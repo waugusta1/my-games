@@ -157,7 +157,7 @@ function burst(x,y,t,n){const f=T[t];for(let i=0;i<n&&parts.length<500;i++){cons
 function physics(dt){const SUB=8,h=dt/SUB,G=1700;
   for(let s=0;s<SUB;s++){
     for(const b of B){const vx=(b.x-b.px)*.998,vy=(b.y-b.py)*.998;b.px=b.x;b.py=b.y;b.x+=vx;b.y+=vy+G*h*h;}
-    for(let it=0;it<2;it++){
+    for(let it=0;it<3;it++){
       for(let i=0;i<B.length;i++){const a=B[i];if(a.dead)continue;for(let j=i+1;j<B.length;j++){const b=B[j];if(b.dead)continue;const dx=b.x-a.x,dy=b.y-a.y,m=a.r+b.r,d2=dx*dx+dy*dy;if(d2>=m*m)continue;
         if(a.t===b.t&&a.age>.05&&b.age>.05){merge(a,b);break;}
         const d=Math.sqrt(d2)||.01,o=(m-d),nx=dx/d,ny=dy/d,wa=b.m/(a.m+b.m),wb=1-wa;a.x-=nx*o*wa;a.y-=ny*o*wa;b.x+=nx*o*wb;b.y+=ny*o*wb;}}
@@ -167,8 +167,8 @@ function physics(dt){const SUB=8,h=dt/SUB,G=1700;
 }
 function update(dt){clock+=dt;
   if(state==='play'){cool-=dt;comboT-=dt;physics(dt);let over=false;
-    for(const b of B){b.age+=dt;b.sq=Math.max(0,b.sq-dt*4);if(b.age>1.2&&b.y-b.r<0)over=true;}
-    danger=over?danger+dt:Math.max(0,danger-dt*2);if(danger>2.2)end();
+    for(const b of B){b.age+=dt;b.sq=Math.max(0,b.sq-dt*4);const still=Math.abs(b.y-b.py)<.35&&Math.abs(b.x-b.px)<.35;if(b.age>1.5&&still&&b.y-b.r*.35<0)over=true;}
+    danger=over?danger+dt:Math.max(0,danger-dt*1.5);if(danger>3)end();
     if(shown<score)shown=Math.min(score,shown+Math.max(1,(score-shown)*dt*8));}
   else if(state==='ending'){overT+=dt;if(overT>.08&&B.length){overT=0;const b=B.shift();burst(b.x,b.y,b.t,10);pluck(note(b.t%8),.2,.03);}if(!B.length&&$('over').hidden&&overT>.6)showOver();}
   for(const p of parts){p.life-=dt;p.x+=p.vx*dt;p.y+=p.vy*dt;p.vy+=500*dt;p.vx*=.97;p.rot+=p.vr*dt;}parts=parts.filter(p=>p.life>0);
@@ -197,6 +197,7 @@ function render(){ctx.setTransform(1,0,0,1,0,0);ctx.drawImage(BG,0,0);ctx.setTra
   rr(jx-lip,jy-6*k,jw+lip*2,jh+lip+6*k,22*k);ctx.fill();
   // soil
   const sg=ctx.createLinearGradient(0,jy+jh-14*k,0,jy+jh);sg.addColorStop(0,'rgba(80,40,30,.0)');sg.addColorStop(1,'rgba(80,40,30,.55)');ctx.fillStyle=sg;ctx.fillRect(jx,jy+jh-14*k,jw,14*k);
+  if(danger>.4&&state==='play'){ctx.save();ctx.textAlign='center';ctx.font='700 '+Math.round(30*Math.max(.8,k))+'px Fredoka,system-ui,sans-serif';ctx.fillStyle=`rgba(255,110,130,${.6+.4*Math.sin(clock*12)})`;ctx.fillText('Overflowing! '+Math.max(1,Math.ceil(3-danger)),jx+jw/2,jy-12*k);ctx.restore();}
   // danger line
   const dl=danger>0?.5+.5*Math.sin(clock*20):0;ctx.strokeStyle=danger>0?`rgba(255,80,100,${.5+dl*.5})`:'rgba(255,230,210,.25)';ctx.setLineDash([8*k,8*k]);ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(jx,jy);ctx.lineTo(jx+jw,jy);ctx.stroke();ctx.setLineDash([]);
   // aim guide + held flower
