@@ -70,17 +70,22 @@ const TAU=Math.PI*2,R=Math.random,clamp=(v,a,b)=>v<a?a:v>b?b:v,lerp=(a,b,t)=>a+(
 
 /* ---------- flower tiers ---------- */
 const T=[
- {n:'Seed',     r:14, bg:'#8a5a3a',pet:0, pc:'#b57a4c',ic:'#d9a070',cc:'#6b4028'},
- {n:'Sprout',   r:19, bg:'#4fae5a',pet:2, pc:'#7fd66a',ic:'#a8ee86',cc:'#3d8a3e'},
- {n:'Clover',   r:25, bg:'#3f9c58',pet:4, pc:'#6fcf73',ic:'#9fe89a',cc:'#2f7a45'},
- {n:'Violet',   r:32, bg:'#5b3fa8',pet:5, pc:'#9a7cf0',ic:'#c4b0ff',cc:'#ffd94a'},
- {n:'Daisy',    r:39, bg:'#e8e2d6',pet:12,pc:'#ffffff',ic:'#f4efe6',cc:'#ffc93a'},
- {n:'Tulip',    r:47, bg:'#d63a5a',pet:6, pc:'#ff5f7e',ic:'#ff9aae',cc:'#ffd36a'},
- {n:'Marigold', r:56, bg:'#e0701c',pet:16,pc:'#ff9a2e',ic:'#ffc25a',cc:'#b4460e'},
+ {n:'Seed',     r:13, bg:'#8a5a3a',pet:0, pc:'#b57a4c',ic:'#d9a070',cc:'#6b4028'},
+ {n:'Sprout',   r:16, bg:'#4fae5a',pet:2, pc:'#7fd66a',ic:'#a8ee86',cc:'#3d8a3e'},
+ {n:'Clover',   r:20, bg:'#3f9c58',pet:4, pc:'#6fcf73',ic:'#9fe89a',cc:'#2f7a45'},
+ {n:'Forget-me-not',r:24,bg:'#3a6ac8',pet:5,pc:'#7ab4ff',ic:'#b8d8ff',cc:'#ffe14a'},
+ {n:'Violet',   r:28, bg:'#5b3fa8',pet:5, pc:'#9a7cf0',ic:'#c4b0ff',cc:'#ffd94a'},
+ {n:'Daisy',    r:33, bg:'#e8e2d6',pet:12,pc:'#ffffff',ic:'#f4efe6',cc:'#ffc93a',long:1},
+ {n:'Pansy',    r:38, bg:'#3a2a6a',pet:5, pc:'#b07aff',ic:'#ffe066',cc:'#ffb02e'},
+ {n:'Tulip',    r:43, bg:'#d63a5a',pet:6, pc:'#ff5f7e',ic:'#ff9aae',cc:'#ffd36a',pt:1},
+ {n:'Cherry Blossom',r:48,bg:'#f2a6c4',pet:5,pc:'#ffd0e2',ic:'#fff0f6',cc:'#e05a8a',pt:1},
+ {n:'Marigold', r:54, bg:'#e0701c',pet:16,pc:'#ff9a2e',ic:'#ffc25a',cc:'#b4460e',long:1},
+ {n:'Hibiscus', r:60, bg:'#c8202a',pet:5, pc:'#ff4a3a',ic:'#ff8a6a',cc:'#ffe06a',pt:1},
  {n:'Rose',     r:66, bg:'#b0123c',pet:9, pc:'#e8285a',ic:'#ff6688',cc:'#8a0e2e'},
- {n:'Sunflower',r:77, bg:'#d89a10',pet:20,pc:'#ffcc22',ic:'#ffe066',cc:'#5a3410'},
- {n:'Lotus',    r:89, bg:'#e57ab0',pet:10,pc:'#ffa6cf',ic:'#ffd6ea',cc:'#ffe28a'},
- {n:'Moonflower',r:102,bg:'#5a6ed8',pet:8,pc:'#c8d4ff',ic:'#f0f4ff',cc:'#fff2b0'}];
+ {n:'Sunflower',r:73, bg:'#d89a10',pet:20,pc:'#ffcc22',ic:'#ffe066',cc:'#5a3410',long:1,sun:1},
+ {n:'Lotus',    r:80, bg:'#e57ab0',pet:10,pc:'#ffa6cf',ic:'#ffd6ea',cc:'#ffe28a',pt:1},
+ {n:'Orchid',   r:87, bg:'#8a3ab8',pet:6, pc:'#e8b0ff',ic:'#fff0ff',cc:'#ff6ab0',pt:1},
+ {n:'Moonflower',r:95,bg:'#5a6ed8',pet:8,pc:'#c8d4ff',ic:'#f0f4ff',cc:'#fff2b0'}];
 const MAXT=T.length-1;
 const PTS=T.map((_,i)=>(i+1)*(i+2)/2);
 
@@ -94,14 +99,14 @@ function drawFlower(g,i,c,r){const f=T[i];g.save();g.translate(c,c);
   else if(i<=2){const n=f.pet;for(let p=0;p<n;p++){g.save();g.rotate(p/n*TAU+(i===1?-.6:.0));g.fillStyle=f.pc;g.beginPath();
       if(i===1){g.ellipse(r*.32,-r*.15,r*.42,r*.24,-.5,0,TAU);}else{g.moveTo(0,0);g.bezierCurveTo(r*.15,-r*.75,r*.75,-r*.65,r*.32,-r*.05);g.bezierCurveTo(r*.65,-r*.1,r*.6,r*.35,0,0);}
       g.fill();g.fillStyle=f.ic;g.globalAlpha=.5;g.beginPath();g.ellipse(r*.25,-r*.25,r*.1,r*.06,-.6,0,TAU);g.fill();g.globalAlpha=1;g.restore();}}
-  else{const n=f.pet,len=r*(i===4||i===6||i===8?.92:.88),wid=r*(n>=12?.17:n>=9?.3:.42);
+  else{const n=f.pet,len=r*(f.long?.92:.88),wid=r*(n>=12?.17:n>=9?.3:.42);
     for(const[layer,col,sc,off]of[[0,f.pc,1,0],[1,f.ic,.68,.5]]){for(let p=0;p<n;p++){g.save();g.rotate((p+off)/n*TAU);
       const pg=g.createLinearGradient(0,0,0,-len*sc);pg.addColorStop(0,col);pg.addColorStop(1,lighten(col,layer?.15:.08));g.fillStyle=pg;g.beginPath();
-      if(i===5||i===9){g.moveTo(0,0);g.bezierCurveTo(wid*1.3*sc,-len*.3*sc,wid*sc,-len*sc,0,-len*sc);g.bezierCurveTo(-wid*sc,-len*sc,-wid*1.3*sc,-len*.3*sc,0,0);}
+      if(f.pt){g.moveTo(0,0);g.bezierCurveTo(wid*1.3*sc,-len*.3*sc,wid*sc,-len*sc,0,-len*sc);g.bezierCurveTo(-wid*sc,-len*sc,-wid*1.3*sc,-len*.3*sc,0,0);}
       else g.ellipse(0,-len*.52*sc,wid*sc,len*.5*sc,0,0,TAU);
       g.fill();g.strokeStyle='rgba(0,0,0,.08)';g.lineWidth=1;g.stroke();g.restore();}}
-    const cr=r*(i===8?.42:.3),cg=g.createRadialGradient(-cr*.3,-cr*.3,0,0,0,cr);cg.addColorStop(0,lighten(f.cc,.3));cg.addColorStop(1,f.cc);g.fillStyle=cg;g.beginPath();g.arc(0,0,cr,0,TAU);g.fill();
-    if(i===8){g.fillStyle='rgba(0,0,0,.25)';for(let d=0;d<40;d++){const a=d*2.4,rr=Math.sqrt(d/40)*cr*.9;g.beginPath();g.arc(Math.cos(a)*rr,Math.sin(a)*rr,cr*.05,0,TAU);g.fill();}}}
+    const cr=r*(f.sun?.42:.3),cg=g.createRadialGradient(-cr*.3,-cr*.3,0,0,0,cr);cg.addColorStop(0,lighten(f.cc,.3));cg.addColorStop(1,f.cc);g.fillStyle=cg;g.beginPath();g.arc(0,0,cr,0,TAU);g.fill();
+    if(f.sun){g.fillStyle='rgba(0,0,0,.25)';for(let d=0;d<40;d++){const a=d*2.4,rr=Math.sqrt(d/40)*cr*.9;g.beginPath();g.arc(Math.cos(a)*rr,Math.sin(a)*rr,cr*.05,0,TAU);g.fill();}}}
   // face
   if(i>=1){const fr=Math.max(r*.3,9)*.5,fy=i<=2?0:0;g.fillStyle='rgba(40,14,30,.85)';g.strokeStyle='rgba(40,14,30,.85)';g.lineWidth=Math.max(1.2,r*.035);g.lineCap='round';
     g.beginPath();g.arc(-fr*.62,fy-fr*.12,fr*.17,0,TAU);g.arc(fr*.62,fy-fr*.12,fr*.17,0,TAU);g.fill();
@@ -130,6 +135,7 @@ function buildBG(){BG=document.createElement('canvas');BG.width=cv.width;BG.heig
 
 /* ---------- save / audio ---------- */
 const SK='bloomjar-save-v1';let save={best:0,snd:true,top:0};try{Object.assign(save,JSON.parse(__store.get(SK))||{});}catch(_){}
+if(!save.v2){save.top=[0,1,2,4,5,7,9,11,12,13,15][save.top||0]||0;save.v2=1;}
 const persist=()=>{try{__store.set(SK,JSON.stringify(save));}catch(_){}};
 let AC=null,master;function audio(){if(!AC){try{AC=new(window.AudioContext||window.webkitAudioContext)();master=AC.createGain();master.gain.value=.7;const comp=AC.createDynamicsCompressor();master.connect(comp);comp.connect(AC.destination);}catch(_){}}if(AC&&AC.state==='suspended')AC.resume();}
 function pluck(f,d=.5,v=.08,type='triangle',dl=0){if(!AC||!save.snd)return;const t=AC.currentTime+dl,o=AC.createOscillator(),o2=AC.createOscillator(),g=AC.createGain();o.type=type;o2.type='sine';o.frequency.value=f;o2.frequency.value=f*2;g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(v,t+.006);g.gain.exponentialRampToValueAtTime(.0001,t+d);const g2=AC.createGain();g2.gain.value=.3;o.connect(g);o2.connect(g2);g2.connect(g);g.connect(master);o.start(t);o2.start(t);o.stop(t+d+.05);o2.stop(t+d+.05);}
@@ -150,8 +156,8 @@ function merge(a,b){a.dead=b.dead=true;const x=(a.x+b.x)/2,y=(a.y+b.y)/2,t=a.t;
   const n=body(t+1,x,y);n.px=x-(a.x-a.px+b.x-b.px)/4;n.py=y-(a.y-a.py+b.y-b.py)/4;n.sq=1;n.age=.3;B.push(n);
   score+=PTS[t+1]*mult;topTier=Math.max(topTier,t+1);burst(x,y,t+1,14+t*5);
   pops.push({x,y:y-T[t+1].r,txt:'+'+PTS[t+1]*mult+(mult>1?'  x'+mult:''),life:1});
-  if(t+1>=7){pops.push({x,y:y-T[t+1].r-26,txt:T[t+1].n+'!',life:1.4,big:1});shake=Math.max(shake,t*1.2);}
-  pluck(note(t+Math.min(combo-1,4)),.4+t*.05,.07);if(t>=5)pluck(note(t+2)/2,.8,.05,'sine');buzz(t>=5?30:12);}
+  if(t+1>=9){pops.push({x,y:y-T[t+1].r-26,txt:T[t+1].n+'!',life:1.4,big:1});shake=Math.max(shake,t*1.2);}
+  pluck(note(Math.round(t*.75)+Math.min(combo-1,4)),.4+t*.05,.07);if(t>=7)pluck(note(Math.round(t*.75)+2)/2,.8,.05,'sine');buzz(t>=7?30:12);}
 function burst(x,y,t,n){const f=T[t];for(let i=0;i<n&&parts.length<500;i++){const a=R()*TAU,v=60+R()*260*(1+t*.08);parts.push({x,y,vx:Math.cos(a)*v,vy:Math.sin(a)*v-80,rot:R()*TAU,vr:(R()-.5)*10,life:.8+R()*.6,ml:1.4,c:R()<.6?f.pc:f.ic,s:3+R()*4+t*.4});}}
 
 function physics(dt){const SUB=8,h=dt/SUB,G=1700;

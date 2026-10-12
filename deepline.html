@@ -106,15 +106,25 @@ const SPECIES=[
  {id:'squid',name:'Ruby Squid',z:[220,750],val:48,size:25,spd:56,shape:'squid',c1:'#ff5a6a',c2:'#a01830'},
  {id:'angler',name:'Glimmer Angler',z:[300,1100],val:85,size:29,spd:30,shape:'angler',c1:'#5a3a2a',c2:'#20120c',glow:'#fff59a'},
  {id:'dragon',name:'Void Dragonfish',z:[500,1700],val:150,size:33,spd:52,shape:'slim',c1:'#2a1e3a',c2:'#08040e',glow:'#c37bff',dots:true},
- {id:'ray',name:'Crystal Ray',z:[800,2100],val:270,size:36,spd:42,shape:'ray',c1:'#9ff6ff',c2:'#2f8aa8',glow:'#88ffff'},
- {id:'leviathan',name:'Abyss Leviathan',z:[1400,2100],val:900,size:58,spd:34,shape:'eel',c1:'#1a3a6a',c2:'#050a18',glow:'#5af0ff',rare:.25},
- {id:'koi',name:'Golden Koi',z:[0,2100],val:500,size:24,spd:80,shape:'fish',c1:'#fff1a0',c2:'#f0a800',glow:'#ffe066',rare:.012}
+ {id:'ray',name:'Crystal Ray',z:[800,2600],val:270,size:36,spd:42,shape:'ray',c1:'#9ff6ff',c2:'#2f8aa8',glow:'#88ffff'},
+ {id:'leviathan',name:'Abyss Leviathan',z:[1400,5000],val:900,size:58,spd:34,shape:'eel',c1:'#1a3a6a',c2:'#050a18',glow:'#5af0ff',rare:.25},
+ {id:'vent',name:'Vent Snapper',z:[1900,3600],val:420,size:26,spd:60,shape:'fish',c1:'#ff7a3a',c2:'#5a0a0a',glow:'#ff9a4a'},
+ {id:'stilt',name:'Stilt Tripod',z:[2300,4600],val:600,size:27,spd:38,shape:'slim',c1:'#efe2cc',c2:'#6a5a4a'},
+ {id:'phantom',name:'Phantom Ray',z:[2800,6500],val:850,size:40,spd:44,shape:'ray',c1:'#e2d4ff',c2:'#5a3aa8',glow:'#c8a8ff'},
+ {id:'goblin',name:'Goblin Shark',z:[3500,8500],val:1200,size:40,spd:58,shape:'slim',c1:'#ffd0d0',c2:'#a86a7a'},
+ {id:'starpuff',name:'Star Puffer',z:[4500,11000],val:1700,size:26,spd:34,shape:'round',c1:'#fff0b0',c2:'#d89a2a',spots:'#ffffff',glow:'#ffe680'},
+ {id:'siren',name:'Abyss Siren',z:[6000,16000],val:2600,size:30,spd:60,shape:'squid',c1:'#7affd8',c2:'#0a4a5a',glow:'#7affd8'},
+ {id:'titan',name:'Trench Titan',z:[9000,1e9],val:4000,size:36,spd:30,shape:'angler',c1:'#4a0a5a',c2:'#0a020e',glow:'#ff7aff'},
+ {id:'cosmic',name:'Cosmic Whale',z:[12000,1e9],val:9000,size:64,spd:28,shape:'eel',c1:'#2a2a7a',c2:'#02020a',glow:'#99aaff',rare:.3},
+ {id:'koi',name:'Golden Koi',z:[0,1e9],val:500,size:24,spd:80,shape:'fish',c1:'#fff1a0',c2:'#f0a800',glow:'#ffe066',rare:.012}
 ];
 const SP=Object.fromEntries(SPECIES.map(s=>[s.id,s]));
 const DEPTHS=[40,70,110,160,230,320,430,560,720,900,1100,1350,1650,2000];
+const depthOf=l=>l<DEPTHS.length?DEPTHS[l]:Math.round(2000*Math.pow(1.2,l-DEPTHS.length+1)/50)*50;
+const lineCost=l=>l<=13?Math.round(30*Math.pow(1.62,l)):Math.round(30*Math.pow(1.62,13)*Math.pow(1.33,l-13));
 const UPG=[
- {id:'line',icon:'🧵',name:'Longer line',desc:l=>'Reach '+DEPTHS[Math.min(l+1,DEPTHS.length-1)]+' m (now '+DEPTHS[l]+' m)',max:DEPTHS.length-1,cost:l=>Math.round(30*Math.pow(1.62,l))},
- {id:'cap',icon:'🪝',name:'Bigger hook',desc:l=>'Carry '+(4+l)+' fish (now '+(3+l)+')',max:17,cost:l=>Math.round(35*Math.pow(1.5,l))},
+ {id:'line',icon:'🧵',name:'Longer line',desc:l=>'Reach '+depthOf(l+1).toLocaleString()+' m (now '+depthOf(l).toLocaleString()+' m)',max:9999,cost:lineCost},
+ {id:'cap',icon:'🪝',name:'Bigger hook',desc:l=>'Carry '+(4+l)+' fish (now '+(3+l)+')',max:37,cost:l=>l<=17?Math.round(35*Math.pow(1.5,l)):Math.round(35*Math.pow(1.5,17)*Math.pow(1.25,l-17))},
  {id:'sink',icon:'⚓',name:'Heavier sinker',desc:l=>'Sink faster down the line',max:6,cost:l=>Math.round(60*Math.pow(1.75,l))},
  {id:'shield',icon:'🫧',name:'Bubble guard',desc:l=>'Ignore '+(l+1)+' bump'+(l?'s':'')+' on the way down',max:5,cost:l=>Math.round(90*Math.pow(1.85,l))},
  {id:'luck',icon:'🍀',name:'Shiny lure',desc:l=>'Rare fish show up more often',max:5,cost:l=>Math.round(150*Math.pow(1.9,l))}];
@@ -173,14 +183,14 @@ let snow=[];addEventListener('resize',resize);
 
 /* ---------- run state ---------- */
 let state='title',run=null,cam=0,t=0,parts=[],pops=[],bubbles=[];
-const maxDepth=()=>DEPTHS[save.up.line],capacity=()=>3+save.up.cap,sinkSpeed=()=>230+save.up.sink*70;
+const maxDepth=()=>depthOf(save.up.line),capacity=()=>3+save.up.cap,sinkSpeed=()=>230+save.up.sink*70;
 function pickSpecies(m){const luck=1+save.up.luck*.8;let pool=[];for(const s of SPECIES){if(m<s.z[0]||m>s.z[1])continue;let w=s.rare?s.rare*luck:1;const mid=(s.z[0]+s.z[1])/2,span=(s.z[1]-s.z[0])/2;if(!s.rare)w*=1.15-Math.min(1,Math.abs(m-mid)/span)*.7;pool.push([s,w]);}
   let tot=pool.reduce((a,p)=>a+p[1],0),r=R()*tot;for(const[s,w]of pool){r-=w;if(r<=0)return s;}return pool.length?pool[0][0]:SP.minnow;}
 function newRun(){const md=maxDepth()*PX,fish=[];let y=130;
   while(y<md+300){const m=y/PX,dens=m<40?1:m<200?1.15:1.3;y+=(55+R()*70)/dens;
     if(m>35&&R()<Math.min(.32,.06+m/2600)){fish.push({jelly:true,x:30+R()*(W-60),y,vx:(R()<.5?-1:1)*(12+R()*14),ph:R()*TAU,r:15});continue;}
-    const s=pickSpecies(m);const n=s.id==='dart'&&R()<.5?3:1;for(let i=0;i<n;i++)fish.push({s,x:40+R()*(W-80)+i*26,y:y+i*14,vx:(R()<.5?-1:1)*s.spd*(.7+R()*.6),ph:R()*TAU,r:s.size*.78});}
-  run={phase:'drop',hx:W/2,hy:-60,vy:0,fish,hooked:[],shields:save.up.shield,depth:0,maxReached:0,bump:0,surfaceT:0,stung:0};state='play';cam=-H*.3;SFX.plop();}
+    const s=pickSpecies(m);const n=s.id==='dart'&&R()<.5?3:1;for(let i=0;i<n;i++)fish.push({s,b:m>2000?1+(m-2000)/6000:1,x:40+R()*(W-80)+i*26,y:y+i*14,vx:(R()<.5?-1:1)*s.spd*(.7+R()*.6),ph:R()*TAU,r:s.size*.78});}
+  const xp=maxDepth()>=1600?Math.max(0,maxDepth()-600):0;run={xp,phase:'drop',hx:W/2,hy:-60,vy:0,fish,hooked:[],shields:save.up.shield,depth:0,maxReached:0,bump:0,surfaceT:0,stung:0};state='play';cam=-H*.3;SFX.plop();}
 
 /* ---------- input ---------- */
 let drag=null;
@@ -199,14 +209,16 @@ function update(dt){t+=dt;
     if(keys.ArrowLeft)r.hx=clamp(r.hx-320*dt,14,W-14);if(keys.ArrowRight)r.hx=clamp(r.hx+320*dt,14,W-14);
     // fish swim
     for(const f of r.fish){if(f.caught)continue;f.ph+=dt*(f.jelly?1.4:4);f.x+=f.vx*dt;const m=f.jelly?18:f.s.size*1.2;if(f.x<m&&f.vx<0||f.x>W-m&&f.vx>0)f.vx*=-1;if(f.jelly)f.y+=Math.sin(f.ph)*6*dt;}
-    if(r.phase==='drop'){r.vy=Math.min(sinkSpeed(),r.vy+600*dt);r.hy+=r.vy*dt;if(r.bump>0){r.bump-=dt;}
+    if(r.phase==='drop'&&r.xp&&r.hy<r.xp*PX){r.vy=Math.min(Math.max(2600,r.xp*PX/7),r.vy+4000*dt);r.hy=Math.min(r.hy+r.vy*dt,r.xp*PX);if(R()<dt*30)bubbles.push({x:r.hx+(R()-.5)*10,y:r.hy,v:300,life:.5,ph:R()*6,r:1.5+R()*2});if(r.hy>=r.xp*PX){r.vy=sinkSpeed();pops.push({x:r.hx,y:r.hy-30,txt:'Express done! Dodge!',life:1.3});}}
+    else if(r.phase==='drop'){r.vy=Math.min(sinkSpeed()*(1+r.hy/PX/5000),r.vy+600*dt);r.hy+=r.vy*dt;if(r.bump>0){r.bump-=dt;}
       if(R()<dt*8)bubbles.push({x:r.hx+(R()-.5)*6,y:r.hy,v:40+R()*40,life:1.4,ph:R()*6,r:1.5+R()*2});
-      if(r.hy>=maxDepth()*PX){r.hy=maxDepth()*PX;startReel('Line end!');}
+      if(r.xp&&r.hy<r.xp*PX){}
+      else if(r.hy>=maxDepth()*PX){r.hy=maxDepth()*PX;startReel('Line end!');}
       else for(const f of r.fish){if(f.caught||r.bump>0)continue;if(hyp(f.x-r.hx,f.y-r.hy)<f.r+8){
         if(r.shields>0){r.shields--;r.bump=.5;SFX.pop();burstC(r.hx,r.hy,'#bfe8ff',14);pops.push({x:r.hx,y:r.hy-20,txt:'Bubble guard!',life:1});buzz(10);f.vx*=-1.4;}
         else if(f.jelly){SFX.sting();buzz(40);r.stung=.4;startReel('Stung!');}
         else{hook(f);SFX.bite();buzz(25);startReel('Bite!');}break;}}}
-    else if(r.phase==='reel'){r.vy=lerp(r.vy,-(380+r.hy/PX*.25),Math.min(1,dt*3));r.hy+=r.vy*dt;
+    else if(r.phase==='reel'){{const m=r.hy/PX;r.vy=lerp(r.vy,-(380+Math.min(m,2000)*.25+Math.max(0,m-2000)*.6),Math.min(1,dt*3));}r.hy+=r.vy*dt;
       for(const f of r.fish){if(f.caught)continue;if(hyp(f.x-r.hx,f.y-r.hy)<f.r+10){
         if(f.jelly){if(r.stung<=0){r.stung=.6;SFX.sting();buzz(35);const lost=r.hooked.pop();if(lost){lost.caught=false;lost.vx=(R()<.5?-1:1)*lost.s.spd*1.5;lost.y=r.hy+30;pops.push({x:r.hx,y:r.hy-24,txt:'Lost a '+lost.s.name+'!',life:1.2,bad:1});}}}
         else if(r.hooked.length<capacity())hook(f);}}
@@ -216,9 +228,9 @@ function update(dt){t+=dt;
     // hooked fish dangle
     r.hooked.forEach((f,i)=>{const tx=r.hx+Math.sin(t*5+i)*(6+i*1.5),ty=r.hy+16+i*9;f.x=lerp(f.x,tx,Math.min(1,dt*10));f.y=lerp(f.y,ty,Math.min(1,dt*10));});
     // camera: look ahead
-    const target=r.hy-(r.phase==='drop'?H*.33:H*.68);cam=lerp(cam,target,Math.min(1,dt*5));}
+    const target=r.hy-(r.phase==='drop'?H*.33:H*.68);cam=lerp(cam,target,Math.min(1,dt*Math.max(5,Math.abs(r.vy)/60)));}
   else if(state==='tally'){r.surfaceT+=dt;cam=lerp(cam,-H*.55,Math.min(1,dt*3));
-    if(r.tq.length&&r.surfaceT>r.nextT){r.nextT=r.surfaceT+Math.max(.08,.32-r.tq.length*.01);const f=r.tq.shift();const v=f.s.val;r.earned+=v;
+    if(r.tq.length&&r.surfaceT>r.nextT){r.nextT=r.surfaceT+Math.max(.08,.32-r.tq.length*.01);const f=r.tq.shift();const v=Math.round(f.s.val*(f.b||1));r.earned+=v;
       parts.push({x:W/2+(R()-.5)*60,y:-30,vx:(R()-.5)*120,vy:-260-R()*120,g:520,life:1.4,spr:f.s.id,rot:R()*6,vr:(R()-.5)*10});pops.push({x:W/2+(R()-.5)*90,y:-90,txt:'+'+v,life:1,gold:1});SFX.coin(r.tq.length);}
     if(!r.tq.length&&r.surfaceT>r.nextT+.8&&!r.shown){r.shown=true;showResult();}}
 }
@@ -236,7 +248,7 @@ function showResult(){const r=run;save.coins+=r.earned;const deep=Math.round(r.m
 function burstC(x,y,c,n){for(let i=0;i<n;i++){const a=R()*TAU,v=40+R()*120;parts.push({x,y,vx:Math.cos(a)*v,vy:Math.sin(a)*v,life:.4+R()*.4,c,s:1.5+R()*2});}}
 
 /* ---------- render ---------- */
-const STOPS=[[0,[63,182,232]],[60,[31,120,184]],[200,[14,58,114]],[500,[8,26,60]],[1000,[4,11,30]],[2100,[2,4,9]]];
+const STOPS=[[0,[63,182,232]],[60,[31,120,184]],[200,[14,58,114]],[500,[8,26,60]],[1000,[4,11,30]],[2100,[2,4,9]],[3500,[16,4,6]],[6000,[10,3,20]],[10000,[2,10,16]],[16000,[6,4,22]]];
 function waterAt(m){m=Math.max(0,m);for(let i=1;i<STOPS.length;i++)if(m<=STOPS[i][0]){const a=STOPS[i-1],b=STOPS[i],k=(m-a[0])/(b[0]-a[0]);return a[1].map((v,j)=>Math.round(lerp(v,b[1][j],k)));}return STOPS[STOPS.length-1][1];}
 const rgb=a=>'rgb('+a[0]+','+a[1]+','+a[2]+')';
 function render(){ctx.setTransform(dpr,0,0,dpr,0,0);const c0=cam,c1=cam+H;
@@ -272,8 +284,8 @@ function render(){ctx.setTransform(dpr,0,0,dpr,0,0);const c0=cam,c1=cam+H;
     ctx.globalAlpha=Math.min(1,p.life*2.5);ctx.fillStyle=p.c;ctx.beginPath();ctx.arc(p.x,p.y-c0,p.s,0,TAU);ctx.fill();ctx.globalAlpha=1;}
   ctx.textAlign='center';for(const p of pops){ctx.globalAlpha=Math.min(1,p.life*2);ctx.font='800 '+(p.newb?18:p.gold?20:14)+'px "Baloo 2",system-ui,sans-serif';ctx.lineWidth=4;ctx.strokeStyle='rgba(0,20,40,.6)';ctx.strokeText(p.txt,p.x,p.y-c0);ctx.fillStyle=p.bad?'#ff9ab0':p.newb?'#7dffb0':p.gold?'#ffd46a':'#fff';ctx.fillText(p.txt,p.x,p.y-c0);}ctx.globalAlpha=1;
   // HUD
-  if(run&&state==='play'){const r=run;ctx.textAlign='left';ctx.font='800 30px "Baloo 2",system-ui,sans-serif';ctx.fillStyle='#fff';ctx.fillText(Math.round(r.depth)+' m',14,40);
-    ctx.font='700 13px "Baloo 2",system-ui,sans-serif';ctx.fillStyle='rgba(200,230,255,.8)';ctx.fillText(r.phase==='drop'?'Dodge fish on the way down':'Catch fish on the way up!',14,58);
+  if(run&&state==='play'){const r=run;ctx.textAlign='left';ctx.font='800 30px "Baloo 2",system-ui,sans-serif';ctx.fillStyle='#fff';ctx.fillText(Math.round(r.depth).toLocaleString()+' m',14,40);
+    ctx.font='700 13px "Baloo 2",system-ui,sans-serif';ctx.fillStyle='rgba(200,230,255,.8)';ctx.fillText(r.phase==='drop'?(r.xp&&r.hy<r.xp*PX?'Express drop to '+r.xp.toLocaleString()+' m…':'Dodge fish on the way down'):'Catch fish on the way up!',14,58);
     ctx.textAlign='right';ctx.font='800 20px "Baloo 2",system-ui,sans-serif';ctx.fillStyle='#ffd46a';ctx.fillText('🪝 '+r.hooked.length+'/'+capacity(),W-14,36);
     if(r.phase==='drop'&&r.shields>0){ctx.font='700 14px "Baloo 2",system-ui,sans-serif';ctx.fillStyle='#bfe8ff';ctx.fillText('🫧×'+r.shields,W-14,56);}
     // depth bar
@@ -295,7 +307,7 @@ $('shopList').addEventListener('click',e=>{const b=e.target.closest('button[data
 $('bookBtn').onclick=()=>{audio();hideAll();renderBook();$('bookOv').hidden=false;};
 $('bookBack').onclick=()=>{hideAll();$('title').hidden=false;updTitle();};
 function renderBook(){const box=$('book');box.innerHTML='';let n=0;for(const s of SPECIES){const seen=!!save.seen[s.id];if(seen)n++;const d=document.createElement('div');d.className='sp';const c=document.createElement('canvas');c.width=192;c.height=112;const g=c.getContext('2d');g.translate(96,56);const sc=Math.min(1.6,30/s.size);g.scale(sc,sc);drawFish(g,s,!seen);
-  d.appendChild(c);const tx=document.createElement('div');tx.innerHTML=seen?'<b>'+s.name+'</b>'+s.z[0]+'–'+s.z[1]+' m · '+s.val+' 🪙'+(save.caught[s.id]?' · caught '+save.caught[s.id]:''):'<b>???</b>'+(s.rare?'Rare':'Found below '+s.z[0]+' m');d.appendChild(tx);box.appendChild(d);}
+  d.appendChild(c);const tx=document.createElement('div');tx.innerHTML=seen?'<b>'+s.name+'</b>'+s.z[0]+(s.z[1]>1e8?'+':'–'+s.z[1])+' m · '+s.val+' 🪙'+(save.caught[s.id]?' · caught '+save.caught[s.id]:''):'<b>???</b>'+(s.rare?'Rare':'Found below '+s.z[0]+' m');d.appendChild(tx);box.appendChild(d);}
   $('bookInfo').textContent=n+' of '+SPECIES.length+' species found. Deeper lines find stranger fish.';}
 
 /* ---------- loop ---------- */
