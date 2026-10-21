@@ -43,6 +43,7 @@ h2{font-family:var(--disp);font-weight:700;font-size:30px;margin:0;color:var(--a
 .card .lv{font-size:11px;color:var(--amber);font-weight:900;letter-spacing:.1em}
 .card.new .lv{color:var(--violet)}
 #pauseBtn{position:fixed;right:12px;top:calc(env(safe-area-inset-top,0px) + 56px);width:40px;height:40px;border-radius:12px;border:1.5px solid var(--line);background:rgba(16,18,16,.7);color:var(--ink);font:900 16px var(--body);cursor:pointer}
+.list{display:flex;flex-direction:column;gap:8px;width:min(400px,100%)}.it{display:grid;grid-template-columns:44px 1fr auto;gap:10px;align-items:center;background:var(--card);border:1.5px solid var(--line);border-radius:14px;padding:8px 12px;text-align:left}.it .ic{font-size:26px;text-align:center}.it .nm{font-weight:900}.it .ds{font-size:12px;color:var(--muted);font-weight:700}.it button{font:900 13px var(--body);border:0;border-radius:10px;padding:8px 10px;background:linear-gradient(180deg,#ffd58a,#ff9d3b);color:#241505;min-width:84px;cursor:pointer}.it button:disabled{opacity:.35}.it.done{border-color:#ffbf5e}.ov.top{justify-content:flex-start;padding-top:max(24px,env(safe-area-inset-top));overflow:auto}
 .how{font-size:13px;color:var(--muted);font-weight:700;max-width:320px;line-height:1.5}
 </style>
 <canvas id="c" aria-label="Lantern survival game. Drag to move; weapons fire automatically."></canvas>
@@ -51,12 +52,20 @@ h2{font-family:var(--disp);font-weight:700;font-size:30px;margin:0;color:var(--a
   <h1>Lantern</h1>
   <p class="sub">The forest wakes at night. Keep your light alive until dawn.</p>
   <div class="pills"><div class="pill"><span>Best</span><b id="tBest">0:00</b></div><div class="pill"><span>Most slain</span><b id="tKills">0</b></div></div>
+  <div class="row"><button class="btn ghost" id="heroBtn">Hero ▸</button></div>
+  <div class="row"><button class="btn ghost" id="cDown" aria-label="Easier">−</button><div class="pill"><span>Nightmare</span><b id="cVal">0</b></div><button class="btn ghost" id="cUp" aria-label="Harder">+</button></div>
+  <p class="sub" id="cInfo" style="font-size:13px"></p>
   <div class="row"><button class="btn" id="contBtn" hidden>Continue run</button><button class="btn" id="playBtn">Light the lantern</button></div><p class="sub" id="contInfo" hidden></p>
+  <div class="row"><button class="btn ghost" id="shrineBtn">🕯️ Shrine</button><button class="btn ghost" id="achBtn">🏆 Feats</button></div>
+  <p class="sub" id="soulInfo" style="color:#c9a2ff"></p>
   <p class="how">Drag anywhere to walk (or WASD). Your weapons fire on their own. Collect embers to level up and choose new powers. Dawn breaks at 10:00. Can you reach it?</p>
 </div>
 <div id="level" class="ov" hidden><h2>Level up</h2><p class="sub">Choose a power</p><div id="cards"></div></div>
 <div id="pause" class="ov" hidden><h2>Paused</h2><div class="pills" id="pStats"></div><div class="row"><button class="btn" id="resumeBtn">Resume</button><button class="btn ghost" id="quitBtn">Give up</button><button class="btn ghost" id="sndBtn">Sound: on</button></div></div>
-<div id="over" class="ov" hidden><h2 id="oTitle">The light fades…</h2><div class="pills" id="oStats"></div><div class="row"><button class="btn" id="againBtn">Try again</button></div></div>
+<div id="over" class="ov" hidden><h2 id="oTitle">The light fades…</h2><div class="pills" id="oStats"></div><p class="sub" id="oSouls" style="color:#c9a2ff;font-size:17px"></p><p class="sub" id="oFeats"></p><div class="row"><button class="btn" id="againBtn">Try again</button><button class="btn ghost" id="oShrine">🕯️ Shrine</button><button class="btn ghost" id="oHome">Home</button></div></div>
+<div id="shrine" class="ov top" hidden><h2>The Shrine</h2><p class="sub" id="shSouls"></p><div class="list" id="shList"></div><div class="row"><button class="btn ghost" id="shBack">Back</button></div></div>
+<div id="heroes" class="ov top" hidden><h2>Heroes</h2><p class="sub">Each hero starts with a different weapon and bonus.</p><div class="list" id="hList"></div><div class="row"><button class="btn ghost" id="hBack">Back</button></div></div>
+<div id="feats" class="ov top" hidden><h2>Feats</h2><p class="sub">Each feat pays souls once.</p><div class="list" id="fList"></div><div class="row"><button class="btn ghost" id="fBack">Back</button></div></div>
 <script>
 /* Cloud save: keeps game saves in your Claude account so they survive across devices and cleared browser storage. */
 (()=>{const mem={},has={};let ls=null;try{ls=window.localStorage;ls.getItem('__probe');}catch(_){ls=null;}
@@ -94,7 +103,7 @@ function resize(){dpr=Math.min(window.devicePixelRatio||1,2);W=innerWidth;H=inne
 addEventListener('resize',resize);
 
 /* ---------- save ---------- */
-const SK='lantern-save-v1';let save={best:0,kills:0,snd:true};try{Object.assign(save,JSON.parse(__store.get(SK))||{});}catch(_){}
+const SK='lantern-save-v1';let save={best:0,kills:0,snd:true,souls:0,meta:{},heroes:{wanderer:1},hero:'wanderer',curse:0,maxCurse:0,feats:{},tk:0,bossK:{},dawnHero:{},bestLvl:0};try{Object.assign(save,JSON.parse(__store.get(SK))||{});}catch(_){}
 const persist=()=>{try{__store.set(SK,JSON.stringify(save));}catch(_){}};
 const fmt=t=>Math.floor(t/60)+':'+String(Math.floor(t%60)).padStart(2,'0');
 
@@ -125,6 +134,29 @@ const ETYPES={
   wraith:{r:13,hp:150,sp:155,dmg:0,xp:30,col:['#ffe08a','#a0701a'],eye:'#ffffff',flee:1},
   queen:{r:46,hp:3600,sp:64,dmg:26,xp:120,col:['#5a2a6a','#100418'],eye:'#ff9aff',boss:1,zig:1},
   warden:{r:60,hp:5200,sp:24,dmg:34,xp:120,col:['#5a5a5a','#141414'],eye:'#6affea',boss:1}};
+const HEROES={wanderer:{name:'Wanderer',icon:'🏮',cost:0,w:'bolt',desc:'Firefly Bolt. Balanced.'},
+  pyro:{name:'Pyromancer',icon:'🔥',cost:150,w:'orbit',desc:'Ember Orbit · +10% damage · −10 health',dmg:.1,hp:-10},
+  witch:{name:'Frost Witch',icon:'❄️',cost:300,w:'frost',desc:'Frost Shards · +15% light',light:.15},
+  storm:{name:'Stormcaller',icon:'⚡',cost:500,w:'chain',desc:'Wild Spark · weapons 10% faster',haste:.1},
+  ranger:{name:'Ember Ranger',icon:'♨️',cost:800,w:'trail',extra:'bolt',desc:'Ember Trail + Bolt · +15% speed',speed:.15},
+  knight:{name:'Lantern Knight',icon:'🛡️',cost:1200,w:'nova',desc:'Dawn Pulse · +50 health · −10% speed',hp:50,speed:-.1}};
+const META=[{id:'power',icon:'✦',name:'Inner Fire',desc:l=>'+'+(5*l)+'% damage',cost:l=>Math.round(30*Math.pow(1.32,l))},
+  {id:'vigor',icon:'♥',name:'Vigor',desc:l=>'+'+(10*l)+' max health',max:20,cost:l=>Math.round(25*Math.pow(1.3,l))},
+  {id:'swift',icon:'➶',name:'Fleet Foot',desc:l=>'+'+(3*l)+'% move speed',max:10,cost:l=>Math.round(30*Math.pow(1.35,l))},
+  {id:'haste',icon:'⏱',name:'Steady Hands',desc:l=>'Weapons '+(3*l)+'% faster',max:15,cost:l=>Math.round(40*Math.pow(1.35,l))},
+  {id:'reach',icon:'☀',name:'Wide Glow',desc:l=>'+'+(10*l)+' ember pickup range',max:10,cost:l=>Math.round(20*Math.pow(1.3,l))},
+  {id:'revive',icon:'✚',name:'Second Wick',desc:l=>'Come back to life '+l+'× per run',max:2,cost:l=>l?2500:600},
+  {id:'reroll',icon:'↻',name:'Fate Twist',desc:l=>l+' reroll'+(l>1?'s':'')+' of level-up choices per run',max:5,cost:l=>Math.round(120*Math.pow(1.6,l))},
+  {id:'greed',icon:'◈',name:'Soul Hunger',desc:l=>'+'+(10*l)+'% souls',cost:l=>Math.round(50*Math.pow(1.38,l))}];
+const M=k=>save.meta[k]||0;let curse=0,hero='wanderer',revivesLeft=0,rerollsLeft=0,dawnBoss=0;
+const H0=()=>HEROES[hero]||HEROES.wanderer;
+const FEATS=[];
+for(const[m,rw]of[[5,40],[10,120],[15,220],[20,400],[30,800],[45,1500]])FEATS.push({id:'t'+m,txt:'Survive '+m+':00',rw,test:()=>save.best>=m*60});
+for(const c of[1,2,3,5,7,10,15,20,30])FEATS.push({id:'c'+c,txt:'See the dawn on Nightmare '+c,rw:100+c*60,test:()=>save.maxCurse>c});
+for(const h in HEROES)FEATS.push({id:'h'+h,txt:'See the dawn as the '+HEROES[h].name,rw:150,test:()=>!!save.dawnHero[h]});
+for(const b of['boss','queen','warden'])FEATS.push({id:'b'+b,txt:'Defeat '+({boss:'the Hollow King',queen:'the Moth Queen',warden:'the Stone Warden'})[b],rw:80,test:()=>(save.bossK[b]||0)>=1});
+for(const k of[1000,10000,50000,250000])FEATS.push({id:'k'+k,txt:'Slay '+k.toLocaleString()+' monsters (all time)',rw:Math.round(Math.sqrt(k)*2),test:()=>save.tk>=k});
+for(const l of[30,50,75])FEATS.push({id:'l'+l,txt:'Reach level '+l+' in one run',rw:l*4,test:()=>save.bestLvl>=l});
 const BOSSES={boss:['THE HOLLOW KING AWAKENS','KING DEFEATED'],queen:['THE MOTH QUEEN DESCENDS','QUEEN DEFEATED'],warden:['THE STONE WARDEN RISES','WARDEN DEFEATED']};
 const OMENS=[
   {id:'clear',name:'Clear Night',desc:'A quiet night. Or is it?',w:3},
@@ -172,9 +204,10 @@ function pickOmen(){const tot=OMENS.reduce((a,o)=>a+o.w,0);let x=R()*tot;for(con
 function reset(){P={x:0,y:0,vx:0,vy:0,hp:100,max:100,r:11,inv:0,face:1,walk:0,w:{bolt:1},p:{},cd:{bolt:0,nova:2,chain:1.5,frost:1,trail:0},orbA:0};
   omen=pickOmen();bossType=['boss','queen','warden'][(R()*3)|0];nextEvent=rnd(40,60);chests=[];shrines=[];flames=[];strikes=[];emberRain=0;meteorT=0;stormT=3;banner={txt:omen.name,sub:omen.desc,t:4.5};
   en=[];shots=[];eshots=[];gems=[];fx=[];nums=[];hearts=[];t=0;kills=0;lvl=1;xp=0;xpNext=4;spawnT=0;shake=0;bossOn=false;wonDawn=false;flash=0;
-  props=[];for(let i=0;i<70;i++)props.push({x:rnd(-1400,1400),y:rnd(-1400,1400)});}
+  props=[];for(let i=0;i<70;i++)props.push({x:rnd(-1400,1400),y:rnd(-1400,1400)});
+  hero=save.hero||'wanderer';curse=save.curse||0;dawnBoss=0;const hh=H0();P.w={};P.w[hh.w]=1;if(hh.extra)P.w[hh.extra]=1;P.max=100+M('vigor')*10+(hh.hp||0);P.hp=P.max;revivesLeft=M('revive');rerollsLeft=M('reroll');if(curse)banner={txt:omen.name+' · Nightmare '+curse,sub:omen.desc,t:4.5};}
 const pl=k=>P.p[k]||0;
-const dmgMul=()=>1+pl('might')*.15,haste=()=>1-pl('haste')*.1,lightR=()=>(150+pl('light')*30)*(omen&&omen.light||1),magnet=()=>100+pl('light')*35;
+const dmgMul=()=>(1+pl('might')*.15)*(1+M('power')*.05)*(1+(H0().dmg||0)),haste=()=>(1-pl('haste')*.1)*(1-M('haste')*.03)*(1-(H0().haste||0)),lightR=()=>(150+pl('light')*30)*(omen&&omen.light||1)*(1+(H0().light||0)),magnet=()=>100+pl('light')*35+M('reach')*10;
 
 /* ---------- input ---------- */
 const keys={};let joy=null;
@@ -192,19 +225,32 @@ function clearRun(){if(__store.get(RK)!==null)__store.remove(RK);}
 let lastRunSave=0;
 function saveRun(force){if(state!=='play'&&state!=='paused'&&state!=='levelup')return;if(!force&&t-lastRunSave<5)return;lastRunSave=t;
   const boss=en.find(e=>ETYPES[e.type].boss);
-  __store.set(RK,JSON.stringify({v:1,x:P.x,y:P.y,hp:P.hp,max:P.max,w:P.w,p:P.p,t,kills,lvl,xp,xpNext,bossOn,wonDawn,bossHp:boss?boss.hp:0,omen:omen&&omen.id,bossType,nextEvent}));}
+  __store.set(RK,JSON.stringify({v:1,x:P.x,y:P.y,hp:P.hp,max:P.max,w:P.w,p:P.p,t,kills,lvl,xp,xpNext,bossOn,wonDawn,bossHp:boss?boss.hp:0,omen:omen&&omen.id,bossType,nextEvent,hero,curse,rv:revivesLeft,rr:rerollsLeft,db:dawnBoss}));}
 function applyRun(r){P.x=r.x;P.y=r.y;P.hp=r.hp;P.max=r.max;P.w=r.w||{bolt:1};P.p=r.p||{};t=r.t;kills=r.kills;lvl=r.lvl;xp=r.xp;xpNext=r.xpNext;bossOn=r.bossOn;wonDawn=r.wonDawn;lastRunSave=t;cam.x=P.x;cam.y=P.y;
+  hero=r.hero||'wanderer';curse=r.curse||0;revivesLeft=r.rv||0;rerollsLeft=r.rr||0;dawnBoss=r.db||0;
   omen=OMENS.find(o=>o.id===r.omen)||OMENS[0];bossType=r.bossType||'boss';nextEvent=r.nextEvent||t+30;banner={txt:omen.name,sub:'Welcome back',t:3};
   if(bossOn&&r.bossHp>0){spawn(bossType);en[en.length-1].hp=r.bossHp;}floatTxt(P.x,P.y-40,'Welcome back','#ffe9a6',1.6);}
 addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden'){saveRun(true);__store.flush();}});
 addEventListener('pagehide',()=>{saveRun(true);__store.flush();});$('againBtn').onclick=()=>{audio();start();};
 $('pauseBtn').onclick=pause;$('resumeBtn').onclick=()=>{$('pause').hidden=true;state='play';last=performance.now();};
-$('quitBtn').onclick=()=>{$('pause').hidden=true;gameOver(false);};
+$('quitBtn').onclick=()=>{$('pause').hidden=true;gameOver(false,true);};
 $('sndBtn').onclick=()=>{save.snd=!save.snd;persist();$('sndBtn').textContent='Sound: '+(save.snd?'on':'off');};$('sndBtn').textContent='Sound: '+(save.snd?'on':'off');
 function start(){reset();lastRunSave=0;state='play';['title','over','level','pause'].forEach(i=>$(i).hidden=true);$('pauseBtn').hidden=false;last=performance.now();}
-function statsHTML(){return[['Time',fmt(t)],['Slain',kills],['Level',lvl],['Night',omen?omen.name:'']].map(([a,b])=>'<div class="pill"><span>'+a+'</span><b>'+b+'</b></div>').join('');}
+function statsHTML(){return[['Time',fmt(t)],['Slain',kills],['Level',lvl],['Night',omen?omen.name:''],['Hero',H0().name]].concat(curse?[['Nightmare',curse]]:[]).map(([a,b])=>'<div class="pill"><span>'+a+'</span><b>'+b+'</b></div>').join('');}
 function pause(){if(state!=='play')return;saveRun(true);state='paused';joy=null;$('pStats').innerHTML=statsHTML();$('pause').hidden=false;}
-function updTitle(){$('tBest').textContent=fmt(save.best);$('tKills').textContent=save.kills;const r=loadRun();$('contBtn').hidden=!r;$('contInfo').hidden=!r;$('playBtn').className=r?'btn ghost':'btn';$('playBtn').textContent=r?'New run':'Light the lantern';if(r)$('contInfo').textContent='Saved run: '+fmt(r.t)+' · level '+r.lvl+' · '+r.kills+' slain';}
+function renderCurse(){const c=save.curse||0;$('cVal').textContent=c;$('cDown').disabled=c<=0;$('cUp').disabled=c>=save.maxCurse;$('cInfo').textContent=c?'Monsters +'+(c*25)+'% health, faster and more of them · souls ×'+(1+c*.35).toFixed(2):(save.maxCurse?'Normal night. Tap + for Nightmare.':'See the dawn to unlock Nightmare 1.');}
+$('cDown').onclick=()=>{save.curse=Math.max(0,(save.curse||0)-1);persist();renderCurse();};$('cUp').onclick=()=>{save.curse=Math.min(save.maxCurse,(save.curse||0)+1);persist();renderCurse();};
+function hideMenus(){['title','shrine','heroes','feats','over'].forEach(i=>$(i).hidden=true);}
+function renderShrine(){$('shSouls').textContent='◈ '+save.souls+' souls · upgrades are permanent';$('shList').innerHTML=META.map(u=>{const l=M(u.id),mx=u.max&&l>=u.max,c=u.cost(l);return'<div class="it"><div class="ic">'+u.icon+'</div><div><div class="nm">'+u.name+' <span class="ds">Lv '+l+(u.max?' / '+u.max:' · no limit')+'</span></div><div class="ds">'+(mx?u.desc(l):(l?u.desc(l)+' → ':'')+u.desc(l+1))+'</div></div><button data-m="'+u.id+'" '+(mx||save.souls<c?'disabled':'')+'>'+(mx?'MAX':'◈ '+c)+'</button></div>';}).join('');}
+$('shList').addEventListener('click',e=>{const b=e.target.closest('button[data-m]');if(!b)return;const u=META.find(x=>x.id===b.dataset.m),l=M(u.id),c=u.cost(l);if(save.souls<c||(u.max&&l>=u.max))return;save.souls-=c;save.meta[u.id]=l+1;persist();SFX.level();renderShrine();});
+function renderHeroes(){$('hList').innerHTML=Object.keys(HEROES).map(k=>{const h=HEROES[k],own=save.heroes[k],on=save.hero===k;return'<div class="it'+(on?' done':'')+'"><div class="ic">'+h.icon+'</div><div><div class="nm">'+h.name+(save.dawnHero[k]?' ☀':'')+'</div><div class="ds">'+h.desc+'</div></div><button data-h="'+k+'" '+(!own&&save.souls<h.cost?'disabled':'')+'>'+(on?'Chosen':own?'Choose':'◈ '+h.cost)+'</button></div>';}).join('');}
+$('hList').addEventListener('click',e=>{const b=e.target.closest('button[data-h]');if(!b)return;const k=b.dataset.h,h=HEROES[k];if(!save.heroes[k]){if(save.souls<h.cost)return;save.souls-=h.cost;save.heroes[k]=1;SFX.level();}save.hero=k;persist();renderHeroes();});
+function renderFeats(){$('fList').innerHTML=FEATS.map(f=>'<div class="it'+(save.feats[f.id]?' done':'')+'"><div class="ic">'+(save.feats[f.id]?'✅':'🏆')+'</div><div><div class="nm">'+f.txt+'</div></div><button disabled>'+(save.feats[f.id]?'Done':'◈ '+f.rw)+'</button></div>').join('');}
+const back=()=>{hideMenus();nums=[];fx=[];$('title').hidden=false;state='title';updTitle();};
+$('shrineBtn').onclick=()=>{audio();hideMenus();renderShrine();$('shrine').hidden=false;};$('oShrine').onclick=$('shrineBtn').onclick;$('shBack').onclick=back;
+$('heroBtn').onclick=()=>{audio();hideMenus();renderHeroes();$('heroes').hidden=false;};$('hBack').onclick=back;
+$('achBtn').onclick=()=>{audio();hideMenus();renderFeats();$('feats').hidden=false;};$('fBack').onclick=back;$('oHome').onclick=back;
+function updTitle(){renderCurse();{const h=HEROES[save.hero]||HEROES.wanderer;$('heroBtn').textContent=h.icon+' '+h.name+' ▸';}const nf=FEATS.find(f=>!save.feats[f.id]);$('soulInfo').textContent='◈ '+save.souls+' souls'+(nf?' · Next feat: '+nf.txt:'');$('tBest').textContent=fmt(save.best);$('tKills').textContent=save.kills;const r=loadRun();$('contBtn').hidden=!r;$('contInfo').hidden=!r;$('playBtn').className=r?'btn ghost':'btn';$('playBtn').textContent=r?'New run':'Light the lantern';if(r)$('contInfo').textContent='Saved run: '+fmt(r.t)+' · level '+r.lvl+' · '+r.kills+' slain';}
 
 /* ---------- level up ---------- */
 function levelUp(){lvl++;xp-=xpNext;xpNext=Math.round(4+lvl*3.2+lvl*lvl*.3);offer();}
@@ -213,6 +259,7 @@ function offer(title){SFX.level();buzz([15,30,15]);state='levelup';joy=null;docu
   for(const k in PASSIVES){const l=pl(k);if(l<PASSIVES[k].max)pool.push({k,kind:'p',l});}
   const pick=[];while(pick.length<3&&pool.length){const i=(R()*pool.length)|0;pick.push(pool.splice(i,1)[0]);}
   if(!pick.length)pick.push({k:'heart',kind:'p',l:0,heal:true});
+  setTimeout(()=>{const old=document.getElementById('rrB');if(old)old.remove();if(rerollsLeft>0){const rb=document.createElement('button');rb.id='rrB';rb.className='btn ghost';rb.textContent='↻ Reroll ('+rerollsLeft+' left)';rb.onclick=()=>{rerollsLeft--;rb.remove();offer(title);};$('cards').after(rb);}},0);
   const box=$('cards');box.innerHTML='';
   for(const o of pick){const d=o.kind==='w'?WEAPONS[o.k]:PASSIVES[o.k],b=document.createElement('button');b.className='card'+(o.l===0?' new':'');
     b.innerHTML='<div class="ic">'+d.icon+'</div><div><div class="lv">'+(o.l===0?'NEW':'LEVEL '+(o.l+1))+'</div><div class="nm">'+d.name+'</div><div class="ds">'+d.desc(o.l+1)+'</div></div>';
@@ -221,13 +268,14 @@ function offer(title){SFX.level();buzz([15,30,15]);state='levelup';joy=null;docu
 
 /* ---------- spawning ---------- */
 function spawn(type,ang){const a=ang??R()*TAU,d=Math.max(W,H)/S*.62+40;spawnAt(type,P.x+Math.cos(a)*d,P.y+Math.sin(a)*d);}
-function spawnAt(type,x,y){const e=ETYPES[type];const hpMul=(1+t/90)*(omen&&omen.hp||1)*(omen&&omen.swarm&&type==='bat'?.6:1);const om=omen&&omen.sp||1;
-  en.push({type,x,y,ttl:e.flee?20:0,vx:0,vy:0,hp:e.hp*(e.boss?1:hpMul),max:e.hp*(e.boss?1:hpMul),r:e.r,sp:e.sp*(1+Math.min(.5,t/600))*(e.boss?1:om),dmg:e.dmg,xp:e.xp,ph:R()*TAU,hit:0,cd:rnd(1,3),kb:0});}
+function spawnAt(type,x,y){const e=ETYPES[type];const cm=1+curse*.25;const hpMul=cm*(1+t/90)*(omen&&omen.hp||1)*(omen&&omen.swarm&&type==='bat'?.6:1);const om=omen&&omen.sp||1;
+  en.push({type,x,y,ttl:e.flee?20:0,vx:0,vy:0,hp:e.hp*(e.boss?cm:hpMul),max:e.hp*(e.boss?cm:hpMul),r:e.r,sp:e.sp*(1+Math.min(.5,t/600))*(e.boss?1:om)*(1+curse*.04),dmg:e.dmg,xp:e.xp,ph:R()*TAU,hit:0,cd:rnd(1,3),kb:0});}
 function spawner(dt){spawnT-=dt;const rate=.9-Math.min(.75,t/400);
-  if(spawnT<=0){spawnT=rate;const n=1+Math.floor(t/60)+(omen.swarm&&R()<.5?1:0);for(let i=0;i<n;i++){const r=R();let ty='wisp';if(t>40&&r<.25)ty='bat';if(t>90&&r>.86)ty='brute';if(t>150&&r>.76&&r<.86)ty='spitter';if(t>200&&r>.70&&r<.76)ty='skeleton';if(t>240&&r>.64&&r<.70)ty='ghoul';if(t>270&&r>.58&&r<.64)ty='shade';if(omen.swarm&&t>15&&r<.6)ty='bat';if(en.length<260)spawn(ty);}}
+  if(spawnT<=0){spawnT=rate;const n=1+Math.floor(t/60)+(omen.swarm&&R()<.5?1:0)+Math.floor(curse/2)+(t>600?Math.floor((t-600)/120):0);for(let i=0;i<n;i++){const r=R();let ty='wisp';if(t>40&&r<.25)ty='bat';if(t>90&&r>.86)ty='brute';if(t>150&&r>.76&&r<.86)ty='spitter';if(t>200&&r>.70&&r<.76)ty='skeleton';if(t>240&&r>.64&&r<.70)ty='ghoul';if(t>270&&r>.58&&r<.64)ty='shade';if(omen.swarm&&t>15&&r<.6)ty='bat';if(en.length<260)spawn(ty);}}
   if(t>30&&Math.floor(t/45)!==Math.floor((t-dt)/45)){const a=R()*TAU;for(let i=0;i<14;i++)spawn(t>120?'bat':'wisp',a+(i-7)*.06);}
   if(Math.floor(t/120)!==Math.floor((t-dt)/120)&&t>1)spawn('elite');
   if(!bossOn&&t>=300){bossOn=true;spawn(bossType);SFX.boss();buzz([80,40,80]);shake=14;floatTxt(P.x,P.y-60,BOSSES[bossType][0],'#ff8a6a',1.8);}
+  if(t>=600&&Math.floor((t-600)/300)!==Math.floor((t-600-dt)/300)&&t-dt>=600){dawnBoss++;const bt=['boss','queen','warden'][(R()*3)|0];spawn(bt);const b=en[en.length-1];b.hp*=1+dawnBoss*.7;b.max=b.hp;SFX.boss();shake=14;floatTxt(P.x,P.y-60,BOSSES[bt][0]+' (×'+(1+dawnBoss*.7).toFixed(1)+')','#ff8a6a',1.8);}
   events(dt);}
 
 /* ---------- events & omens ---------- */
@@ -259,7 +307,7 @@ function damage(e,d,kx,ky){d*=dmgMul();e.hp-=d;e.hit=.1;if(kx!==undefined&&!ETYP
   if(e.hp<=0&&!e.dead){e.dead=true;kills++;SFX.kill();burst(e.x,e.y,ETYPES[e.type].eye,ETYPES[e.type].boss?80:10,ETYPES[e.type].boss?260:110);
     const n=e.xp*(omen&&omen.xp||1);for(let i=0;i<Math.min(Math.ceil(n),12);i++)gems.push({x:e.x+rnd(-8,8),y:e.y+rnd(-8,8),v:n/Math.min(Math.ceil(n),12),big:n>3});if(R()<.012*(omen&&omen.hearts||1)*(1+pl('luck')*.5)||e.type==='elite')hearts.push({x:e.x,y:e.y});
     if(ETYPES[e.type].split){spawnAt('wisp',e.x-10,e.y);spawnAt('wisp',e.x+10,e.y);}if(e.type==='wraith'){chests.push({x:e.x,y:e.y});floatTxt(e.x,e.y-30,'Caught it!','#ffe08a',1.4);}
-    if(ETYPES[e.type].boss){shake=20;flash=1;floatTxt(e.x,e.y,(BOSSES[e.type]||BOSSES.boss)[1],'#ffd36a',2);}}else if(R()<.3)SFX.hit();}
+    if(ETYPES[e.type].boss){save.bossK[e.type]=(save.bossK[e.type]||0)+1;shake=20;flash=1;floatTxt(e.x,e.y,(BOSSES[e.type]||BOSSES.boss)[1],'#ffd36a',2);}}else if(R()<.3)SFX.hit();}
 function burst(x,y,col,n,sp){for(let i=0;i<n&&fx.length<700;i++){const a=R()*TAU,v=rnd(sp*.2,sp);fx.push({x,y,vx:Math.cos(a)*v,vy:Math.sin(a)*v,life:rnd(.3,.7),max:.7,c:col,s:rnd(1.5,3.5)});}}
 function floatTxt(x,y,s,c,big){nums.push({x,y,txt:s,c,life:big||1,big:true});}
 function weapons(dt){
@@ -289,7 +337,7 @@ function update(dt){
   // move
   let mx=(keys.KeyD||keys.ArrowRight?1:0)-(keys.KeyA||keys.ArrowLeft?1:0),my=(keys.KeyS||keys.ArrowDown?1:0)-(keys.KeyW||keys.ArrowUp?1:0);
   if(joy){const dx=joy.x-joy.ox,dy=joy.y-joy.oy,d=hyp(dx,dy);if(d>6){mx=dx/Math.max(d,40);my=dy/Math.max(d,40);}if(d>60){joy.ox=joy.x-dx/d*60;joy.oy=joy.y-dy/d*60;}}
-  P.lx=P.x;P.ly=P.y;const ml=hyp(mx,my);if(ml>1){mx/=ml;my/=ml;}const sp=118*(1+pl('speed')*.1);P.x+=mx*sp*dt;P.y+=my*sp*dt;if(mx)P.face=Math.sign(mx);if(ml>.1)P.walk+=dt*10;
+  P.lx=P.x;P.ly=P.y;const ml=hyp(mx,my);if(ml>1){mx/=ml;my/=ml;}const sp=118*(1+pl('speed')*.1)*(1+M('swift')*.03+(H0().speed||0));P.x+=mx*sp*dt;P.y+=my*sp*dt;if(mx)P.face=Math.sign(mx);if(ml>.1)P.walk+=dt*10;
   P.inv-=dt;if(pl('regen'))P.hp=Math.min(P.max,P.hp+dt*pl('regen')*.6);
   cam.x=lerp(cam.x,P.x,Math.min(1,dt*6));cam.y=lerp(cam.y,P.y,Math.min(1,dt*6));
   spawner(dt);if(P.hp<=0){gameOver(false);return;}weapons(dt);
@@ -325,7 +373,12 @@ function update(dt){
   shake=Math.max(0,shake-dt*30);flash=Math.max(0,flash-dt*2);
   if(!wonDawn&&t>=600){wonDawn=true;SFX.dawn();floatTxt(P.x,P.y-60,'DAWN BREAKS! Keep going for a record.','#ffe9a6',3);for(const e of en)if(!ETYPES[e.type].boss)damage(e,9999);}
 }
-function gameOver(win){state='over';clearRun();$('pauseBtn').hidden=true;const nb=t>save.best;save.best=Math.max(save.best,t);save.kills=Math.max(save.kills,kills);persist();
+function gameOver(win,quit){if(!win&&!quit&&revivesLeft>0&&state==='play'){revivesLeft--;P.hp=P.max*.6;P.inv=2.5;flash=0;shake=16;for(const e of en)if(!ETYPES[e.type].boss&&hyp(e.x-P.x,e.y-P.y)<320)damage(e,9999);fx.push({ring:true,x:P.x,y:P.y,r:10,max:340,life:.7,ml:.7});SFX.dawn();floatTxt(P.x,P.y-50,'SECOND WICK! Revived','#ffe9a6',2);return;}
+  state='over';clearRun();$('pauseBtn').hidden=true;const nb=t>save.best;save.best=Math.max(save.best,t);save.kills=Math.max(save.kills,kills);save.tk=(save.tk||0)+kills;save.bestLvl=Math.max(save.bestLvl||0,lvl);
+  if(wonDawn){save.dawnHero[hero]=1;if(curse>=save.maxCurse)save.maxCurse=curse+1;}
+  const bk=en.filter(()=>false).length;const souls=Math.round((Math.floor(t/6)+Math.floor(kills/12)+(wonDawn?100:0)+dawnBoss*40)*(1+curse*.35)*(1+M('greed')*.1));save.souls+=souls;
+  const nf=[];for(const fe of FEATS){if(save.feats[fe.id])continue;if(fe.test()){save.feats[fe.id]=1;save.souls+=fe.rw;nf.push(fe);}}persist();
+  $('oSouls').textContent='+'+souls+' souls'+(curse?' (Nightmare ×'+(1+curse*.35).toFixed(2)+')':'')+(wonDawn&&curse+1===save.maxCurse?' · Nightmare '+save.maxCurse+' unlocked!':'');$('oFeats').innerHTML=nf.length?'🏆 '+nf.map(x=>x.txt+' (+'+x.rw+')').join(' · '):'';
   $('oTitle').textContent=wonDawn?'You saw the dawn!':'The light fades…';$('oStats').innerHTML=statsHTML()+(nb?'<div class="pill"><span>New</span><b style="color:var(--amber)">Record</b></div>':'');
   setTimeout(()=>{$('over').hidden=false;},500);burst(P.x,P.y,'#ffbf5e',60,200);SFX.hurt();updTitle();}
 
