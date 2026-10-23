@@ -16,7 +16,7 @@ function init(){document.head.appendChild(st);var own=document.getElementById('p
   pb.addEventListener('click',function(){paused=true;ov.hidden=false;pb.hidden=true;try{window.dispatchEvent(new Event('pagehide'));}catch(e){}});
   document.body.appendChild(pb);document.body.appendChild(ov);}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();})();</script>
-<title>Ember Knight</title>
+<title>Cinderblade</title>
 <style>
 :root{--f:Fredoka,"Trebuchet MS",system-ui,sans-serif;--st:env(safe-area-inset-top);--sb:env(safe-area-inset-bottom);--acc:#ff7a2a}
 [hidden]{display:none!important}
@@ -37,7 +37,7 @@ html,body{height:100%;margin:0;background:#0c0a12;overflow:hidden;font-family:va
 #toast{position:fixed;left:50%;top:calc(60px + var(--st));transform:translateX(-50%);background:rgba(20,10,25,.85);font:700 16px var(--f);padding:8px 18px;border-radius:999px;pointer-events:none;z-index:9;white-space:nowrap}
 #over{position:fixed;inset:0;z-index:6;display:flex;align-items:center;justify-content:center;background:rgba(10,5,15,.7)}#over .box{background:#2a1a34;border-radius:22px;padding:20px;text-align:center;max-width:380px;border:2px solid rgba(255,255,255,.15)}
 </style>
-<script>/* SND: shared synth audio engine: generative music, rich sound effects, nature ambience. No audio files needed. */
+<script>/* SND: shared audio engine: real public-domain soundtrack (FreePD.com, CC0) with synth fallback, rich sound effects, nature ambience. */
 window.SND=(()=>{
 'use strict';
 let ac=null,master,comp,rev,musicBus,sfxBus,ambBus,noiseBuf=null,pinkBuf=null,unlocked=false;
@@ -55,7 +55,26 @@ function init(){if(ac)return true;const AC=window.AudioContext||window.webkitAud
   const n=ac.sampleRate*2;noiseBuf=ac.createBuffer(1,n,ac.sampleRate);const d=noiseBuf.getChannelData(0);for(let i=0;i<n;i++)d[i]=R()*2-1;
   pinkBuf=ac.createBuffer(1,n,ac.sampleRate);const p=pinkBuf.getChannelData(0);let b0=0,b1=0,b2=0;for(let i=0;i<n;i++){const w=R()*2-1;b0=.997*b0+w*.029;b1=.985*b1+w*.032;b2=.95*b2+w*.048;p[i]=(b0+b1+b2+w*.02)*1.4;}
   return true;}
-function unlock(){if(!init())return;if(ac.state==='suspended')ac.resume();if(!unlocked){unlocked=true;if(want.song)startSong(want.song);for(const k in want.amb)if(want.amb[k])ambOn(k,want.amb[k]);}}
+/* ---- real soundtrack: public-domain tracks streamed from music/ ---- */
+const TRK={garden:['magic_in_the_garden','travelers_notebook','spring_chicken','peaceful_days','happy_whistling_ukulele','wisdom_in_the_sun','a_place_i_call_home','barnville','slice_of_life'],
+  calm:['infinite_peace','study_and_relax','river_meditation','kalimba_relaxation_music','lonely_mountain'],night:['forest_night','night_vigil','midnight_in_the_green_house','shining_stars'],
+  ocean:['the_lagoon','pond','aquarium','pina_colada','coy_koi'],adventure:['heroic_adventure','journey_of_hope','jungle_mission','adventure','horizon_flare'],flight:['inventing_flight','adventures_of_flying_jack','horizon_flare','journey_of_hope'],
+  race:['take_the_ride','rush','gotta_keep_on_movin','action_strike','city_run'],boss:['epic_boss_battle','battle_ready','strength_of_the_titans'],candy:['funshine','going_bananas','llama_in_pajama','hippety_hop','improved_ice_cream_truck'],
+  arcade:['blippy_trance','funky_energy_loop','circuit','bit_bit_loop'],storm:['cold_journey','mysterious_lights'],snow:['ice_and_snow','winter'],desert:['the_desert','jungle_mission'],
+  castle:['black_knight','behind_the_sword','night_in_the_castle','honor_bound'],space:['space_ambience','mothership','neptunian_princess'],cozy:['bonfire','brewing_potions','forest_frolic_loop']};
+const FALL={flight:'adventure',snow:'night',castle:'boss',space:'arcade',desert:'adventure',cozy:'calm'};
+let RT=null,rtBus=null,rtStyle=null,rtFail=0;const rtIdx={};const MB=()=>(window.MUSIC_BASE||'music/');
+function rtInit(){if(RT||!ac)return;rtBus=ac.createGain();rtBus.gain.value=S.music?1:0;rtBus.connect(master);RT=[0,1].map(()=>{const a=new Audio();a.preload='auto';a.setAttribute('playsinline','');let src=null;try{src=ac.createMediaElementSource(a);}catch(_){}const g=ac.createGain();g.gain.value=0;if(src){src.connect(g);g.connect(rtBus);}return{a,g,src,busy:false};});}
+function rtUnlockEls(){if(!RT)return;for(const e of RT){if(e.busy)continue;try{e.a.muted=true;const p=e.a.play();if(p&&p.catch)p.catch(()=>{});e.a.pause();e.a.muted=false;}catch(_){}}}
+function rtStart(style){if(!RT||rtFail>3)return false;const list=TRK[style];if(!list)return false;if(rtStyle===style&&RT.some(e=>e.busy))return true;rtStop();rtStyle=style;
+  const e=RT[0].busy?RT[1]:RT[0];let i=rtIdx[style];if(i==null)i=Math.floor(Math.random()*list.length);rtIdx[style]=(i+1)%list.length;
+  e.busy=true;e.a.src=MB()+list[i]+'.mp3';e.a.currentTime=0;e.g.gain.cancelScheduledValues(now());e.g.gain.setValueAtTime(0,now());e.g.gain.linearRampToValueAtTime(.62,now()+2.2);
+  e.a.onended=()=>{e.busy=false;if(rtStyle===style){rtStyle=null;rtStart(style);}};
+  e.a.onerror=()=>{e.busy=false;rtFail++;if(rtStyle===style){rtStyle=null;if(rtFail>3){startSong(STY[style]?style:FALL[style]);}else rtStart(style);}};
+  const p=e.a.play();if(p&&p.catch)p.catch(()=>{});return true;}
+function rtStop(){if(!RT)return;rtStyle=null;for(const e of RT){if(!e.busy)continue;e.busy=false;const a=e.a,g=e.g;a.onended=null;a.onerror=null;g.gain.cancelScheduledValues(now());g.gain.setValueAtTime(g.gain.value,now());g.gain.linearRampToValueAtTime(0,now()+1.8);setTimeout(()=>{if(!e.busy)a.pause();},1900);}}
+function playMusic(name){if(!name){rtStop();stopSong();return;}if(TRK[name]&&rtFail<=3&&RT){stopSong();rtStart(name);return;}rtStop();startSong(STY[name]?name:FALL[name]);}
+function unlock(){if(!init())return;if(ac.state==='suspended')ac.resume();rtInit();if(!unlocked){unlocked=true;rtUnlockEls();if(want.song)playMusic(want.song);for(const k in want.amb)if(want.amb[k])ambOn(k,want.amb[k]);}}
 ['pointerdown','touchstart','keydown','mousedown'].forEach(ev=>addEventListener(ev,unlock,{capture:true,passive:true}));
 document.addEventListener('visibilitychange',()=>{if(!ac)return;if(document.hidden)ac.suspend&&ac.suspend();else if(unlocked)ac.resume();});
 const now=()=>ac.currentTime;
@@ -239,17 +258,17 @@ function play(name,...a){if(!ac||!S.sfx)return;const f=FX[name];if(f)try{f(...a)
 function note(ins,m,dur=.4,v=.5){if(!ac||!S.sfx)return;INS[ins](m,0,dur,v,sfxBus);}
 return{
   play,note,tone:o=>ac&&S.sfx&&tone(o),noise:o=>ac&&S.sfx&&noise(o),
-  music(name){want.song=name;if(!ac||!unlocked)return;if(name)startSong(name);else stopSong();},
+  music(name){if(name===want.song&&unlocked&&(rtStyle===name||(song&&song.name===(STY[name]?name:FALL[name]))))return;want.song=name;if(!ac||!unlocked)return;playMusic(name);},
   intensity(x){if(song)song.intensity=x;},
   amb(name,vol){if(vol)ambOn(name,vol);else ambOff(name);},
   engine:()=>{init();return engine();},
   get:k=>S[k],
-  set(k,v){S[k]=v;saveS();if(!ac)return;if(k==='music')musicBus.gain.setTargetAtTime(v?.5:0,now(),.2);if(k==='sfx'){sfxBus.gain.setTargetAtTime(v?1:0,now(),.1);ambBus.gain.setTargetAtTime(v?.8:0,now(),.1);}if(k==='vol')master.gain.setTargetAtTime(v,now(),.1);},
-  get ready(){return !!ac&&unlocked;},
+  set(k,v){S[k]=v;saveS();if(!ac)return;if(k==='music'){musicBus.gain.setTargetAtTime(v?.5:0,now(),.2);if(rtBus)rtBus.gain.setTargetAtTime(v?1:0,now(),.2);}if(k==='sfx'){sfxBus.gain.setTargetAtTime(v?1:0,now(),.1);ambBus.gain.setTargetAtTime(v?.8:0,now(),.1);}if(k==='vol')master.gain.setTargetAtTime(v,now(),.1);},
+  get ready(){return !!ac&&unlocked;},get track(){return RT&&RT.find(e=>e.busy)?RT.find(e=>e.busy).a.src:null;},tracks:TRK,
   styles:Object.keys(STY)};
 })();
 </script>
-<canvas id="c" aria-label="Ember Knight platformer"></canvas>
+<canvas id="c" aria-label="Cinderblade platformer"></canvas>
 <div id="ctl" hidden><div class="cb" id="bL">◀</div><div class="cb" id="bR">▶</div><div class="cb" id="bJ">JUMP</div><div class="cb" id="bA">⚔️</div><div class="cb" id="bD">DASH</div><div class="cb" id="bF">🔥</div></div>
 <button id="pauseB" hidden>⏸</button>
 <div id="toast" hidden></div>
@@ -293,9 +312,9 @@ const cv=$('c'),ctx=cv.getContext('2d');let W=1,H=1,dpr=1;function resize(){dpr=
 /* ================= DATA ================= */
 const TS=32,ROWS=12;
 const WORLDS=[{n:'Emberwood Meadows',sky:['#6ab8f0','#c8e8ff'],far:'#7aa0c0',mid:'#4a8a5a',ground:'grass',music:'adventure',amb:'birds',boss:'slimeking',bossN:'Slime King'},
- {n:'Glimmer Caverns',sky:['#140c22','#2a1a3a'],far:'#2a2040',mid:'#3a2a4a',ground:'cave',music:'night',amb:'river',boss:'batqueen',bossN:'Bat Queen',dark:1},
- {n:'Molten Keep',sky:['#2a0a0a','#8a2a10'],far:'#4a1a14',mid:'#3a1410',ground:'brick',music:'storm',amb:'fire',boss:'golem',bossN:'Fire Golem',embers:1},
- {n:'Sky Ruins',sky:['#3a6ad0','#ffd8a8'],far:'#e8d8f0',mid:'#b8a8d0',ground:'marble',music:'adventure',amb:'wind',boss:'dragon',bossN:'Storm Dragon',clouds:1}];
+ {n:'Glimmer Caverns',sky:['#140c22','#2a1a3a'],far:'#2a2040',mid:'#3a2a4a',ground:'cave',music:'space',amb:'river',boss:'batqueen',bossN:'Bat Queen',dark:1},
+ {n:'Molten Keep',sky:['#2a0a0a','#8a2a10'],far:'#4a1a14',mid:'#3a1410',ground:'brick',music:'castle',amb:'fire',boss:'golem',bossN:'Fire Golem',embers:1},
+ {n:'Sky Ruins',sky:['#3a6ad0','#ffd8a8'],far:'#e8d8f0',mid:'#b8a8d0',ground:'marble',music:'flight',amb:'wind',boss:'dragon',bossN:'Storm Dragon',clouds:1}];
 // chunks: 12 rows x 16 cols. '#' ground '=' one-way '^' spikes 'L' lava 'o' coin 'G' gem 'H' heart 'C' crate 'T' chest 'F' flag 'X' crumble 'S' spring 'M' mover-h 'V' mover-v
 // enemies: s slime b bat k skeleton h hedgehog g ghost f firespirit n knight
 const CH=[
