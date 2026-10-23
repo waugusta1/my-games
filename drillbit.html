@@ -471,7 +471,7 @@ return{
 <button id="enter" hidden></button>
 <div id="toast" hidden></div>
 <div id="sheet" hidden></div>
-<div id="start"><div><h1>⛏️ Drillbit Depths</h1><p>Pilot a drill pod into the earth. Dig for coal, gold, rubies and stranger things below. Watch your <b>fuel</b> and <b>hull</b>, and get back up before you run dry!</p><p style="font-size:13px;color:#6a5a48">◀ ▶ ▼ drill · ▲ thruster · Sell ore and upgrade at the surface</p><button class="btn" id="goB" style="font-size:20px;padding:12px 28px">Start digging</button></div></div>
+<div id="start"><div><h1>⛏️ Drillbit Depths</h1><p>Pilot a drill pod into the earth. Dig for coal, gold, rubies and stranger things below. Watch your <b>fuel</b> and <b>hull</b>, and get back up before you run dry!</p><p style="font-size:13px;color:#6a5a48">◀ ▶ ▼ drill · hold ▲ to fly up (it drills through rock above you) · Sell ore and upgrade at the surface</p><button class="btn" id="goB" style="font-size:20px;padding:12px 28px">Start digging</button></div></div>
 <script>
 /* Cloud save: keeps game saves in your Claude account so they survive across devices and cleared browser storage. */
 (()=>{const mem={},has={};let ls=null;try{ls=window.localStorage;ls.getItem('__probe');}catch(_){ls=null;}
@@ -579,10 +579,11 @@ function update(dt){if(state!=='play')return;const st=S();t+=dt;
     if(U&&P.fuel>0){P.vy=Math.max(P.vy-dt*(26+st.eng*8),-(4.5+st.eng*2));P.fuel-=dt*.4;P.thr=1;if(R()<dt*30)burst(P.x+.5,P.Y+1,'#ffb040',1,1.5,-4,.35,.06);}else{P.thr=0;P.vy+=dt*20;}
     P.vy=clamp(P.vy,-12,18);let nY=P.Y+P.vy*dt;
     if(P.vy>0){let fy=Math.floor(P.Y);while(fy<Math.floor(nY)+1){if(solid(tile(P.x,fy+1))){if(nY>fy){nY=fy;const imp=P.vy;if(imp>11){const dmg=Math.round((imp-11)*6);P.hull-=dmg;toast('💢 Hard landing −'+dmg+' hull');SND.play('hit');shake=.5;buzz(40);}else if(imp>4)SND.play('land');P.vy=0;}break;}fy++;}}
-    else if(P.vy<0){if(nY<-1.6){nY=-1.6;P.vy=0;}const top=Math.floor(nY);if(top<Math.ceil(P.Y)&&top>=1&&solid(tile(P.x,top))){nY=top+1;P.vy=0;}}
+    let ceil=false;if(P.vy<0){if(nY<-1.6){nY=-1.6;P.vy=0;}const top=Math.floor(nY);if(top<Math.ceil(P.Y)&&top>=1&&solid(tile(P.x,top))){nY=top+1;P.vy=0;ceil=true;}}
     P.Y=nY;P.y=Math.max(0,Math.round(P.Y));const aligned=Math.abs(P.Y-Math.round(P.Y))<.12;const grounded=aligned&&P.vy>=0&&solid(tile(P.x,Math.round(P.Y)+1));if(grounded){P.Y=Math.round(P.Y);P.y=P.Y;}
     P.mvT=(P.mvT||0)-dt;
-    if((L||Rr)&&P.mvT<=0&&aligned){const dx=L?-1:1,yy=Math.max(0,Math.round(P.Y)),nt=yy<1?(P.x+dx<0||P.x+dx>=WC?7:0):tile(P.x+dx,yy);if(nt===0){P.fx=P.x;P.x+=dx;P.anim=0;P.mvT=.16/st.eng;P.fuel-=.04;P.Y=yy;P.y=yy;}else if(grounded&&yy>=1){startDrill(dx,0);}}
+    if(ceil&&U&&P.fuel>0&&!L&&!Rr){startDrill(0,-1);}
+    else if((L||Rr)&&P.mvT<=0&&Math.abs(P.Y-Math.round(P.Y))<.4){const dx=L?-1:1,yy=Math.max(0,Math.round(P.Y)),nt=yy<1?(P.x+dx<0||P.x+dx>=WC?7:0):tile(P.x+dx,yy);if(nt===0){P.fx=P.x;P.x+=dx;P.anim=0;P.mvT=.16/st.eng;P.fuel-=.04;P.Y=yy;P.y=yy;}else if(grounded&&yy>=1){startDrill(dx,0);}}
     else if(D&&grounded){startDrill(0,1);}}
   P.anim=Math.min(1,P.anim+dt*7);P.fuel-=dt*.015;
   // hazards: heat below radiator depth
@@ -683,7 +684,7 @@ let last=performance.now(),saveT=0;
 function loop(now){requestAnimationFrame(loop);const dt=Math.min(.05,(now-last)/1000);last=now;if($('sheet').hidden||state!=='play')update(dt);render();if(toastT>0){toastT-=dt;if(toastT<=0)$('toast').hidden=true;}saveT+=dt;if(saveT>6){saveT=0;persist();}}
 $('goB').onclick=()=>{$('start').hidden=true;save.started=true;SND.play('click');if(!drillSnd)drillSnd=SND.engine();persist();};
 addEventListener('pointerdown',()=>{if(!drillSnd&&save.started)drillSnd=SND.engine();},{once:true});
-window.__dd={P,save,tile,S,building,useItem,toSurface,keys};
+window.__dd={P,save,tile,S,building,useItem,toSurface,keys,step:update};
 resize();buildTex();toSurface();renderItems();if(save.started)$('start').hidden=true;requestAnimationFrame(loop);
 addEventListener('visibilitychange',()=>{if(document.hidden)persist();});
 })();
