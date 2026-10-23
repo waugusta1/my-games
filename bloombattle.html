@@ -1,6 +1,7 @@
 <!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><style>html,body{margin:0}</style></head><body>
 <script>window.__BACKMODE='btn';window.__BACKPOS='top:50%;margin-top:-20px;left:8px'</script>
-<script>(function(){var MODE=window.__BACKMODE||'btn',POS=window.__BACKPOS||'top:calc(8px + env(safe-area-inset-top));left:50%;margin-left:-20px';
+<script>(function(){try{var id=(location.pathname.split('/').pop()||'').replace('.html','');if(!id||id==='index')return;var k='mg_hub',h=JSON.parse(localStorage.getItem(k)||'{}')||{};h.plays=h.plays||{};h.last=h.last||{};h.time=h.time||{};h.plays[id]=(h.plays[id]||0)+1;h.last[id]=Date.now();localStorage.setItem(k,JSON.stringify(h));setInterval(function(){if(document.hidden)return;try{var h2=JSON.parse(localStorage.getItem(k)||'{}')||{};h2.time=h2.time||{};h2.time[id]=(h2.time[id]||0)+15;h2.last=h2.last||{};h2.last[id]=Date.now();localStorage.setItem(k,JSON.stringify(h2));}catch(e){}},15000);}catch(e){}})();
+(function(){var MODE=window.__BACKMODE||'btn',POS=window.__BACKPOS||'top:calc(8px + env(safe-area-inset-top));left:50%;margin-left:-20px';
 var raf=window.requestAnimationFrame.bind(window),paused=false,q=[];
 window.requestAnimationFrame=function(cb){if(paused){q.push(cb);return 0;}return raf(cb);};
 function go(){try{if(window.__store&&__store.flush)__store.flush();}catch(e){}try{window.dispatchEvent(new Event('pagehide'));}catch(e){}setTimeout(function(){location.href='index.html';},150);}
@@ -51,6 +52,7 @@ function book(c1,c2){var a=L(c1,c2);return S([a],'<path d="M8 12c8-4 18-4 24 2v4
 I['📖']=book('#e85a4a','#a8281a');I['📔']=book('#e8a43a','#a8641a');I['📚']=book('#4a8ae8','#1a4aa8');I['📋']=I['📖'];
 (function(){var a=Rg('#fff6a0','#ff5a10',.5,.5,.6);var p='';for(var i=0;i<12;i++){var a1=i/12*Math.PI*2,r=i%2?16:30;p+=(i?'L':'M')+(32+Math.cos(a1)*r).toFixed(1)+' '+(32+Math.sin(a1)*r).toFixed(1);}I['💥']=S([a],'<path d="'+p+'z" fill="'+U(a)+'" stroke="#d83a10" stroke-width="2" stroke-linejoin="round"/>');I['💢']=I['💥'];})();
 (function(){var a=L('#f4f4f8','#b8bcc8',0,0,1,0);I['🚀']=S([a],'<g transform="rotate(45 32 32)"><path d="M32 2c10 8 14 22 12 38H20C18 24 22 10 32 2z" fill="'+U(a)+'" stroke="#6a7080" stroke-width="2"/><circle cx="32" cy="22" r="6" fill="#4ab0ff" stroke="#2a5aa8" stroke-width="2"/><path d="M20 30l-8 14h10zM44 30l8 14H42z" fill="#e8403a"/><path d="M24 40h16l-3 10h-10z" fill="#5a6070"/><path d="M26 50c2 8 4 10 6 12 2-2 4-4 6-12z" fill="#ffb020"/></g>');})();
+(function(){var a=L('#ffffff','#c8c8e8',0,0,1,0);I['👻']=S([a],'<path d="M12 30C12 14 20 6 32 6s20 8 20 24v28l-6-5-7 5-7-5-7 5-7-5-6 5z" fill="'+U(a)+'" stroke="#8080a8" stroke-width="2.5"/><ellipse cx="24" cy="28" rx="4" ry="6" fill="#2a2a48"/><ellipse cx="40" cy="28" rx="4" ry="6" fill="#2a2a48"/><ellipse cx="32" cy="42" rx="5" ry="4" fill="#2a2a48"/>');})();
 (function(){var a=L('#ffe04a','#f0a010');I['⚠️']=I['⚠']=S([a],'<path d="M32 5L61 56H3z" fill="'+U(a)+'" stroke="#a86a00" stroke-width="3" stroke-linejoin="round"/><rect x="29" y="22" width="6" height="18" rx="3" fill="#2a1a00"/><circle cx="32" cy="47" r="3.5" fill="#2a1a00"/>');})();
 (function(){var a=L('#d8dce4','#6a7280');I['⛏️']=I['⛏']=S([a],'<path d="M14 54L44 18" stroke="#8a5a2a" stroke-width="6" stroke-linecap="round"/><path d="M18 12c14-6 30-4 40 8-12-4-24-4-36 2z" fill="'+U(a)+'" stroke="#4a5260" stroke-width="2"/><path d="M40 16c4 4 6 8 6 12" stroke="#4a5260" stroke-width="2" fill="none"/>');})();
 (function(){var b='';for(var i=0;i<6;i++){var r=i*60;b+='<g transform="rotate('+r+' 32 32)"><path d="M32 32V4M32 12l-6-6M32 12l6-6M32 22l-7-5M32 22l7-5" stroke="#6ad0ff" stroke-width="4" stroke-linecap="round"/></g>';}I['❄️']=I['❄']=S([],b+'<circle cx="32" cy="32" r="5" fill="#e8faff"/>');})();
@@ -223,7 +225,9 @@ h2{font-size:44px;margin:0;font-weight:700}
   <p class="sub">Each player has a jar. Drag in <b>your jar</b> to aim and let go to drop. Two matching flowers bloom into a bigger one. Big blooms throw <b>weeds</b> into your rival's jar! First jar to overflow loses the round.</p>
   <span class="lbl">Who's playing?</span>
   <div class="row"><button class="btn on" data-p="2">👥 2 Players</button><button class="btn ghost" data-p="1">🤖 vs Computer</button></div>
-  <div class="row" id="cpuLv" hidden><button class="btn ghost" data-d="0">Easy</button><button class="btn on" data-d="1">Medium</button><button class="btn ghost" data-d="2">Hard</button></div>
+  <div class="row" id="cpuLv" hidden><button class="btn ghost" data-d="0">Easy</button><button class="btn on" data-d="1">Medium</button><button class="btn ghost" data-d="2">Hard</button><button class="btn ghost" data-d="3">Expert</button></div>
+  <span class="lbl">Match</span>
+  <div class="row"><button class="btn ghost" data-m="1">1 round</button><button class="btn on" data-m="2">First to 2</button><button class="btn ghost" data-m="3">First to 3</button></div>
   <div class="row"><button class="btn" id="go">Start!</button></div>
   <p class="sub" id="wins" style="font-size:14px"></p>
 </div>
@@ -267,7 +271,7 @@ const T=[{n:'Seed',r:12,a:'#c8945a',b:'#8a5a30',pet:0},{n:'Bud',r:15,a:'#8ee86a'
   {n:'Violet',r:29,a:'#b89cff',b:'#6a3fc8',pet:5,c:'#ffe066'},{n:'Tulip',r:35,a:'#ff7a9a',b:'#c8305a',pet:6,c:'#ffe08a'},{n:'Rose',r:42,a:'#ff4a6a',b:'#a0103a',pet:9,c:'#8a0e2e'},{n:'Sunflower',r:50,a:'#ffd23a',b:'#d89a10',pet:18,c:'#5a3410'},{n:'Lotus',r:58,a:'#ffb0d8',b:'#e06aa8',pet:10,c:'#ffe28a'}];
 const MAXT=T.length-1;
 const COLS=[{name:'Pink',c:'#ff7aa8',d:'#b8306a'},{name:'Green',c:'#5ee0b0',d:'#1f8a64'}];
-let W,H,dpr,k,portrait,J=[],state='title',nPlayers=2,diff=1,rounds=[0,0],t=0,parts=[];
+let matchN=2;let W,H,dpr,k,portrait,J=[],state='title',nPlayers=2,diff=1,rounds=[0,0],t=0,parts=[];
 const SK='bloombattle-save-v1';let save={w:[0,0],cpu:0};try{Object.assign(save,JSON.parse(__store.get(SK))||{});}catch(_){}
 const persist=()=>{try{__store.set(SK,JSON.stringify(save));}catch(_){}};
 let AC=null;function audio(){if(!AC){try{AC=new(window.AudioContext||window.webkitAudioContext)();}catch(_){}}if(AC&&AC.state==='suspended')AC.resume();}
@@ -333,17 +337,18 @@ function cpu(j,dt){j.cpuT-=dt;if(j.cpuT>0||j.cool>0)return;const r=T[j.cur].r;le
   for(let x=r+6;x<=JW-r-6;x+=6){// find landing: highest body under x
     let land=JH,hit=null;for(const b of j.B){if(Math.abs(b.x-x)<b.r+r){const yy=b.y-Math.sqrt(Math.max(0,(b.r+r)**2-(b.x-x)**2));if(yy<land){land=yy;hit=b;}}}
     let sc=land*.02;if(hit&&hit.t===j.cur)sc+=20+j.cur*2;else if(hit&&hit.t>=0)sc-=Math.abs(hit.t-j.cur)*2;if(hit&&hit.t<0)sc-=4;sc+=R()*(diff===0?14:diff===1?5:1);if(sc>bs){bs=sc;best=x;}}
-  j.aim=best;j.cpuT=[1.6,1.05,.7][diff]+R()*.4;drop(j);}
+  j.aim=best;j.cpuT=[1.6,1.05,.7,.45][diff]+R()*.4;drop(j);}
 
 /* ---------- rounds ---------- */
 function startRound(){J=[newJar(0),newJar(1)];parts=[];state='play';$('title').hidden=true;$('over').hidden=true;[523,659,784].forEach((f,i)=>tone(f,.2,'triangle',.06,0,i*.1));}
-function roundOver(w){if(state!=='play')return;state='end';rounds[w]++;const champ=rounds[w]>=2;
+function roundOver(w){if(state!=='play')return;state='end';rounds[w]++;const champ=rounds[w]>=matchN;
   [523,659,784,1047].forEach((f,i)=>tone(f,.35,'triangle',.07,0,i*.1));buzz([30,40,60]);
   if(champ){if(nPlayers===2)save.w[w]++;else if(w===0)save.cpu=(save.cpu||0)+1;persist();}
   setTimeout(()=>{const nm=nPlayers===1&&w===1?'Computer':COLS[w].name;$('wTitle').textContent=champ?(nPlayers===1?(w===0?'You beat the computer!':'The computer wins the match!'):'🏆 '+nm+' wins the match!'):nm+' wins the round!';$('wTitle').style.color=COLS[w].c;
-    $('wScore').textContent='Rounds: Pink '+rounds[0]+' – '+rounds[1]+' '+(nPlayers===1?'Computer':'Green')+(champ?'':' · first to 2 rounds wins');$('next').textContent=champ?'New match':'Next round';if(champ)rounds=[0,0];$('over').hidden=false;},1300);}
+    $('wScore').textContent='Rounds: Pink '+rounds[0]+' – '+rounds[1]+' '+(nPlayers===1?'Computer':'Green')+(champ?'':' · first to '+matchN+' rounds wins');$('next').textContent=champ?'New match':'Next round';if(champ)rounds=[0,0];$('over').hidden=false;},1300);}
 document.querySelectorAll('[data-p]').forEach(b=>b.onclick=()=>{nPlayers=+b.dataset.p;document.querySelectorAll('[data-p]').forEach(x=>x.className='btn '+(x===b?'on':'ghost'));$('cpuLv').hidden=nPlayers!==1;tone(700,.06);});
 document.querySelectorAll('[data-d]').forEach(b=>b.onclick=()=>{diff=+b.dataset.d;document.querySelectorAll('[data-d]').forEach(x=>x.className='btn '+(x===b?'on':'ghost'));tone(700,.06);});
+document.querySelectorAll('[data-m]').forEach(b=>b.onclick=()=>{matchN=+b.dataset.m;document.querySelectorAll('[data-m]').forEach(x=>x.className='btn '+(x===b?'on':'ghost'));tone(700,.06);});
 $('go').onclick=()=>{audio();rounds=[0,0];startRound();};$('next').onclick=()=>{audio();startRound();};
 $('home').onclick=()=>{rounds=[0,0];$('over').hidden=true;$('title').hidden=false;state='title';updTitle();};
 function updTitle(){$('wins').textContent=(save.w[0]||save.w[1])?'Matches won · Pink '+save.w[0]+' – '+save.w[1]+' Green'+(save.cpu?' · beat the computer '+save.cpu+'×':''):'';}

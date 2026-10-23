@@ -1,6 +1,7 @@
 <!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><style>html,body{margin:0}</style></head><body>
 <script>window.__BACKMODE='btn';window.__BACKPOS='top:calc(12px + env(safe-area-inset-top));right:12px'</script>
-<script>(function(){var MODE=window.__BACKMODE||'btn',POS=window.__BACKPOS||'top:calc(8px + env(safe-area-inset-top));left:50%;margin-left:-20px';
+<script>(function(){try{var id=(location.pathname.split('/').pop()||'').replace('.html','');if(!id||id==='index')return;var k='mg_hub',h=JSON.parse(localStorage.getItem(k)||'{}')||{};h.plays=h.plays||{};h.last=h.last||{};h.time=h.time||{};h.plays[id]=(h.plays[id]||0)+1;h.last[id]=Date.now();localStorage.setItem(k,JSON.stringify(h));setInterval(function(){if(document.hidden)return;try{var h2=JSON.parse(localStorage.getItem(k)||'{}')||{};h2.time=h2.time||{};h2.time[id]=(h2.time[id]||0)+15;h2.last=h2.last||{};h2.last[id]=Date.now();localStorage.setItem(k,JSON.stringify(h2));}catch(e){}},15000);}catch(e){}})();
+(function(){var MODE=window.__BACKMODE||'btn',POS=window.__BACKPOS||'top:calc(8px + env(safe-area-inset-top));left:50%;margin-left:-20px';
 var raf=window.requestAnimationFrame.bind(window),paused=false,q=[];
 window.requestAnimationFrame=function(cb){if(paused){q.push(cb);return 0;}return raf(cb);};
 function go(){try{if(window.__store&&__store.flush)__store.flush();}catch(e){}try{window.dispatchEvent(new Event('pagehide'));}catch(e){}setTimeout(function(){location.href='index.html';},150);}
@@ -51,6 +52,7 @@ function book(c1,c2){var a=L(c1,c2);return S([a],'<path d="M8 12c8-4 18-4 24 2v4
 I['📖']=book('#e85a4a','#a8281a');I['📔']=book('#e8a43a','#a8641a');I['📚']=book('#4a8ae8','#1a4aa8');I['📋']=I['📖'];
 (function(){var a=Rg('#fff6a0','#ff5a10',.5,.5,.6);var p='';for(var i=0;i<12;i++){var a1=i/12*Math.PI*2,r=i%2?16:30;p+=(i?'L':'M')+(32+Math.cos(a1)*r).toFixed(1)+' '+(32+Math.sin(a1)*r).toFixed(1);}I['💥']=S([a],'<path d="'+p+'z" fill="'+U(a)+'" stroke="#d83a10" stroke-width="2" stroke-linejoin="round"/>');I['💢']=I['💥'];})();
 (function(){var a=L('#f4f4f8','#b8bcc8',0,0,1,0);I['🚀']=S([a],'<g transform="rotate(45 32 32)"><path d="M32 2c10 8 14 22 12 38H20C18 24 22 10 32 2z" fill="'+U(a)+'" stroke="#6a7080" stroke-width="2"/><circle cx="32" cy="22" r="6" fill="#4ab0ff" stroke="#2a5aa8" stroke-width="2"/><path d="M20 30l-8 14h10zM44 30l8 14H42z" fill="#e8403a"/><path d="M24 40h16l-3 10h-10z" fill="#5a6070"/><path d="M26 50c2 8 4 10 6 12 2-2 4-4 6-12z" fill="#ffb020"/></g>');})();
+(function(){var a=L('#ffffff','#c8c8e8',0,0,1,0);I['👻']=S([a],'<path d="M12 30C12 14 20 6 32 6s20 8 20 24v28l-6-5-7 5-7-5-7 5-7-5-6 5z" fill="'+U(a)+'" stroke="#8080a8" stroke-width="2.5"/><ellipse cx="24" cy="28" rx="4" ry="6" fill="#2a2a48"/><ellipse cx="40" cy="28" rx="4" ry="6" fill="#2a2a48"/><ellipse cx="32" cy="42" rx="5" ry="4" fill="#2a2a48"/>');})();
 (function(){var a=L('#ffe04a','#f0a010');I['⚠️']=I['⚠']=S([a],'<path d="M32 5L61 56H3z" fill="'+U(a)+'" stroke="#a86a00" stroke-width="3" stroke-linejoin="round"/><rect x="29" y="22" width="6" height="18" rx="3" fill="#2a1a00"/><circle cx="32" cy="47" r="3.5" fill="#2a1a00"/>');})();
 (function(){var a=L('#d8dce4','#6a7280');I['⛏️']=I['⛏']=S([a],'<path d="M14 54L44 18" stroke="#8a5a2a" stroke-width="6" stroke-linecap="round"/><path d="M18 12c14-6 30-4 40 8-12-4-24-4-36 2z" fill="'+U(a)+'" stroke="#4a5260" stroke-width="2"/><path d="M40 16c4 4 6 8 6 12" stroke="#4a5260" stroke-width="2" fill="none"/>');})();
 (function(){var b='';for(var i=0;i<6;i++){var r=i*60;b+='<g transform="rotate('+r+' 32 32)"><path d="M32 32V4M32 12l-6-6M32 12l6-6M32 22l-7-5M32 22l7-5" stroke="#6ad0ff" stroke-width="4" stroke-linecap="round"/></g>';}I['❄️']=I['❄']=S([],b+'<circle cx="32" cy="32" r="5" fill="#e8faff"/>');})();
@@ -455,7 +457,7 @@ return{
 </head><body>
 <canvas id="c" aria-label="Prism Path: rotate mirrors to guide light beams into crystals."></canvas>
 <div id="top"><span id="lvl">Level 1</span></div><div id="info"></div>
-<div id="bar"><button class="btn" id="levB">▦ Levels</button><button class="btn" id="resetB">↺ Reset</button><button class="btn" id="hintB">💡 Hint</button><button class="btn" id="setB">⚙️</button></div>
+<div id="bar"><button class="btn" id="levB">▦ Levels</button><button class="btn" id="resetB">↺ Reset</button><button class="btn" id="dayB">📅 Daily</button><button class="btn" id="hintB">💡 Hint</button><button class="btn" id="setB">⚙️</button></div>
 <div id="win" hidden><div class="big">Crystals lit!</div><div class="stars" id="stars"></div><div id="winInfo"></div><button class="btn hi" id="nextB" style="font-size:20px;padding:12px 30px">Next level ▶</button></div>
 <div id="sheet" hidden></div><div id="toast" hidden></div>
 <script>
@@ -490,13 +492,13 @@ const $=id=>document.getElementById(id),clamp=(v,a,b)=>v<a?a:v>b?b:v,TAU=Math.PI
 const cv=$('c'),ctx=cv.getContext('2d');let W=1,H=1,DPR=1;
 function resize(){DPR=Math.min(devicePixelRatio||1,2);W=innerWidth;H=innerHeight;cv.width=W*DPR;cv.height=H*DPR;ctx.setTransform(DPR,0,0,DPR,0,0);}addEventListener('resize',resize);resize();
 let toastT=0;function toast(m,d=2){const t=$('toast');t.textContent=m;t.hidden=false;toastT=d;}
-const KEY='prismpath-v1';let save;try{save=JSON.parse(__store.get(KEY)||'null');}catch(_){}save=Object.assign({lvl:1,max:1,stars:{},hints:3},save||{});const persist=()=>{try{__store.set(KEY,JSON.stringify(save));}catch(_){}};
+const KEY='prismpath-v1';let save;try{save=JSON.parse(__store.get(KEY)||'null');}catch(_){}save=Object.assign({lvl:1,max:1,stars:{},hints:3,daily:{},dStreak:0,dLast:0},save||{});const DAY=()=>Math.floor((Date.now()-new Date().getTimezoneOffset()*6e4)/864e5);const persist=()=>{try{__store.set(KEY,JSON.stringify(save));}catch(_){}};
 function seeded(s){let a=s>>>0||1;return()=>{a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};}
 const DX=[0,1,0,-1],DY=[-1,0,1,0],M0={0:1,1:0,2:3,3:2},M1={0:3,3:0,1:2,2:1};
 const COLS=[{n:'cyan',c:'#3ae8ff',g:'rgba(58,232,255,'},{n:'magenta',c:'#ff4ae0',g:'rgba(255,74,224,'},{n:'gold',c:'#ffd84a',g:'rgba(255,216,74,'}];
 /* ---------- level generation (guaranteed solvable) ---------- */
 let L=null;
-function gen(n){const g=seeded(n*7919+13);const N=Math.min(9,5+Math.floor((n-1)/4)),K=n<4?1:n<12?(g()<.5?1:2):n<25?2:(g()<.5?2:3);
+function gen(n,sd){const g=seeded(sd||n*7919+13);const N=Math.min(9,5+Math.floor((n-1)/4)),K=n<4?1:n<12?(g()<.5?1:2):n<25?2:(g()<.5?2:3);
   for(let tries=0;tries<400;tries++){const grid=Array.from({length:N},()=>Array.from({length:N},()=>({t:'e'})));const used=new Set(),beams=[];let ok=true;
     for(let k=0;k<K&&ok;k++){// emitter on the border pointing inward
       let x,y,d;const side=(g()*4)|0;if(side===0){x=1+((g()*(N-2))|0);y=0;d=2;}else if(side===1){x=N-1;y=1+((g()*(N-2))|0);d=3;}else if(side===2){x=1+((g()*(N-2))|0);y=N-1;d=0;}else{x=0;y=1+((g()*(N-2))|0);d=1;}
@@ -522,7 +524,7 @@ function gen(n){const g=seeded(n*7919+13);const N=Math.min(9,5+Math.floor((n-1)/
     let flips=0;for(const row of grid)for(const c of row)if(c.t==='m'&&c.sol!==undefined){if(n>8&&g()<.18){c.lock=1;continue;}if(g()<.75){c.o=1-c.o;flips++;}}
     if(flips===0){for(const row of grid)for(const c of row)if(c.t==='m'&&c.sol!==undefined&&!c.lock){c.o=1-c.o;flips++;break;}}
     const lv={N,K,grid,par:flips,n};if(solvedNow(lv))continue;const keep=[];for(const row of grid)for(const c of row)if(c.t==='m'&&c.sol!==undefined){keep.push([c,c.o]);c.o=c.sol;}const okSol=solvedNow(lv);for(const[c,o]of keep)c.o=o;if(!okSol)continue;return lv;}
-  return gen(n+100003);}
+  return gen(n+100003,sd?sd+7:0);}
 function trace(lv){const{N,grid}=lv,beams=[],lit=new Set();for(let y=0;y<N;y++)for(let x=0;x<N;x++){const c=grid[y][x];if(c.t!=='src')continue;let cx=x,cy=y,d=c.d;const pts=[[x+.5,y+.5]];
   for(let s=0;s<200;s++){const nx=cx+DX[d],ny=cy+DY[d];if(nx<0||ny<0||nx>=N||ny>=N){pts.push([cx+.5+DX[d]*.5,cy+.5+DY[d]*.5]);break;}const q=grid[ny][nx];cx=nx;cy=ny;
     if(q.t==='m'){pts.push([cx+.5,cy+.5]);d=q.o?M1[d]:M0[d];continue;}if(q.t==='w'||q.t==='src'){pts.push([cx+.5-DX[d]*.5,cy+.5-DY[d]*.5]);break;}if(q.t==='tgt'){pts.push([cx+.5,cy+.5]);if(q.col===c.col)lit.add(cx+','+cy);break;}}
@@ -530,6 +532,7 @@ function trace(lv){const{N,grid}=lv,beams=[],lit=new Set();for(let y=0;y<N;y++)f
 function solvedNow(lv){const{lit}=trace(lv);let n=0;for(const row of lv.grid)for(const c of row)if(c.t==='tgt')n++;return lit.size===n;}
 /* ---------- state ---------- */
 let moves=0,won=false,t=0,trc=null,litPrev=new Set(),parts=[],hintCell=null,rot={};
+function loadDaily(){const d=DAY();L=gen(26+d%24,d*104729+11);L.daily=d;moves=0;won=false;trc=trace(L);litPrev=new Set(trc.lit);hintCell=null;rot={};$('lvl').textContent='Daily puzzle'+(save.daily[d]?' ✓':'');updInfo();$('win').hidden=true;layout();}
 function load(n){L=gen(n);save.lvl=n;moves=0;won=false;trc=trace(L);litPrev=new Set(trc.lit);hintCell=null;rot={};$('lvl').textContent='Level '+n;updInfo();persist();$('win').hidden=true;layout();}
 function updInfo(){let tg=0;for(const row of L.grid)for(const c of row)if(c.t==='tgt')tg++;$('info').textContent='Crystals '+trc.lit.size+'/'+tg+' · Moves '+moves+' · Par '+L.par+' · 💡 '+save.hints;}
 /* ---------- layout & input ---------- */
@@ -539,10 +542,11 @@ cv.addEventListener('pointerdown',e=>{if(won||!$('sheet').hidden)return;const x=
     trc=trace(L);for(const k of trc.lit)if(!litPrev.has(k)){const[a,b]=k.split(',').map(Number);sparks(a,b,COLS[L.grid[b][a].col].c);SND.note('bell',74+trc.lit.size*4,.6,.6);SND.play('chime');}litPrev=new Set(trc.lit);updInfo();
     if(solvedNow(L))win();}});
 function sparks(x,y,col){for(let i=0;i<26;i++){const a=R()*TAU,s=1+R()*3;parts.push({x:x+.5,y:y+.5,vx:Math.cos(a)*s,vy:Math.sin(a)*s,l:.9+R()*.5,col});}}
-function win(){won=true;const st=moves<=L.par?3:moves<=L.par+2?2:1;save.stars[L.n]=Math.max(save.stars[L.n]||0,st);save.max=Math.max(save.max,L.n+1);if(L.n%5===0){save.hints++;}persist();
+function win(){won=true;const st=moves<=L.par?3:moves<=L.par+2?2:1;if(L.daily){const d=L.daily,first=!save.daily[d];save.daily[d]=Math.max(save.daily[d]||0,st);if(first){save.dStreak=save.dLast===d-1?save.dStreak+1:1;save.dLast=d;save.hints+=2;}persist();setTimeout(()=>{SND.play('fanfare');$('stars').textContent='★'.repeat(st)+'☆'.repeat(3-st);$('winInfo').textContent='Daily puzzle solved! '+(first?'+2 hints · ':'')+'streak '+save.dStreak+' day'+(save.dStreak===1?'':'s');$('nextB').textContent='Back to level '+save.lvl+' ▶';$('win').hidden=false;},650);return;}$('nextB').textContent='Next level ▶';save.stars[L.n]=Math.max(save.stars[L.n]||0,st);save.max=Math.max(save.max,L.n+1);if(L.n%5===0){save.hints++;}persist();
   setTimeout(()=>{SND.play('fanfare');$('stars').textContent='★'.repeat(st)+'☆'.repeat(3-st);$('winInfo').textContent=moves+' moves (par '+L.par+')'+(L.n%5===0?' · +1 💡 hint':'');$('win').hidden=false;},650);}
-$('nextB').onclick=()=>{SND.play('click');load(L.n+1);layout();};
-$('resetB').onclick=()=>{SND.play('whoosh');load(L.n);layout();};
+$('nextB').onclick=()=>{SND.play('click');if(L.daily){load(save.lvl);}else load(L.n+1);layout();};
+$('dayB').onclick=()=>{SND.play('click');loadDaily();toast(save.daily[DAY()]?'You solved today\'s puzzle. Play it again for more stars!':'New puzzle every day. Keep your streak going!');};
+$('resetB').onclick=()=>{SND.play('whoosh');if(L.daily)loadDaily();else load(L.n);layout();};
 $('hintB').onclick=()=>{if(won)return;if(save.hints<=0){toast('No hints left. Every 5th level gives one!');SND.play('error');return;}for(let y=0;y<L.N;y++)for(let x=0;x<L.N;x++){const c=L.grid[y][x];if(c.t==='m'&&c.sol!==undefined&&c.o!==c.sol&&!c.lock){hintCell=[x,y];save.hints--;updInfo();persist();SND.play('magic');toast('Tap the glowing mirror');return;}}toast('Try moving a decoy mirror out of the way');};
 $('levB').onclick=()=>{SND.play('click');const s=$('sheet');let h='<h3>Levels <button class="x">×</button></h3><div class="lv">';const top=Math.max(save.max,20);for(let i=1;i<=top+5;i++){const st=save.stars[i]||0;h+='<button data-l="'+i+'" '+(i>save.max?'disabled':'')+'>'+i+'<small>'+(st?'★'.repeat(st):'')+'</small></button>';}s.innerHTML=h+'</div>';s.hidden=false;
   s.querySelectorAll('[data-l]').forEach(b=>b.onclick=()=>{s.hidden=true;load(+b.dataset.l);layout();});s.querySelector('.x').onclick=()=>s.hidden=true;};

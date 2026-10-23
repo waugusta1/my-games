@@ -1,6 +1,7 @@
 <!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><style>html,body{margin:0}</style></head><body>
 <script>window.__BACKMODE='btn';window.__BACKPOS='top:calc(100px + env(safe-area-inset-top));left:14px'</script>
-<script>(function(){var MODE=window.__BACKMODE||'btn',POS=window.__BACKPOS||'top:calc(8px + env(safe-area-inset-top));left:50%;margin-left:-20px';
+<script>(function(){try{var id=(location.pathname.split('/').pop()||'').replace('.html','');if(!id||id==='index')return;var k='mg_hub',h=JSON.parse(localStorage.getItem(k)||'{}')||{};h.plays=h.plays||{};h.last=h.last||{};h.time=h.time||{};h.plays[id]=(h.plays[id]||0)+1;h.last[id]=Date.now();localStorage.setItem(k,JSON.stringify(h));setInterval(function(){if(document.hidden)return;try{var h2=JSON.parse(localStorage.getItem(k)||'{}')||{};h2.time=h2.time||{};h2.time[id]=(h2.time[id]||0)+15;h2.last=h2.last||{};h2.last[id]=Date.now();localStorage.setItem(k,JSON.stringify(h2));}catch(e){}},15000);}catch(e){}})();
+(function(){var MODE=window.__BACKMODE||'btn',POS=window.__BACKPOS||'top:calc(8px + env(safe-area-inset-top));left:50%;margin-left:-20px';
 var raf=window.requestAnimationFrame.bind(window),paused=false,q=[];
 window.requestAnimationFrame=function(cb){if(paused){q.push(cb);return 0;}return raf(cb);};
 function go(){try{if(window.__store&&__store.flush)__store.flush();}catch(e){}try{window.dispatchEvent(new Event('pagehide'));}catch(e){}setTimeout(function(){location.href='index.html';},150);}
@@ -51,6 +52,7 @@ function book(c1,c2){var a=L(c1,c2);return S([a],'<path d="M8 12c8-4 18-4 24 2v4
 I['📖']=book('#e85a4a','#a8281a');I['📔']=book('#e8a43a','#a8641a');I['📚']=book('#4a8ae8','#1a4aa8');I['📋']=I['📖'];
 (function(){var a=Rg('#fff6a0','#ff5a10',.5,.5,.6);var p='';for(var i=0;i<12;i++){var a1=i/12*Math.PI*2,r=i%2?16:30;p+=(i?'L':'M')+(32+Math.cos(a1)*r).toFixed(1)+' '+(32+Math.sin(a1)*r).toFixed(1);}I['💥']=S([a],'<path d="'+p+'z" fill="'+U(a)+'" stroke="#d83a10" stroke-width="2" stroke-linejoin="round"/>');I['💢']=I['💥'];})();
 (function(){var a=L('#f4f4f8','#b8bcc8',0,0,1,0);I['🚀']=S([a],'<g transform="rotate(45 32 32)"><path d="M32 2c10 8 14 22 12 38H20C18 24 22 10 32 2z" fill="'+U(a)+'" stroke="#6a7080" stroke-width="2"/><circle cx="32" cy="22" r="6" fill="#4ab0ff" stroke="#2a5aa8" stroke-width="2"/><path d="M20 30l-8 14h10zM44 30l8 14H42z" fill="#e8403a"/><path d="M24 40h16l-3 10h-10z" fill="#5a6070"/><path d="M26 50c2 8 4 10 6 12 2-2 4-4 6-12z" fill="#ffb020"/></g>');})();
+(function(){var a=L('#ffffff','#c8c8e8',0,0,1,0);I['👻']=S([a],'<path d="M12 30C12 14 20 6 32 6s20 8 20 24v28l-6-5-7 5-7-5-7 5-7-5-6 5z" fill="'+U(a)+'" stroke="#8080a8" stroke-width="2.5"/><ellipse cx="24" cy="28" rx="4" ry="6" fill="#2a2a48"/><ellipse cx="40" cy="28" rx="4" ry="6" fill="#2a2a48"/><ellipse cx="32" cy="42" rx="5" ry="4" fill="#2a2a48"/>');})();
 (function(){var a=L('#ffe04a','#f0a010');I['⚠️']=I['⚠']=S([a],'<path d="M32 5L61 56H3z" fill="'+U(a)+'" stroke="#a86a00" stroke-width="3" stroke-linejoin="round"/><rect x="29" y="22" width="6" height="18" rx="3" fill="#2a1a00"/><circle cx="32" cy="47" r="3.5" fill="#2a1a00"/>');})();
 (function(){var a=L('#d8dce4','#6a7280');I['⛏️']=I['⛏']=S([a],'<path d="M14 54L44 18" stroke="#8a5a2a" stroke-width="6" stroke-linecap="round"/><path d="M18 12c14-6 30-4 40 8-12-4-24-4-36 2z" fill="'+U(a)+'" stroke="#4a5260" stroke-width="2"/><path d="M40 16c4 4 6 8 6 12" stroke="#4a5260" stroke-width="2" fill="none"/>');})();
 (function(){var b='';for(var i=0;i<6;i++){var r=i*60;b+='<g transform="rotate('+r+' 32 32)"><path d="M32 32V4M32 12l-6-6M32 12l6-6M32 22l-7-5M32 22l7-5" stroke="#6ad0ff" stroke-width="4" stroke-linecap="round"/></g>';}I['❄️']=I['❄']=S([],b+'<circle cx="32" cy="32" r="5" fill="#e8faff"/>');})();
@@ -1113,8 +1115,11 @@ const TRAILS=[
  {id:'pine',n:'Pine Ridge',d:'Flowy singletrack through a tall pine forest. Berms and tabletop jumps.',biome:'forest',seed:7,len:1100,grade:.15,wig:[38,24],jumps:4,med:[94,107,128],unlock:0},
  {id:'canyon',n:'Red Canyon Rip',d:'Fast, dusty and exposed. Sandstone ledges and big gap jumps.',biome:'canyon',seed:19,len:1300,grade:.17,wig:[52,30],jumps:6,med:[109,125,149],unlock:1},
  {id:'alpine',n:'Alpine Plunge',d:'Steep rocky descent above the treeline. Tight switchbacks, huge drops.',biome:'alpine',seed:31,len:1450,grade:.21,wig:[62,34],jumps:7,med:[148,169,201],unlock:2},
- {id:'birch',n:'Golden Birches',d:'Autumn evening ride through birch woods. Long and rhythmic.',biome:'autumn',seed:43,len:1600,grade:.14,wig:[44,30],jumps:8,med:[151,172,205],unlock:3}];
-const BIKES=[{c:'#e83a2a',n:'Lava'},{c:'#1a7ae8',n:'Glacier'},{c:'#2ab84a',n:'Moss'},{c:'#f0c020',n:'Sulphur'},{c:'#1a1a1a',n:'Stealth'},{c:'#ff5ab8',n:'Flamingo'}];
+ {id:'birch',n:'Golden Birches',d:'Autumn evening ride through birch woods. Long and rhythmic.',biome:'autumn',seed:43,len:1600,grade:.14,wig:[44,30],jumps:8,med:[151,172,205],unlock:3},
+ {id:'misty',n:'Misty Hollow',d:'Dawn mist rolls through an old oak valley. Can you see the next jump?',biome:'misty',seed:57,len:1250,grade:.16,wig:[40,26],jumps:6,med:[112,128,152],unlock:4},
+ {id:'redwood',n:'Giant Redwoods',d:'Rip between enormous trees on a fast, rooty forest floor.',biome:'redwood',seed:71,len:1500,grade:.17,wig:[36,22],jumps:7,med:[136,155,184],unlock:5},
+ {id:'mesa',n:'Mesa Mayhem',d:'The big one: a long desert freeride with ten gap jumps.',biome:'canyon',seed:83,len:1900,grade:.18,wig:[58,32],jumps:10,med:[170,194,230],unlock:6}];
+const BIKES=[{c:'#ff8a1a',n:'Tangerine'},{c:'#7a4ae8',n:'Grape'},{c:'#e8e8ec',n:'Arctic'},{c:'#e83a2a',n:'Lava'},{c:'#1a7ae8',n:'Glacier'},{c:'#2ab84a',n:'Moss'},{c:'#f0c020',n:'Sulphur'},{c:'#1a1a1a',n:'Stealth'},{c:'#ff5ab8',n:'Flamingo'}];
 const SK='ridgeback-v1';const fresh=()=>({best:{},medal:{},bike:0,trail:'pine',runs:0});let save=fresh();try{const s=JSON.parse(__store.get(SK));if(s)save=Object.assign(fresh(),s);}catch(_){}const persist=()=>{try{__store.set(SK,JSON.stringify(save));}catch(_){}};
 const medalsCount=()=>Object.values(save.medal).filter(m=>m>0).length;
 /* ================= RENDERER ================= */
@@ -1200,6 +1205,8 @@ const BIOME={
  forest:{tint:[1,1,1],rockSlope:.72,trees:5,kinds:['pine','pine','pine','oak'],rocks:.18,grass:9,flowers:1,bush:.25,dirt:['#5a4030','#6a4a34','#4a3424','#7a5a3e'],fog:0xc8d8e0,mtnC:0x7a90a0,sunD:[.4,.62,-.45],turb:4,ray:1.3,cloud:.3,env:{exp:.74}},
  canyon:{tint:[1.25,.82,.6],rockSlope:.5,base:'sand',trees:.35,kinds:['oak','none','none'],rocks:.9,rockC:[1.35,.82,.6],grass:2,grassC:[1.3,1.1,.6],flowers:0,bush:.3,dirt:['#a8643a','#b8744a','#8a5030','#c8845a'],fog:0xe8cdb0,mtnC:0xb07a5a,mtn:260,sunD:[.6,.45,-.3],turb:8,ray:1,cloud:.12,env:{exp:.72},treeS:.8},
  alpine:{tint:[.95,1,1],rockSlope:.45,snowY:-150,trees:1.6,kinds:['pine','none'],rocks:1.2,grass:5,grassC:[.9,1,.75],flowers:1,bush:.1,dirt:['#4a4440','#5a5450','#3a3634','#6a625a'],fog:0xd8e4ee,mtnC:0xa8b8c8,mtn:380,sunD:[.3,.7,-.5],turb:2.5,ray:1.1,cloud:.4,env:{exp:.72},treeS:.85},
+ misty:{tint:[.95,1,.98],rockSlope:.7,trees:5,kinds:['oak','oak','birch','pine'],rocks:.25,grass:9,flowers:1,bush:.4,dirt:['#4a3a2c','#5a4636','#3a2c20','#6a5440'],fog:0xd8dce4,mtnC:0x9aa4b4,sunD:[.85,.14,-.4],turb:6,ray:2,cloud:.5,env:{exp:.78},mist:.16},
+ redwood:{tint:[.9,1,.9],rockSlope:.72,trees:4.5,kinds:['pine','pine','pine'],rocks:.12,grass:6,grassC:[.8,1,.7],flowers:0,bush:.5,dirt:['#5a3624','#6a4030','#4a2a1a','#7a4a34'],fog:0xb8c8b0,mtnC:0x6a8070,sunD:[.35,.7,-.3],turb:3,ray:1,cloud:.3,env:{exp:.8},treeS:1.7},
  autumn:{tint:[1.15,.95,.7],rockSlope:.72,trees:5.5,kinds:['birch','birch','oak','pine'],rocks:.2,grass:8,grassC:[1.3,1.05,.6],flowers:0,bush:.3,dirt:['#6a4a2a','#7a5a34','#5a3a20','#8a6a44'],fog:0xf0c8a0,mtnC:0x9a7a8a,sunD:[.75,.18,-.55],turb:5,ray:2.2,cloud:.35,leafC:g=>{const k=g();return k<.4?[1.5,.95,.35]:k<.7?[1.5,.6,.25]:[1.2,1.2,.45];},env:{exp:.8}}};
 /* ================= BIKE + RIDER ================= */
 let bike=null,bikeParts={};
@@ -1260,7 +1267,7 @@ function startRun(id){const t=TRAILS.find(x=>x.id===id);save.trail=id;persist();
 let tyres=null,wind=null;
 function setLight(t){const B=BIOME[t.biome];const sd=new THREE.Vector3(...B.sunD).normalize();sun.position.copy(sd).multiplyScalar(150);scene.fog.color.set(B.fog);
   const su=rsky.material.uniforms;su.sunPosition.value.copy(sd);su.turbidity.value=B.turb;su.rayleigh.value=B.ray;const evening=sd.y<.3;sun.color.set(evening?0xffb070:0xfff0d8);sun.intensity=evening?.95:1.08;hemi.intensity=evening?.35:.45;
-  RK.setEnv({sunDir:sd,sunCol:_sc.copy(sun.color).multiplyScalar(sun.intensity*1.6),fogCol:scene.fog.color,day:evening?.7:1,cloud:B.cloud,mist:t.biome==='alpine'?.08:0,fogD:.0016,fogY:-80,fogH:.004,exp:B.env.exp,sat:1.02});RK.envFromSky(rsky);}
+  RK.setEnv({sunDir:sd,sunCol:_sc.copy(sun.color).multiplyScalar(sun.intensity*1.6),fogCol:scene.fog.color,day:evening?.7:1,cloud:B.cloud,mist:B.mist??(t.biome==='alpine'?.08:0),fogD:.0016,fogY:-80,fogH:.004,exp:B.env.exp,sat:1.02});RK.envFromSky(rsky);}
 function crash(why){if(ST.crash)return;ST.crash=.001;ST.crashV=ST.v;SND.play('crash');SND.play('hurt');buzz([60,40,120]);toast(why||'Crashed!',1.6);ST.v*=.3;}
 function update(dt){if(!run)return;const t=run.t;
   if(state==='count'){run.count-=dt;const n=Math.ceil(run.count);const el=$('count');const txt=n>0?String(n):'GO!';if(el.textContent!==txt){el.textContent=txt;SND.play('countdown',n<=0);}if(run.count<=-.6){el.hidden=true;state='ride';}}

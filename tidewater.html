@@ -1,6 +1,7 @@
 <!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><style>html,body{margin:0}</style></head><body>
 <script>window.__BACKMODE='btn';window.__BACKPOS='top:calc(82px + env(safe-area-inset-top));left:10px'</script>
-<script>(function(){var MODE=window.__BACKMODE||'btn',POS=window.__BACKPOS||'top:calc(8px + env(safe-area-inset-top));left:50%;margin-left:-20px';
+<script>(function(){try{var id=(location.pathname.split('/').pop()||'').replace('.html','');if(!id||id==='index')return;var k='mg_hub',h=JSON.parse(localStorage.getItem(k)||'{}')||{};h.plays=h.plays||{};h.last=h.last||{};h.time=h.time||{};h.plays[id]=(h.plays[id]||0)+1;h.last[id]=Date.now();localStorage.setItem(k,JSON.stringify(h));setInterval(function(){if(document.hidden)return;try{var h2=JSON.parse(localStorage.getItem(k)||'{}')||{};h2.time=h2.time||{};h2.time[id]=(h2.time[id]||0)+15;h2.last=h2.last||{};h2.last[id]=Date.now();localStorage.setItem(k,JSON.stringify(h2));}catch(e){}},15000);}catch(e){}})();
+(function(){var MODE=window.__BACKMODE||'btn',POS=window.__BACKPOS||'top:calc(8px + env(safe-area-inset-top));left:50%;margin-left:-20px';
 var raf=window.requestAnimationFrame.bind(window),paused=false,q=[];
 window.requestAnimationFrame=function(cb){if(paused){q.push(cb);return 0;}return raf(cb);};
 function go(){try{if(window.__store&&__store.flush)__store.flush();}catch(e){}try{window.dispatchEvent(new Event('pagehide'));}catch(e){}setTimeout(function(){location.href='index.html';},150);}
@@ -51,6 +52,7 @@ function book(c1,c2){var a=L(c1,c2);return S([a],'<path d="M8 12c8-4 18-4 24 2v4
 I['📖']=book('#e85a4a','#a8281a');I['📔']=book('#e8a43a','#a8641a');I['📚']=book('#4a8ae8','#1a4aa8');I['📋']=I['📖'];
 (function(){var a=Rg('#fff6a0','#ff5a10',.5,.5,.6);var p='';for(var i=0;i<12;i++){var a1=i/12*Math.PI*2,r=i%2?16:30;p+=(i?'L':'M')+(32+Math.cos(a1)*r).toFixed(1)+' '+(32+Math.sin(a1)*r).toFixed(1);}I['💥']=S([a],'<path d="'+p+'z" fill="'+U(a)+'" stroke="#d83a10" stroke-width="2" stroke-linejoin="round"/>');I['💢']=I['💥'];})();
 (function(){var a=L('#f4f4f8','#b8bcc8',0,0,1,0);I['🚀']=S([a],'<g transform="rotate(45 32 32)"><path d="M32 2c10 8 14 22 12 38H20C18 24 22 10 32 2z" fill="'+U(a)+'" stroke="#6a7080" stroke-width="2"/><circle cx="32" cy="22" r="6" fill="#4ab0ff" stroke="#2a5aa8" stroke-width="2"/><path d="M20 30l-8 14h10zM44 30l8 14H42z" fill="#e8403a"/><path d="M24 40h16l-3 10h-10z" fill="#5a6070"/><path d="M26 50c2 8 4 10 6 12 2-2 4-4 6-12z" fill="#ffb020"/></g>');})();
+(function(){var a=L('#ffffff','#c8c8e8',0,0,1,0);I['👻']=S([a],'<path d="M12 30C12 14 20 6 32 6s20 8 20 24v28l-6-5-7 5-7-5-7 5-7-5-6 5z" fill="'+U(a)+'" stroke="#8080a8" stroke-width="2.5"/><ellipse cx="24" cy="28" rx="4" ry="6" fill="#2a2a48"/><ellipse cx="40" cy="28" rx="4" ry="6" fill="#2a2a48"/><ellipse cx="32" cy="42" rx="5" ry="4" fill="#2a2a48"/>');})();
 (function(){var a=L('#ffe04a','#f0a010');I['⚠️']=I['⚠']=S([a],'<path d="M32 5L61 56H3z" fill="'+U(a)+'" stroke="#a86a00" stroke-width="3" stroke-linejoin="round"/><rect x="29" y="22" width="6" height="18" rx="3" fill="#2a1a00"/><circle cx="32" cy="47" r="3.5" fill="#2a1a00"/>');})();
 (function(){var a=L('#d8dce4','#6a7280');I['⛏️']=I['⛏']=S([a],'<path d="M14 54L44 18" stroke="#8a5a2a" stroke-width="6" stroke-linecap="round"/><path d="M18 12c14-6 30-4 40 8-12-4-24-4-36 2z" fill="'+U(a)+'" stroke="#4a5260" stroke-width="2"/><path d="M40 16c4 4 6 8 6 12" stroke="#4a5260" stroke-width="2" fill="none"/>');})();
 (function(){var b='';for(var i=0;i<6;i++){var r=i*60;b+='<g transform="rotate('+r+' 32 32)"><path d="M32 32V4M32 12l-6-6M32 12l6-6M32 22l-7-5M32 22l7-5" stroke="#6ad0ff" stroke-width="4" stroke-linecap="round"/></g>';}I['❄️']=I['❄']=S([],b+'<circle cx="32" cy="32" r="5" fill="#e8faff"/>');})();
@@ -1165,11 +1167,19 @@ const FISH=[
  {id:'crystal',n:'Crystal Trout',r:'M',z:'mv',t:'a',w:[2,8],v:2400,shape:'trout',c1:'#a8f0ff',c2:'#e8ffff',pat:'none',str:1.8,glow:'#8af0ff',wx:'rain',clear:1},
  {id:'moonfin',n:'Moonfin',r:'M',z:'d',t:'n',w:[5,25],v:3200,shape:'bass',c1:'#2a3a8a',c2:'#a8b8ff',pat:'stars',str:2.2,glow:'#7a9aff'},
  {id:'whiskers',n:'Old Whiskers',r:'M',z:'d',t:'a',w:[60,180],v:5000,shape:'cat',c1:'#3a3a32',c2:'#c8c0a0',pat:'mottle',str:3.2,whisk:1,wx:'storm',boss:1},
- {id:'emberfin',n:'Emberfin Bass',r:'M',z:'rs',t:'d',w:[3,12],v:2800,shape:'bass',c1:'#8a1a0a',c2:'#ffb040',pat:'flame',str:2,glow:'#ff7a2a',wx:'clear'}];
+ {id:'emberfin',n:'Emberfin Bass',r:'M',z:'rs',t:'d',w:[3,12],v:2800,shape:'bass',c1:'#8a1a0a',c2:'#ffb040',pat:'flame',str:2,glow:'#ff7a2a',wx:'clear'},
+ {id:'rockbass',n:'Rock Bass',r:'C',z:'rs',t:'a',w:[.1,.8],v:16,shape:'deep',c1:'#5a4a2a',c2:'#d8b070',pat:'speck',str:.38},
+ {id:'smallmouth',n:'Smallmouth Bass',r:'U',z:'v',t:'d',w:[.5,3.5],v:55,shape:'bass',c1:'#6a5a2a',c2:'#e0c890',pat:'bars',str:.85},
+ {id:'whitefish',n:'Lake Whitefish',r:'U',z:'d',t:'a',w:[.6,4],v:52,shape:'trout',c1:'#8a9aa8',c2:'#f4f6f8',pat:'none',str:.7},
+ {id:'bowfin',n:'Bowfin',r:'R',z:'r',t:'n',w:[1.5,9],v:125,shape:'pike',c1:'#3a4a2a',c2:'#c8c890',pat:'mottle',str:1.25},
+ {id:'goldtrout',n:'Golden Trout',r:'L',z:'v',t:'d',w:[1,6],v:480,shape:'trout',c1:'#c8a020',c2:'#ff6a3a',pat:'speck',str:1.3,glow:'#ffd060'},
+ {id:'tigermusk',n:'Tiger Muskie',r:'L',z:'r',t:'a',w:[5,28],v:560,shape:'pike',c1:'#5a6a3a',c2:'#f0e8c0',pat:'bars',str:2.1,teeth:1},
+ {id:'rosekoi',n:'Rose Koi',r:'L',z:'r',t:'n',w:[2,10],v:500,shape:'carp',c1:'#ffffff',c2:'#ff5a9a',pat:'koi',str:1,whisk:1,glow:'#ffb0d0'},
+ {id:'aurora',n:'Aurora Pike',r:'M',z:'r',t:'n',w:[6,24],v:3600,shape:'pike',c1:'#1a4a3a',c2:'#7affc0',pat:'stars',str:2.4,glow:'#6affb0',teeth:1,wx:'fog'}];
 const FR=Object.fromEntries(FISH.map(f=>[f.id,f]));
 const LURES=[{id:'worm',n:'Worm',e:'🪱',cost:0,d:'The classic. Everything bites, slowly.',sp:1,rar:1},{id:'minnow',n:'Live Minnow',e:'🐟',cost:400,d:'Bigger fish bite more. Bass, pike & trout love it.',sp:1.1,rar:1.4,big:1.25},
  {id:'spinner',n:'Spinner',e:'🌀',cost:1200,d:'Bites come 60% faster.',sp:1.6,rar:1.2},{id:'glow',n:'Glow Lure',e:'💡',cost:4000,d:'Night fish bite 3× more. Big rarity boost after dark.',sp:1.2,rar:1.5,night:3},
- {id:'golden',n:'Golden Lure',e:'✨',cost:20000,d:'Double chance of rare fish.',sp:1.3,rar:2.2},{id:'legend',n:'Legend Bait',e:'🔮',cost:120000,d:'Mythic fish chance ×4. Monsters lurk.',sp:1.2,rar:3,myth:4}];
+ {id:'jig',n:'Deep Jig',e:'🪝',cost:2500,d:'Sinks fast. Deep-water fish bite more and bigger.',sp:1.4,rar:1.3,big:1.2},{id:'frog',n:'Frog Popper',e:'🐸',cost:8000,d:'Topwater lure. Explosive strikes from bass & pike.',sp:1.3,rar:1.8,big:1.4},{id:'golden',n:'Golden Lure',e:'✨',cost:20000,d:'Double chance of rare fish.',sp:1.3,rar:2.2},{id:'legend',n:'Legend Bait',e:'🔮',cost:120000,d:'Mythic fish chance ×4. Monsters lurk.',sp:1.2,rar:3,myth:4}];
 const UPG=[{id:'rod',n:'Rod Power',e:'🎣',d:'Fight bigger fish with less line tension',base:250,max:12},{id:'reel',n:'Reel Speed',e:'⚙️',d:'Pull fish in faster',base:200,max:12},
  {id:'line',n:'Line Strength',e:'🧵',d:'Line can handle more tension before it snaps',base:300,max:12},{id:'boat',n:'Boat Speed',e:'🚣',d:'Row faster around the lake',base:180,max:10},
  {id:'cooler',n:'Cooler Size',e:'🧊',d:'Carry more fish before you have to sell',base:220,max:12},{id:'luck',n:'Angler Luck',e:'🍀',d:'Better chance at rare & big fish',base:600,max:10},
