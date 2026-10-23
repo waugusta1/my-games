@@ -520,11 +520,19 @@ const FL=[{px:178,py:898,len:84,rest:.5,up:-.42,a:.5,w:0,side:-1,on:0},{px:392,p
 const rampPath=[[500,420],[520,200],[420,110],[250,90],[110,160],[70,330],[60,640],[110,760],[150,800]];
 
 /* ================= STATE ================= */
-const SK='starfall-save-v1';let save={hs:[],plays:0};try{const s=JSON.parse(__store.get(SK));if(s)save=Object.assign(save,s);}catch(_){}
+const SK='starfall-save-v1';let save={hs:[],plays:0,st:{},ach:{}};try{const s=JSON.parse(__store.get(SK));if(s)save=Object.assign(save,s);}catch(_){}if(!save.st)save.st={};if(!save.ach)save.ach={};
 const persist=()=>{try{__store.set(SK,JSON.stringify(save));}catch(_){}};
 let state='menu',balls=[],G=null,t=0;
 function newGame(){G={score:0,ball:1,balls:3,mult:1,lanes:0,bumps:0,drops:0,ramps:0,cons:{orion:0,draco:0,lyra:0,cygnus:0},level:1,multiball:0,jackpot:0,saveT:0,tilt:0,tilted:0,extra:[1e6,5e6,2e7],plunger:0,charging:0,msg:[],bonus:0};balls=[];serve();state='play';$('menu').hidden=true;['launch','nudge','menuB'].forEach(k=>$(k).hidden=false);SND.music('arcade');save.plays++;persist();dmd('PLAYER 1','BALL 1',2);}
-function serve(){balls.push({x:562,y:940,vx:0,vy:0,lane:1,trail:[]});G.saveT=0;}
+function serve(){balls.push({x:562,y:940,vx:0,vy:0,lane:1,trail:[],fresh:1});G.saveT=0;G.skill=Math.floor(R()*3);G.misT=6;}
+/* ---- missions, skill shots, mystery, trophies ---- */
+const MIS=[{k:'bump',n:'BUMPER BASH',d:'15 BUMPERS',need:15,time:30},{k:'ramp',n:'RAMP RUSH',d:'2 RAMPS',need:2,time:35},{k:'drop',n:'TARGET PRACTICE',d:'4 TARGETS',need:4,time:30},{k:'lane',n:'LANE RUNNER',d:'5 LANES',need:5,time:30},{k:'orbit',n:'ORBIT RACE',d:'3 ORBITS',need:3,time:35},{k:'hole',n:'HOLE IN ONE',d:'BLACK HOLE',need:1,time:40}];
+function misHit(k){if(!G)return;ST(k);const m=G.mis;if(!m||m.k!==k)return;m.have++;if(m.have>=m.need){const v=150000*G.level;addScore(v/G.mult);dmd('MISSION DONE',fmt(v),2,'flash');SND.play('success');SND.play('coins');G.misDone=(G.misDone||0)+1;ST('missions');G.mis=null;G.misT=10;checkAch();}else dmd(m.n,m.have+' / '+m.need,.7);}
+function misTick(dt){if(!G||G.multiball)return;if(G.mis){G.mis.t-=dt;if(G.mis.t<=0){dmd('MISSION','FAILED',1.4);SND.play('error');G.mis=null;G.misT=12;}}else if(balls.some(b=>!b.lane)){G.misT-=dt;if(G.misT<=0){const m=Object.assign({},MIS[Math.floor(R()*MIS.length)]);m.have=0;m.t=m.time;G.mis=m;dmd(m.n,m.d+' IN '+m.time+'s',2.2,'flash');SND.play('chime');}}}
+function mystery(){const k=R();if(k<.25){G.saveT=-6;dmd('MYSTERY','BALL SAVER',1.6,'flash');}else if(k<.5){G.mult=Math.min(10,G.mult+1);dmd('MYSTERY','MULT x'+G.mult,1.6,'flash');}else if(k<.75){const v=50000*G.level;addScore(v/G.mult);dmd('MYSTERY',fmt(v),1.6,'flash');}else if(k<.92){const L=LANES.find(q=>!q.lit);if(L)L.lit=1;dmd('MYSTERY','LANE LIT',1.6,'flash');}else{G.balls++;dmd('MYSTERY','EXTRA BALL!',2.2,'flash');SND.play('levelup');}SND.play('magic');}
+function ST(k,v=1){save.st[k]=(save.st[k]||0)+v;}
+const ACH=[{id:'m1',n:'Million Club',d:'Score 1,000,000',f:()=>(save.hs[0]||{s:0}).s>=1e6},{id:'m10',n:'Ten Million',d:'Score 10,000,000',f:()=>(save.hs[0]||{s:0}).s>=1e7},{id:'sk',n:'Sharpshooter',d:'Make a skill shot',f:()=>save.st.skill>=1},{id:'sk10',n:'Deadeye',d:'10 skill shots',f:()=>save.st.skill>=10},{id:'mi1',n:'On a Mission',d:'Finish a mission',f:()=>save.st.missions>=1},{id:'mi20',n:'Mission Master',d:'Finish 20 missions',f:()=>save.st.missions>=20},{id:'mb',n:'Supernova',d:'Start multiball',f:()=>save.st.multiball>=1},{id:'jp',n:'Jackpot!',d:'Hit a jackpot',f:()=>save.st.jackpot>=1},{id:'b1k',n:'Pinball Wizard',d:'1,000 bumper hits',f:()=>save.st.bump>=1000},{id:'p50',n:'Regular',d:'Play 50 games',f:()=>save.plays>=50}];
+function checkAch(){for(const a of ACH)if(!save.ach[a.id]&&a.f()){save.ach[a.id]=1;dmd('TROPHY!',a.n.toUpperCase(),2.2,'flash');SND.play('fanfare');persist();}}
 function addScore(v,x,y){v=Math.round(v*G.mult);G.score+=v;if(x!=null)pops.push({x,y,txt:fmt(v),life:1});for(const e of G.extra)if(G.score>=e&&!G['x'+e]){G['x'+e]=1;G.balls++;dmd('EXTRA BALL!','',2.5);SND.play('levelup');}}
 const pops=[],sparks=[];
 
@@ -534,7 +542,7 @@ function dmd(a,b,dur=1.6,anim){dmdQ.push({a,b,dur,anim});}
 function renderDMD(){dg.fillStyle='#000';dg.fillRect(0,0,128,32);let m=dmdQ[0];if(m){dmdT+=1/60;if(dmdT>m.dur){dmdQ.shift();dmdT=0;m=dmdQ[0];}}
   dg.fillStyle='#ff9a2a';dg.textAlign='center';dg.textBaseline='middle';
   if(m){const fl=m.anim==='flash'&&Math.floor(t*8)%2;if(!fl){dg.font='bold 13px monospace';dg.fillText(m.a,64,m.b?10:16);if(m.b){dg.font='bold 10px monospace';dg.fillText(m.b,64,24);}}}
-  else if(G&&state==='play'){dg.font='bold 15px monospace';dg.fillText(fmt(G.score),64,12);dg.font='9px monospace';dg.fillText('BALL '+Math.min(G.ball,G.balls)+'  x'+G.mult+(G.multiball?'  MULTIBALL':''),64,26);}
+  else if(G&&state==='play'){dg.font='bold 15px monospace';dg.fillText(fmt(G.score),64,12);dg.font='9px monospace';dg.fillText(G.mis?(G.mis.d.split(' ')[1]+' '+G.mis.have+'/'+G.mis.need+'  '+Math.ceil(G.mis.t)+'s'):'BALL '+Math.min(G.ball,G.balls)+'  x'+G.mult+(G.multiball?'  MULTIBALL':''),64,26);}
   else{dg.font='bold 12px monospace';dg.fillText('STARFALL',64,10);dg.font='9px monospace';dg.fillText(Math.floor(t*2)%2?'PRESS START':'HI '+fmt((save.hs[0]||{s:0}).s),64,24);}}
 function drawDMD(x,y,w,h){const img=dg.getImageData(0,0,128,32).data;ctx.fillStyle='#120804';ctx.fillRect(x-6,y-6,w+12,h+12);ctx.strokeStyle='#3a2a1a';ctx.lineWidth=3;ctx.strokeRect(x-6,y-6,w+12,h+12);const cw=w/128,ch=h/32,r=Math.min(cw,ch)*.42;
   for(let j=0;j<32;j++)for(let i=0;i<128;i++){const k=(j*128+i)*4,v=img[k]/255;ctx.fillStyle=v>.25?'rgba(255,'+(110+v*60|0)+',30,'+(.35+v*.65)+')':'rgba(70,30,10,.55)';ctx.fillRect(x+i*cw+cw/2-r,y+j*ch+ch/2-r,r*2,r*2);}}
@@ -574,37 +582,37 @@ function collideSeg(b,s){const dx=s.bx-s.ax,dy=s.by-s.ay,l2=dx*dx+dy*dy;let u=((
     else if(vn<-250&&!s.kick){if(R()<.5)SND.tone({type:'sine',f:180+R()*60,d:.04,v:.04});}}
   return true;}
 function collideCircle(b,c){const dx=b.x-c.x,dy=b.y-c.y,d=hyp(dx,dy),r=c.r+BR;if(d>=r||d===0)return;const nx=dx/d,ny=dy/d;b.x=c.x+nx*r;b.y=c.y+ny*r;const vn=b.vx*nx+b.vy*ny;if(vn<0){b.vx-=(1+c.e)*vn*nx;b.vy-=(1+c.e)*vn*ny;}
-  if(c.bump){b.vx+=nx*560;b.vy+=ny*560;c.flash=.25;G.bumps++;addScore(1000,c.x,c.y-36);SND.play('bumper');SND.note('bell',[76,79,83][BUMP.indexOf(c.bump)]+(G.multiball?12:0),.3,.4);spark(c.x+nx*c.r,c.y+ny*c.r,c.bump.c);buzz(12);cons('lyra',G.bumps,30,'LYRA');}}
+  if(c.bump){b.vx+=nx*560;b.vy+=ny*560;c.flash=.25;G.bumps++;misHit('bump');addScore(1000,c.x,c.y-36);SND.play('bumper');SND.note('bell',[76,79,83][BUMP.indexOf(c.bump)]+(G.multiball?12:0),.3,.4);spark(c.x+nx*c.r,c.y+ny*c.r,c.bump.c);buzz(12);cons('lyra',G.bumps,30,'LYRA');}}
 function collideFlipper(b,f){const ex=f.px+Math.cos(f.a)*f.len,ey=f.py+Math.sin(f.a)*f.len;const dx=ex-f.px,dy=ey-f.py,l2=dx*dx+dy*dy;let u=((b.x-f.px)*dx+(b.y-f.py)*dy)/l2;u=clamp(u,0,1);const cx=f.px+dx*u,cy=f.py+dy*u,rr=lerp(f.small?10:13,f.small?6:7,u);let nx=b.x-cx,ny=b.y-cy;const d=hyp(nx,ny);if(d>=BR+rr||d===0)return;nx/=d;ny/=d;b.x=cx+nx*(BR+rr);b.y=cy+ny*(BR+rr);
   const svx=-f.w*(cy-f.py),svy=f.w*(cx-f.px);let rx=b.vx-svx,ry=b.vy-svy;const vn=rx*nx+ry*ny;if(vn<0){rx-=(1+.35)*vn*nx;ry-=(1+.35)*vn*ny;b.vx=rx+svx;b.vy=ry+svy;if(Math.abs(f.w)>5&&-vn>400){SND.tone({type:'sine',f:140,f2:70,d:.06,v:.1});}}}
 function step(dt){for(const f of FL){const target=f.on?f.up:f.rest;const sp=f.on?26:14;const prev=f.a;const dir=Math.sign(target-f.a);f.a+=dir*sp*dt;if((dir>0&&f.a>target)||(dir<0&&f.a<target))f.a=target;f.w=(f.a-prev)/dt;}
   for(const b of balls){if(b.held||b.ramp)continue;b.vy+=1500*dt;const sp=hyp(b.vx,b.vy);if(sp>2600){b.vx*=2600/sp;b.vy*=2600/sp;}b.x+=b.vx*dt;b.y+=b.vy*dt;
     for(const s of segs)collideSeg(b,s);for(const c of circles)collideCircle(b,c);for(const f of FL)collideFlipper(b,f);
-    for(const d of DROPS)if(d.up&&b.x+BR>d.x-d.w/2&&b.x-BR<d.x+d.w/2&&b.y+BR>d.y&&b.y-BR<d.y+d.h){d.up=0;d.t=.3;b.vx=Math.abs(b.vx)*.8+120;b.x=d.x+d.w/2+BR+.5;G.drops++;addScore(5000,d.x+30,d.y);SND.play('hit');SND.play('ding',72+DROPS.filter(q=>!q.up).length*4);spark(d.x,d.y+13,'#ffd23a');if(DROPS.every(q=>!q.up)){addScore(50000,120,520);cons('draco',1,1,'DRACO');setTimeout(()=>{DROPS.forEach(q=>q.up=1);SND.play('ratchet');},1500);}}
+    for(const d of DROPS)if(d.up&&b.x+BR>d.x-d.w/2&&b.x-BR<d.x+d.w/2&&b.y+BR>d.y&&b.y-BR<d.y+d.h){d.up=0;d.t=.3;b.vx=Math.abs(b.vx)*.8+120;b.x=d.x+d.w/2+BR+.5;G.drops++;misHit('drop');addScore(5000,d.x+30,d.y);SND.play('hit');SND.play('ding',72+DROPS.filter(q=>!q.up).length*4);spark(d.x,d.y+13,'#ffd23a');if(DROPS.every(q=>!q.up)){addScore(50000,120,520);cons('draco',1,1,'DRACO');setTimeout(()=>{DROPS.forEach(q=>q.up=1);SND.play('ratchet');},1500);}}
     // drop target backing for left of bank
     if(b.x<60+BR&&b.y>460&&b.y<600){b.x=60+BR;b.vx=Math.abs(b.vx)*.5;}
     // ball-ball
     for(const o of balls){if(o===b||o.held||o.ramp)continue;const dx=b.x-o.x,dy=b.y-o.y,d=hyp(dx,dy);if(d<BR*2&&d>0){const nx=dx/d,ny=dy/d,p=(BR*2-d)/2;b.x+=nx*p;b.y+=ny*p;o.x-=nx*p;o.y-=ny*p;const rv=(b.vx-o.vx)*nx+(b.vy-o.vy)*ny;if(rv<0){b.vx-=rv*nx;b.vy-=rv*ny;o.vx+=rv*nx;o.vy+=rv*ny;SND.play('ding',96);}}}
     // sensors
-    if(b.y>150&&b.y<200&&b.vy<0)for(const L of LANES)if(Math.abs(b.x-L.x)<30&&!b['ln'+L.x]){b['ln'+L.x]=1;setTimeout(()=>b['ln'+L.x]=0,500);if(!L.lit){L.lit=1;addScore(2500,L.x,170);SND.play('ding',84);if(LANES.every(q=>q.lit)){addScore(25000,280,130);G.mult=Math.min(10,G.mult+1);dmd('MULTIPLIER','x'+G.mult,1.8,'flash');SND.play('levelup');cons('orion',1,1,'ORION');setTimeout(()=>LANES.forEach(q=>q.lit=0),800);}}else{addScore(500,L.x,170);SND.play('ding',72);}}
+    if(b.y>150&&b.y<200&&b.vy<0)for(const L of LANES)if(Math.abs(b.x-L.x)<30&&!b['ln'+L.x]){b['ln'+L.x]=1;setTimeout(()=>b['ln'+L.x]=0,500);misHit('lane');if(b.fresh){b.fresh=0;if(LANES.indexOf(L)===G.skill){const v=100000*G.level;addScore(v/G.mult);dmd('SKILL SHOT!',fmt(v),2,'flash');SND.play('rare');ST('skill');checkAch();}}if(!L.lit){L.lit=1;addScore(2500,L.x,170);SND.play('ding',84);if(LANES.every(q=>q.lit)){addScore(25000,280,130);G.mult=Math.min(10,G.mult+1);dmd('MULTIPLIER','x'+G.mult,1.8,'flash');SND.play('levelup');cons('orion',1,1,'ORION');setTimeout(()=>LANES.forEach(q=>q.lit=0),800);}}else{addScore(500,L.x,170);SND.play('ding',72);}}
     if(b.y>RAMP.y-20&&b.y<RAMP.y+20&&b.x>RAMP.x0&&b.x<RAMP.x1&&b.vy<-200&&!b.lane){startRamp(b);}
     if(!b.ramp&&hyp(b.x-HOLE.x,b.y-HOLE.y)<HOLE.r&&hyp(b.vx,b.vy)<1500){captureHole(b);}
-    if(b.lane&&b.x<540&&b.y<330)b.lane=0;
+    if(b.lane&&b.x<540&&b.y<330)b.lane=0;if(b.fresh&&b.y>330&&!b.lane)b.fresh=0;
     // spinner-ish: orbit through top arc
-    if(b.y<120&&Math.abs(b.vx)>600&&!b.orb){b.orb=1;setTimeout(()=>b.orb=0,600);addScore(3000);SND.play('ratchet');}}}
-function startRamp(b){b.ramp={u:0};addScore(25000,500,400);G.ramps++;SND.play('whoosh');SND.play('swish');
-  if(G.multiball){const j=250000*G.level;addScore(j/G.mult);dmd('JACKPOT!',fmt(j),2,'flash');SND.play('rare');buzz([40,30,80]);for(let i=0;i<30;i++)spark(rnd(100,500),rnd(200,800),['#ffd23a','#ff5aa0','#5ad8ff'][i%3]);}else cons('cygnus',G.ramps,3,'CYGNUS');}
+    if(b.y<120&&Math.abs(b.vx)>600&&!b.orb){b.orb=1;setTimeout(()=>b.orb=0,600);addScore(3000);SND.play('ratchet');misHit('orbit');}}}
+function startRamp(b){b.ramp={u:0};addScore(25000,500,400);G.ramps++;misHit('ramp');SND.play('whoosh');SND.play('swish');
+  if(G.multiball){const j=250000*G.level;addScore(j/G.mult);dmd('JACKPOT!',fmt(j),2,'flash');ST('jackpot');checkAch();SND.play('rare');buzz([40,30,80]);for(let i=0;i<30;i++)spark(rnd(100,500),rnd(200,800),['#ffd23a','#ff5aa0','#5ad8ff'][i%3]);}else cons('cygnus',G.ramps,3,'CYGNUS');}
 function rampPos(u){const n=rampPath.length-1,f=u*n,i=Math.min(n-1,Math.floor(f)),k=f-i;const a=rampPath[i],b=rampPath[i+1];return[lerp(a[0],b[0],k),lerp(a[1],b[1],k)];}
 function captureHole(b){b.held=1.3;b.x=HOLE.x;b.y=HOLE.y;b.vx=b.vy=0;SND.play('magic');addScore(10000,HOLE.x,HOLE.y-30);
-  if(HOLE.lit){HOLE.lit=0;startMultiball();}else dmd('BLACK HOLE','10,000',1.4);}
-function startMultiball(){G.multiball=1;dmd('SUPERNOVA','MULTIBALL!',2.6,'flash');SND.play('fanfare');SND.play('explosion',.5);SND.intensity(1.4);SND.music('boss');buzz([60,40,60,40,120]);for(let i=0;i<2;i++)setTimeout(()=>{balls.push({x:562,y:940,vx:0,vy:-2200-R()*300,lane:1,trail:[]});SND.play('whoosh');},400+i*700);G.saveT=-10;}
+  misHit('hole');if(HOLE.lit){HOLE.lit=0;startMultiball();}else if(R()<.45)mystery();else dmd('BLACK HOLE','10,000',1.4);}
+function startMultiball(){G.multiball=1;G.mis=null;ST('multiball');checkAch();dmd('SUPERNOVA','MULTIBALL!',2.6,'flash');SND.play('fanfare');SND.play('explosion',.5);SND.intensity(1.4);SND.music('boss');buzz([60,40,60,40,120]);for(let i=0;i<2;i++)setTimeout(()=>{balls.push({x:562,y:940,vx:0,vy:-2200-R()*300,lane:1,trail:[]});SND.play('whoosh');},400+i*700);G.saveT=-10;}
 function cons(k,v,need,name){if(G.cons[k]||v<need)return;G.cons[k]=1;addScore(75000);dmd(name,'CONSTELLATION LIT',2,'flash');SND.play('success');if(Object.values(G.cons).every(Boolean)){HOLE.lit=1;dmd('BLACK HOLE','IS LIT!',2.2,'flash');SND.play('rare');}}
 function spark(x,y,col){for(let i=0;i<8;i++){const a=R()*TAU,s=rnd(80,300);sparks.push({x,y,vx:Math.cos(a)*s,vy:Math.sin(a)*s,life:.4,col});}}
 function drainCheck(){for(let i=balls.length-1;i>=0;i--){const b=balls[i];if(b.y>TH+20){balls.splice(i,1);if(G.saveT<8&&!G.tilted){dmd('BALL SAVED','',1.4);SND.play('powerup');balls.push({x:562,y:940,vx:0,vy:-2000,lane:1,trail:[]});continue;}
-    if(balls.length===0){if(G.multiball){G.multiball=0;SND.music('arcade');SND.intensity(1);}const bonus=(G.bumps*100+G.drops*1000+G.ramps*5000)*G.mult;G.score+=bonus;G.ball++;SND.play('powerdown');dmd('BONUS',fmt(bonus),2.2);G.mult=1;G.tilted=0;G.tilt=0;G.bumps=0;G.drops=0;G.ramps=0;
+    if(balls.length===0){if(G.multiball){G.multiball=0;SND.music('arcade');SND.intensity(1);}const bonus=(G.bumps*100+G.drops*1000+G.ramps*5000)*G.mult;G.score+=bonus;G.ball++;SND.play('powerdown');dmd('BONUS',fmt(bonus),2.2);G.mult=1;G.mis=null;G.tilted=0;G.tilt=0;G.bumps=0;G.drops=0;G.ramps=0;
       if(G.ball>G.balls){setTimeout(gameOver,1600);}else{setTimeout(()=>{serve();dmd('BALL '+G.ball,'',1.5);},1600);}}
     else if(balls.length===1&&G.multiball){G.multiball=0;SND.music('arcade');SND.intensity(1);dmd('MULTIBALL','OVER',1.5);G.level++;G.cons={orion:0,draco:0,lyra:0,cygnus:0};}}}}
-function gameOver(){state='over';SND.play('gong');save.hs.push({s:G.score,d:new Date().toLocaleDateString()});save.hs.sort((a,b)=>b.s-a.s);save.hs=save.hs.slice(0,8);persist();dmd('GAME OVER',fmt(G.score),3);setTimeout(showMenu,2600);}
+function gameOver(){state='over';SND.play('gong');save.hs.push({s:G.score,d:new Date().toLocaleDateString()});save.hs.sort((a,b)=>b.s-a.s);save.hs=save.hs.slice(0,8);persist();checkAch();dmd('GAME OVER',fmt(G.score),3);setTimeout(showMenu,2600);}
 
 /* ================= INPUT ================= */
 const touches=new Map();
@@ -624,7 +632,7 @@ let shake=0;
 function draw(){ctx.setTransform(dpr,0,0,dpr,0,0);ctx.fillStyle='#05040c';ctx.fillRect(0,0,W,H);const sx=shake?rnd(-shake,shake):0,sy=shake?rnd(-shake,shake):0;
   ctx.drawImage(art,OX+sx,OY+sy,TW*S,TH*S);ctx.save();ctx.translate(OX+sx,OY+sy);ctx.scale(S,S);
   // lights
-  for(const L of LANES){ctx.fillStyle=L.lit?'#ffd23a':'rgba(255,210,58,.18)';ctx.shadowColor='#ffd23a';ctx.shadowBlur=L.lit?16:0;ctx.beginPath();ctx.arc(L.x,172,8,0,TAU);ctx.fill();}ctx.shadowBlur=0;
+  const skB=G&&state==='play'&&balls.some(b=>b.fresh);for(const L of LANES){if(skB&&LANES.indexOf(L)===G.skill&&Math.floor(t*6)%2){ctx.fillStyle='#5affd0';ctx.shadowColor='#5affd0';ctx.shadowBlur=18;ctx.beginPath();ctx.arc(L.x,172,11,0,TAU);ctx.fill();ctx.shadowBlur=0;continue;}ctx.fillStyle=L.lit?'#ffd23a':'rgba(255,210,58,.18)';ctx.shadowColor='#ffd23a';ctx.shadowBlur=L.lit?16:0;ctx.beginPath();ctx.arc(L.x,172,8,0,TAU);ctx.fill();}ctx.shadowBlur=0;
   ['S','T','R'].forEach((c,i)=>{ctx.fillStyle=LANES[i].lit?'#fff':'rgba(255,255,255,.3)';ctx.font='700 13px Fredoka,system-ui';ctx.textAlign='center';ctx.fillText(c,LANES[i].x,128);});
   const consL=[['orion',196,700],['draco',282,700],['lyra',368,700],['cygnus',282,740]];for(const[k,x,y]of consL){const on=G&&G.cons[k];ctx.fillStyle=on?'#7af0ff':'rgba(122,240,255,.15)';ctx.shadowColor='#7af0ff';ctx.shadowBlur=on?14:0;ctx.beginPath();for(let i=0;i<10;i++){const a=-Math.PI/2+i*Math.PI/5,r=i%2?5:11;ctx.lineTo(x+Math.cos(a)*r,y+Math.sin(a)*r);}ctx.fill();ctx.shadowBlur=0;ctx.fillStyle=on?'#fff':'rgba(255,255,255,.35)';ctx.font='600 10px Fredoka,system-ui';ctx.fillText(k.toUpperCase(),x,y+24);}
   // ramp entrance glow
@@ -658,7 +666,7 @@ function draw(){ctx.setTransform(dpr,0,0,dpr,0,0);ctx.fillStyle='#05040c';ctx.fi
 /* ================= LOOP ================= */
 let last=performance.now();
 function frame(now){const dt=Math.min(.033,(now-last)/1000);last=now;t+=dt;
-  if(state==='play'){if(G.charging){G.plunger=Math.min(1,G.plunger+dt*1.4);}G.saveT+=dt;const sub=10;for(let i=0;i<sub;i++)step(dt/sub);
+  if(state==='play'){if(G.charging){G.plunger=Math.min(1,G.plunger+dt*1.4);}G.saveT+=dt;misTick(dt);const sub=10;for(let i=0;i<sub;i++)step(dt/sub);
     for(const b of balls){if(b.held){b.held-=dt;if(b.held<=0){b.held=0;b.vx=rnd(200,350);b.vy=rnd(300,450);SND.play('whoosh');SND.play('flipper');}}if(b.ramp){b.ramp.u+=dt/1.1;if(b.ramp.u>=1){const p=rampPos(1);b.x=p[0];b.y=p[1];b.vx=180;b.vy=380;b.ramp=null;}}}
     drainCheck();$('launch').hidden=!balls.some(b=>b.lane&&b.y>900);}
   for(const c of circles)if(c.flash>0)c.flash-=dt;for(let i=sparks.length-1;i>=0;i--){const s=sparks[i];s.life-=dt;s.x+=s.vx*dt;s.y+=s.vy*dt;if(s.life<=0)sparks.splice(i,1);}for(let i=pops.length-1;i>=0;i--){pops[i].life-=dt;pops[i].y-=40*dt;if(pops[i].life<=0)pops.splice(i,1);}shake=Math.max(0,shake-dt*30);
@@ -668,8 +676,8 @@ function frame(now){const dt=Math.min(.033,(now-last)/1000);last=now;t+=dt;
 function showMenu(paused){$('menu').hidden=false;['launch','nudge','menuB'].forEach(k=>$(k).hidden=true);if(!paused)SND.music('arcade');
   $('menu').innerHTML='<h1>STARFALL</h1><div style="font-weight:700;opacity:.8;letter-spacing:4px">P I N B A L L</div><div style="margin-top:18px">'+(paused?'<button class="btn" id="resume">Resume</button>':'')+'<button class="btn" id="play">'+(paused?'New game':'Play')+'</button></div>'+
     '<div class="hs"><div style="color:#ffd23a">🏆 High scores</div>'+(save.hs.length?save.hs.slice(0,8).map((h,i)=>'<div><span>'+(i+1)+'. '+h.d+'</span><b>'+fmt(h.s)+'</b></div>').join(''):'<div>No scores yet!</div>')+'</div>'+
-    '<div><button class="btn s" id="tMus">🎵 Music: '+(SND.get('music')?'on':'off')+'</button><button class="btn s" id="tSfx">🔊 Sounds: '+(SND.get('sfx')?'on':'off')+'</button></div>'+
-    '<div class="help">👈 Tap the left side for the left flipper, 👉 the right side for the right flippers.<br>🚀 Hold LAUNCH to pull the plunger, then let go.<br>⭐ Light all 4 constellations: S-T-R lanes (flippers move the lit lanes!), all 4 drop targets, 30 bumper hits and 3 ramp shots. Then shoot the 🌀 Black Hole for SUPERNOVA MULTIBALL. Hit the ramp in multiball for JACKPOTS!<br>📳 NUDGE shakes the table, but 3 nudges means TILT.</div>';
+    '<div class="hs"><div style="color:#5affd0">Trophies '+ACH.filter(a=>save.ach[a.id]).length+'/'+ACH.length+'</div>'+ACH.map(a=>'<div><span>'+(save.ach[a.id]?'★ ':'☆ ')+a.n+'</span><b style="font-weight:600;opacity:.7">'+a.d+'</b></div>').join('')+'</div>'+'<div><button class="btn s" id="tMus">🎵 Music: '+(SND.get('music')?'on':'off')+'</button><button class="btn s" id="tSfx">🔊 Sounds: '+(SND.get('sfx')?'on':'off')+'</button></div>'+
+    '<div class="help">👈 Tap the left side for the left flipper, 👉 the right side for the right flippers.<br>🚀 Hold LAUNCH to pull the plunger, then let go.<br>⭐ Light all 4 constellations: S-T-R lanes (flippers move the lit lanes!), all 4 drop targets, 30 bumper hits and 3 ramp shots. Then shoot the 🌀 Black Hole for SUPERNOVA MULTIBALL. Hit the ramp in multiball for JACKPOTS!<br>🎯 SKILL SHOT: when a top lane blinks green, launch the ball into it.<br>⏱️ MISSIONS start during play: finish them before time runs out. The Black Hole sometimes gives a MYSTERY award.<br>📳 NUDGE shakes the table, but 3 nudges means TILT.</div>';
   const pb=$('play');pb.onclick=()=>{SND.play('click');LANES.forEach(l=>l.lit=0);DROPS.forEach(d=>d.up=1);HOLE.lit=0;newGame();};if(paused)$('resume').onclick=()=>{SND.play('click');state='play';$('menu').hidden=true;['launch','nudge','menuB'].forEach(k=>$(k).hidden=false);};
   $('tMus').onclick=()=>{SND.set('music',!SND.get('music'));showMenu(paused);};$('tSfx').onclick=()=>{SND.set('sfx',!SND.get('sfx'));showMenu(paused);};}
 resize();showMenu();requestAnimationFrame(frame);

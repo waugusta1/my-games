@@ -315,6 +315,8 @@ const ETYPES={
   skeleton:{r:12,hp:30,sp:50,dmg:10,xp:2,col:['#d8d0b8','#5a5040'],eye:'#ff8a3a'},
   ghoul:{r:15,hp:44,sp:56,dmg:12,xp:3,col:['#4a5a3a','#141a0e'],eye:'#e0ff6a',split:1},
   shade:{r:12,hp:28,sp:38,dmg:12,xp:3,col:['#22223a','#000000'],eye:'#ff3ad8',blink:1},
+  golem:{r:22,hp:140,sp:24,dmg:20,xp:5,col:['#4a3a2a','#140c06'],eye:'#ff9a3a'},
+  imp:{r:9,hp:14,sp:110,dmg:8,xp:2,col:['#6a1a1a','#200404'],eye:'#ffd23a',zig:1},
   wraith:{r:13,hp:150,sp:155,dmg:0,xp:30,col:['#ffe08a','#a0701a'],eye:'#ffffff',flee:1},
   queen:{r:46,hp:3600,sp:64,dmg:26,xp:120,col:['#5a2a6a','#100418'],eye:'#ff9aff',boss:1,zig:1},
   warden:{r:60,hp:5200,sp:24,dmg:34,xp:120,col:['#5a5a5a','#141414'],eye:'#6affea',boss:1}};
@@ -323,7 +325,9 @@ const HEROES={wanderer:{name:'Wanderer',icon:'🏮',cost:0,w:'bolt',desc:'Firefl
   witch:{name:'Frost Witch',icon:'❄️',cost:300,w:'frost',desc:'Frost Shards · +15% light',light:.15},
   storm:{name:'Stormcaller',icon:'⚡',cost:500,w:'chain',desc:'Wild Spark · weapons 10% faster',haste:.1},
   ranger:{name:'Ember Ranger',icon:'♨️',cost:800,w:'trail',extra:'bolt',desc:'Ember Trail + Bolt · +15% speed',speed:.15},
-  knight:{name:'Lantern Knight',icon:'🛡️',cost:1200,w:'nova',desc:'Dawn Pulse · +50 health · −10% speed',hp:50,speed:-.1}};
+  knight:{name:'Lantern Knight',icon:'🛡️',cost:1200,w:'nova',desc:'Dawn Pulse · +50 health · −10% speed',hp:50,speed:-.1},
+  moon:{name:'Moon Dancer',icon:'🌙',cost:1800,w:'boomer',desc:'Moon Blade · +10% speed · +10% damage',speed:.1,dmg:.1},
+  sage:{name:'Star Sage',icon:'✨',cost:2600,w:'meteor',extra:'nova',desc:'Star Fall + Dawn Pulse · −20 health',hp:-20}};
 const META=[{id:'power',icon:'✦',name:'Inner Fire',desc:l=>'+'+(5*l)+'% damage',cost:l=>Math.round(30*Math.pow(1.32,l))},
   {id:'vigor',icon:'♥',name:'Vigor',desc:l=>'+'+(10*l)+' max health',max:20,cost:l=>Math.round(25*Math.pow(1.3,l))},
   {id:'swift',icon:'➶',name:'Fleet Foot',desc:l=>'+'+(3*l)+'% move speed',max:10,cost:l=>Math.round(30*Math.pow(1.35,l))},
@@ -374,7 +378,9 @@ const WEAPONS={
   nova:{name:'Dawn Pulse',icon:'✺',desc:l=>'A ring of light bursts out every '+(4.2-l*.35).toFixed(1)+'s.',max:7},
   chain:{name:'Wild Spark',icon:'ϟ',desc:l=>'Lightning jumps between '+(2+l)+' enemies.',max:7},
   frost:{name:'Frost Shards',icon:'❄',desc:l=>(6+l)+' icy shards burst out and slow monsters down.',max:7},
-  trail:{name:'Ember Trail',icon:'♨',desc:l=>'Leave burning embers behind you as you walk. Damage '+(5+l*3)+'.',max:7}};
+  trail:{name:'Ember Trail',icon:'♨',desc:l=>'Leave burning embers behind you as you walk. Damage '+(5+l*3)+'.',max:7},
+  boomer:{name:'Moon Blade',icon:'☾',desc:l=>(1+Math.floor(l/2))+' spinning moon blade'+(l>=2?'s':'')+' fly out and come back. Damage '+(12+l*5)+'.',max:7},
+  meteor:{name:'Star Fall',icon:'✧',desc:l=>(1+Math.floor(l/2))+' falling star'+(l>=2?'s':'')+' smash monsters every '+(3.4-l*.25).toFixed(1)+'s.',max:7}};
 const boltDmg=l=>8+l*3;
 const PASSIVES={
   speed:{name:'Swift Boots',icon:'➶',desc:()=>'Move 10% faster.',max:5},
@@ -385,9 +391,10 @@ const PASSIVES={
   regen:{name:'Ember Blood',icon:'✚',desc:()=>'Slowly regain health.',max:4},
   luck:{name:'Lucky Charm',icon:'☘',desc:()=>'More hearts and better treasure.',max:4}};
 function pickOmen(){const tot=OMENS.reduce((a,o)=>a+o.w,0);let x=R()*tot;for(const o of OMENS){x-=o.w;if(x<=0)return o;}return OMENS[0];}
-function reset(){P={x:0,y:0,vx:0,vy:0,hp:100,max:100,r:11,inv:0,face:1,walk:0,w:{bolt:1},p:{},cd:{bolt:0,nova:2,chain:1.5,frost:1,trail:0},orbA:0};
+let booms=[];
+function reset(){P={x:0,y:0,vx:0,vy:0,hp:100,max:100,r:11,inv:0,face:1,walk:0,w:{bolt:1},p:{},cd:{bolt:0,nova:2,chain:1.5,frost:1,trail:0,boomer:.5,meteor:2},orbA:0};
   omen=pickOmen();bossType=['boss','queen','warden'][(R()*3)|0];nextEvent=rnd(40,60);chests=[];shrines=[];flames=[];strikes=[];emberRain=0;meteorT=0;stormT=3;banner={txt:omen.name,sub:omen.desc,t:4.5};
-  en=[];shots=[];eshots=[];gems=[];fx=[];nums=[];hearts=[];t=0;kills=0;lvl=1;xp=0;xpNext=4;spawnT=0;shake=0;bossOn=false;wonDawn=false;flash=0;
+  en=[];shots=[];booms=[];eshots=[];gems=[];fx=[];nums=[];hearts=[];t=0;kills=0;lvl=1;xp=0;xpNext=4;spawnT=0;shake=0;bossOn=false;wonDawn=false;flash=0;
   props=[];for(let i=0;i<70;i++)props.push({x:rnd(-1400,1400),y:rnd(-1400,1400)});
   hero=save.hero||'wanderer';curse=save.curse||0;dawnBoss=0;const hh=H0();P.w={};P.w[hh.w]=1;if(hh.extra)P.w[hh.extra]=1;P.max=100+M('vigor')*10+(hh.hp||0);P.hp=P.max;revivesLeft=M('revive');rerollsLeft=M('reroll');if(curse)banner={txt:omen.name+' · Nightmare '+curse,sub:omen.desc,t:4.5};}
 const pl=k=>P.p[k]||0;
@@ -455,7 +462,7 @@ function spawn(type,ang){const a=ang??R()*TAU,d=Math.max(W,H)/S*.62+40;spawnAt(t
 function spawnAt(type,x,y){const e=ETYPES[type];const cm=1+curse*.25;const hpMul=cm*(1+t/90)*(omen&&omen.hp||1)*(omen&&omen.swarm&&type==='bat'?.6:1);const om=omen&&omen.sp||1;
   en.push({type,x,y,ttl:e.flee?20:0,vx:0,vy:0,hp:e.hp*(e.boss?cm:hpMul),max:e.hp*(e.boss?cm:hpMul),r:e.r,sp:e.sp*(1+Math.min(.5,t/600))*(e.boss?1:om)*(1+curse*.04),dmg:e.dmg,xp:e.xp,ph:R()*TAU,hit:0,cd:rnd(1,3),kb:0});}
 function spawner(dt){spawnT-=dt;const rate=.9-Math.min(.75,t/400);
-  if(spawnT<=0){spawnT=rate;const n=1+Math.floor(t/60)+(omen.swarm&&R()<.5?1:0)+Math.floor(curse/2)+(t>600?Math.floor((t-600)/120):0);for(let i=0;i<n;i++){const r=R();let ty='wisp';if(t>40&&r<.25)ty='bat';if(t>90&&r>.86)ty='brute';if(t>150&&r>.76&&r<.86)ty='spitter';if(t>200&&r>.70&&r<.76)ty='skeleton';if(t>240&&r>.64&&r<.70)ty='ghoul';if(t>270&&r>.58&&r<.64)ty='shade';if(omen.swarm&&t>15&&r<.6)ty='bat';if(en.length<260)spawn(ty);}}
+  if(spawnT<=0){spawnT=rate;const n=1+Math.floor(t/60)+(omen.swarm&&R()<.5?1:0)+Math.floor(curse/2)+(t>600?Math.floor((t-600)/120):0);for(let i=0;i<n;i++){const r=R();let ty='wisp';if(t>40&&r<.25)ty='bat';if(t>90&&r>.86)ty='brute';if(t>150&&r>.76&&r<.86)ty='spitter';if(t>200&&r>.70&&r<.76)ty='skeleton';if(t>240&&r>.64&&r<.70)ty='ghoul';if(t>270&&r>.58&&r<.64)ty='shade';if(t>330&&r>.52&&r<.58)ty='golem';if(t>360&&r>.46&&r<.52)ty='imp';if(omen.swarm&&t>15&&r<.6)ty='bat';if(en.length<260)spawn(ty);}}
   if(t>30&&Math.floor(t/45)!==Math.floor((t-dt)/45)){const a=R()*TAU;for(let i=0;i<14;i++)spawn(t>120?'bat':'wisp',a+(i-7)*.06);}
   if(Math.floor(t/120)!==Math.floor((t-dt)/120)&&t>1)spawn('elite');
   if(!bossOn&&t>=300){bossOn=true;spawn(bossType);SFX.boss();buzz([80,40,80]);shake=14;floatTxt(P.x,P.y-60,BOSSES[bossType][0],'#ff8a6a',1.8);}
@@ -510,6 +517,13 @@ function weapons(dt){
     for(let i=0;i<2+l&&cur;i++){hit.add(cur);pts.push([cur.x,cur.y]);damage(cur,16+l*6);cur=nearest(cur.x,cur.y,170,hit);}fx.push({bolt:pts,life:.22,ml:.22});SFX.zap();}}}
   // frost shards
   if(P.w.frost){P.cd.frost-=dt;if(P.cd.frost<=0){const l=P.w.frost,n=6+l;P.cd.frost=(2.7-l*.14)*h;const o=R()*TAU;for(let i=0;i<n;i++){const a=o+i/n*TAU;shots.push({frost:1,x:P.x,y:P.y-6,vx:Math.cos(a)*300,vy:Math.sin(a)*300,life:.9,dmg:10+l*4,pierce:2,hitSet:new Set()});}tone(1600,.12,'triangle',.03,2400);}}
+  // moon blades: fly out, spin, come back
+  if(P.w.boomer){P.cd.boomer-=dt;const l=P.w.boomer;if(P.cd.boomer<=0){P.cd.boomer=1.7*h;const n=1+Math.floor(l/2),tg=nearest(P.x,P.y,300);const a0=tg?Math.atan2(tg.y-P.y,tg.x-P.x):R()*TAU;for(let i=0;i<n;i++){const a=a0+(i-(n-1)/2)*.5;booms.push({x:P.x,y:P.y,vx:Math.cos(a)*380,vy:Math.sin(a)*380,t:0,spin:0,dmg:12+l*5});}tone(700,.15,'triangle',.03,1100);}
+    for(const b of booms){b.t+=dt;b.spin+=dt*18;if(b.t>.45){const dx=P.x-b.x,dy=P.y-b.y,d=hyp(dx,dy)||1;b.vx=lerp(b.vx,dx/d*460,dt*5);b.vy=lerp(b.vy,dy/d*460,dt*5);if(d<16)b.done=1;}b.x+=b.vx*dt;b.y+=b.vy*dt;if(b.t>3)b.done=1;
+      for(const e of en){if(e.dead)continue;if((e.x-b.x)**2+(e.y-b.y)**2<(e.r+12)**2&&(!e.bmT||e.bmT<t)){e.bmT=t+.3;damage(e,b.dmg,b.vx*.3,b.vy*.3);}}}booms=booms.filter(b=>!b.done);}
+  // falling stars
+  if(P.w.meteor){P.cd.meteor-=dt;const l=P.w.meteor;if(P.cd.meteor<=0){P.cd.meteor=(3.4-l*.25)*h;const n=1+Math.floor(l/2),pool=en.filter(e=>!e.dead&&hyp(e.x-P.x,e.y-P.y)<lightR()*1.4);for(let i=0;i<n&&pool.length;i++){const e=pool.splice((R()*pool.length)|0,1)[0],x=e.x,y=e.y,rad=55+l*6;
+      fx.push({ring:true,x,y,r:8,max:rad,life:.4,ml:.4});fx.push({bolt:[[x+40,y-260],[x+20,y-130],[x,y]],life:.25,ml:.25});for(const o of en){if(o.dead)continue;const d=hyp(o.x-x,o.y-y);if(d<rad)damage(o,30+l*12,(o.x-x)/(d||1)*200,(o.y-y)/(d||1)*200);}}tone(180,.4,'sine',.08,60);shake=Math.max(shake,4);}}
   // ember trail
   if(P.w.trail){P.cd.trail-=dt;const l=P.w.trail;if(P.cd.trail<=0&&(Math.abs(P.lx-P.x)+Math.abs(P.ly-P.y))>2){P.cd.trail=.16;flames.push({x:P.x+rnd(-4,4),y:P.y+8,life:1.8+l*.3,ml:1.8+l*.3,r:16+l*2});}
     for(const fl of flames){for(const e of en){if(e.dead)continue;if((e.x-fl.x)**2+(e.y-fl.y)**2<(e.r+fl.r)**2&&(!e.trT||e.trT<t)){e.trT=t+.4;damage(e,5+l*3);}}}}
@@ -599,6 +613,7 @@ function render(){
   if(P.w.orbit){const l=P.w.orbit,n=1+l,rad=58+l*4;ctx.globalCompositeOperation='lighter';for(let i=0;i<n;i++){const a=P.orbA+i/n*TAU,ox=P.x+Math.cos(a)*rad,oy=P.y+Math.sin(a)*rad;const g=ctx.createRadialGradient(ox,oy,0,ox,oy,16);g.addColorStop(0,'rgba(255,230,160,1)');g.addColorStop(.4,'rgba(255,140,40,.7)');g.addColorStop(1,'rgba(255,80,20,0)');ctx.fillStyle=g;ctx.beginPath();ctx.arc(ox,oy,16,0,TAU);ctx.fill();}ctx.globalCompositeOperation='source-over';}
   // shots
   ctx.globalCompositeOperation='lighter';
+  for(const b of booms){ctx.save();ctx.translate(b.x,b.y);ctx.rotate(b.spin);ctx.fillStyle='#e8f0ff';ctx.shadowColor='#bfe0ff';ctx.shadowBlur=12;ctx.beginPath();ctx.arc(0,0,11,.3,Math.PI*1.7);ctx.arc(4,0,8,Math.PI*1.6,.4,true);ctx.closePath();ctx.fill();ctx.shadowBlur=0;ctx.restore();}
   for(const s of shots){const g=ctx.createRadialGradient(s.x,s.y,0,s.x,s.y,9);g.addColorStop(0,s.frost?'rgba(230,250,255,1)':'rgba(255,255,220,1)');g.addColorStop(1,s.frost?'rgba(120,200,255,0)':'rgba(255,200,80,0)');ctx.fillStyle=g;ctx.beginPath();ctx.arc(s.x,s.y,9,0,TAU);ctx.fill();
     ctx.strokeStyle='rgba(255,200,90,.45)';ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(s.x,s.y);ctx.lineTo(s.x-s.vx*.04,s.y-s.vy*.04);ctx.stroke();}
   for(const s of eshots){const g=ctx.createRadialGradient(s.x,s.y,0,s.x,s.y,8);g.addColorStop(0,'rgba(200,240,255,1)');g.addColorStop(1,'rgba(90,160,255,0)');ctx.fillStyle=g;ctx.beginPath();ctx.arc(s.x,s.y,8,0,TAU);ctx.fill();}
@@ -611,7 +626,7 @@ function render(){
   const dawn=clamp((t-540)/60,0,1);const tn=omen&&omen.tint||[2,4,8];lx.fillStyle=`rgba(${tn[0]},${tn[1]},${tn[2]},${.9-dawn*.6})`;lx.fillRect(0,0,lw,lh);lx.globalCompositeOperation='destination-out';
   const toL=(x,y)=>[(x-vx)*S*k2,(y-vy)*S*k2];const hole=(x,y,r,a=1)=>{const[px,py]=toL(x,y),rr=r*S*k2;const g=lx.createRadialGradient(px,py,0,px,py,rr);g.addColorStop(0,`rgba(0,0,0,${a})`);g.addColorStop(.55,`rgba(0,0,0,${a*.8})`);g.addColorStop(1,'rgba(0,0,0,0)');lx.fillStyle=g;lx.fillRect(px-rr,py-rr,rr*2,rr*2);};
   const flick=1+Math.sin(t*13)*.025+Math.sin(t*7.7)*.02;hole(P.x,P.y-10,lightR()*flick);
-  for(const s of shots)hole(s.x,s.y,40,.7);if(P.w.orbit){const l=P.w.orbit,n=1+l,rad=58+l*4;for(let i=0;i<n;i++){const a=P.orbA+i/n*TAU;hole(P.x+Math.cos(a)*rad,P.y+Math.sin(a)*rad,45,.6);}}
+  for(const s of shots)hole(s.x,s.y,40,.7);for(const b of booms)hole(b.x,b.y,44,.6);if(P.w.orbit){const l=P.w.orbit,n=1+l,rad=58+l*4;for(let i=0;i<n;i++){const a=P.orbA+i/n*TAU;hole(P.x+Math.cos(a)*rad,P.y+Math.sin(a)*rad,45,.6);}}
   for(const f of fx)if(f.ring){const kk=1-f.life/f.ml;hole(f.x,f.y,lerp(f.r,f.max,kk)+30,(1-kk)*.8);}
   for(const g of gems)if(g.big)hole(g.x,g.y,22,.5);
   for(const c of chests)hole(c.x,c.y,50,.7);for(const sh of shrines)hole(sh.x,sh.y,70,.6);for(const fl of flames)hole(fl.x,fl.y,fl.r*1.6,.35);for(const s of strikes)if(!s.done)hole(s.x,s.y,s.r,.35);
