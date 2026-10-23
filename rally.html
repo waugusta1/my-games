@@ -85,8 +85,8 @@ const TRK={garden:['magic_in_the_garden','travelers_notebook','spring_chicken','
   ocean:['the_lagoon','pond','aquarium','pina_colada','coy_koi'],adventure:['heroic_adventure','journey_of_hope','jungle_mission','adventure','horizon_flare'],flight:['inventing_flight','adventures_of_flying_jack','horizon_flare','journey_of_hope'],
   race:['take_the_ride','rush','gotta_keep_on_movin','action_strike','city_run'],boss:['epic_boss_battle','battle_ready','strength_of_the_titans'],candy:['funshine','going_bananas','llama_in_pajama','hippety_hop','improved_ice_cream_truck'],
   arcade:['blippy_trance','funky_energy_loop','circuit','bit_bit_loop'],storm:['cold_journey','mysterious_lights'],snow:['ice_and_snow','winter'],desert:['the_desert','jungle_mission'],
-  castle:['black_knight','behind_the_sword','night_in_the_castle','honor_bound'],space:['space_ambience','mothership','neptunian_princess'],cozy:['bonfire','brewing_potions','forest_frolic_loop']};
-const FALL={flight:'adventure',snow:'night',castle:'boss',space:'arcade',desert:'adventure',cozy:'calm'};
+  castle:['black_knight','behind_the_sword','night_in_the_castle','honor_bound'],pirate:['land_of_pirates','windy_old_weather','village_tarantella'],safari:['nomadic_sunset','the_range','wisdom_in_the_sun','del_rio_bravo'],deep:['aquatic_city_vanished','the_abyss','deep_tones','neptunian_princess'],kitchen:['le_baguette','dancing_at_the_inn','sunny_rasta','funshine'],groove:['funkeriffic','groovin','funky_energy_loop'],space:['space_ambience','mothership','neptunian_princess'],cozy:['bonfire','brewing_potions','forest_frolic_loop']};
+const FALL={pirate:'adventure',safari:'adventure',deep:'calm',kitchen:'candy',groove:'arcade',flight:'adventure',snow:'night',castle:'boss',space:'arcade',desert:'adventure',cozy:'calm'};
 let RT=null,rtBus=null,rtStyle=null,rtFail=0;const rtIdx={};const MB=()=>(window.MUSIC_BASE||'music/');
 function rtInit(){if(RT||!ac)return;rtBus=ac.createGain();rtBus.gain.value=S.music?1:0;rtBus.connect(master);RT=[0,1].map(()=>{const a=new Audio();a.preload='auto';a.setAttribute('playsinline','');let src=null;try{src=ac.createMediaElementSource(a);}catch(_){}const g=ac.createGain();g.gain.value=0;if(src){src.connect(g);g.connect(rtBus);}return{a,g,src,busy:false};});}
 function rtUnlockEls(){if(!RT)return;for(const e of RT){if(e.busy)continue;try{e.a.muted=true;const p=e.a.play();if(p&&p.catch)p.catch(()=>{});e.a.pause();e.a.muted=false;}catch(_){}}}
@@ -288,7 +288,7 @@ return{
   engine:()=>{init();return engine();},
   get:k=>S[k],
   set(k,v){S[k]=v;saveS();if(!ac)return;if(k==='music'){musicBus.gain.setTargetAtTime(v?.5:0,now(),.2);if(rtBus)rtBus.gain.setTargetAtTime(v?1:0,now(),.2);}if(k==='sfx'){sfxBus.gain.setTargetAtTime(v?1:0,now(),.1);ambBus.gain.setTargetAtTime(v?.8:0,now(),.1);}if(k==='vol')master.gain.setTargetAtTime(v,now(),.1);},
-  get ready(){return !!ac&&unlocked;},get track(){return RT&&RT.find(e=>e.busy)?RT.find(e=>e.busy).a.src:null;},tracks:TRK,
+  get dbg(){return{want:want.song,rt:rtStyle,song:song&&song.name,RT:!!RT,fail:rtFail,unlocked};},get ready(){return !!ac&&unlocked;},get track(){return RT&&RT.find(e=>e.busy)?RT.find(e=>e.busy).a.src:null;},loop(o){if(!init())return null;const n=loopNoise(o);n.g.disconnect();n.g.connect(sfxBus);return{set(v,f,q){const t=now();n.g.gain.setTargetAtTime(v,t,.08);if(f)n.f.frequency.setTargetAtTime(f,t,.08);if(q)n.f.Q.setTargetAtTime(q,t,.08);},stop(){n.g.gain.setTargetAtTime(0,now(),.1);}};},tracks:TRK,get ac(){init();return ac;},get bus(){if(!init())return null;rtInit();return rtBus||master;},
   styles:Object.keys(STY)};
 })();
 </script>
@@ -477,8 +477,12 @@ const VAR={};function variants(){if(VAR.oak)return VAR;mats();
   VAR.grass=[buildGrass(900,7,1),buildGrass(901,9,.8)];VAR.flower=[buildFlower([.85,.12,.15]),buildFlower([.95,.82,.2]),buildFlower([.6,.4,.9]),buildFlower([1,1,1])];VAR.mushroom=buildMushroom();VAR.stick=buildStick();return VAR;}
 /* instanced helper: list of {x,y,z,ry,s,(sy),(c:[r,g,b])} */
 const _m=new THREE.Matrix4(),_q=new THREE.Quaternion(),_e=new THREE.Euler(),_s=new V3(),_p=new V3(),_c=new THREE.Color();
+/* three r128 reuses one shader program for every InstancedMesh that shares a material, even when some have per-instance colours and some don't.
+   Give every InstancedMesh a white instanceColor so the programs always match. */
+if(!THREE.InstancedMesh.prototype.__rkCol){THREE.InstancedMesh.prototype.__rkCol=1;const sm=THREE.InstancedMesh.prototype.setMatrixAt;THREE.InstancedMesh.prototype.setMatrixAt=function(i,m){if(!this.instanceColor){const n=this.instanceMatrix.count;this.instanceColor=new THREE.InstancedBufferAttribute(new Float32Array(n*3).fill(1),3);}return sm.call(this,i,m);};}
 function inst(geo,mat,list,o={}){const im=new THREE.InstancedMesh(geo,mat,Math.max(1,list.length));im.count=list.length;im.frustumCulled=false;im.castShadow=!!o.cast;im.receiveShadow=o.recv!==false;if(o.depth)im.customDepthMaterial=o.depth;
   list.forEach((p,i)=>{_e.set(p.rx||0,p.ry||0,p.rz||0);_q.setFromEuler(_e);_s.set(p.s,p.sy||p.s,p.s);_p.set(p.x,p.y,p.z);_m.compose(_p,_q,_s);im.setMatrixAt(i,_m);if(p.c){_c.setRGB(p.c[0],p.c[1],p.c[2]);im.setColorAt(i,_c);}});
+  if(!im.instanceColor&&list.length){_c.setRGB(1,1,1);for(let i=0;i<list.length;i++)im.setColorAt(i,_c);}/* r128 reuses programs across instanced meshes, so every one gets instance colours */
   im.instanceMatrix.needsUpdate=true;if(im.instanceColor)im.instanceColor.needsUpdate=true;return im;}
 function tree(kind,i,far){const V=variants()[kind];return V[i%V.length][far?'far':'near'];}
 /* ---- sky ---- */
