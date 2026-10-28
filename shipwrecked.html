@@ -5491,10 +5491,10 @@ const stars=(()=>{const n=1800,p=new Float32Array(n*3);for(let i=0;i<n;i++){cons
 const moon=new THREE.Sprite(new THREE.SpriteMaterial({map:glowTex,color:0xeef2ff,fog:false,depthWrite:false,transparent:true}));moon.scale.set(110,110,1);scene.add(moon);
 /* ----- assets ----- */
 const AS={};const TEXL=new THREE.TextureLoader();const GL=new THREE.GLTFLoader();const ABASE='assets/shipwrecked/';
-function loadAssets(onP){const glbs=['survivor','shark','drum','soldier','fish','cannon','parrot','fox'];const texs=['sand','rockg','rockg_n','rock','rock_n','grass','ground','dirt','waternormals'];let done=0;const tot=glbs.length+texs.length+1;const tick=()=>{done++;onP(done/tot);};
+function loadAssets(onP){const glbs=['human','hanims','shark','drum','fish','cannon','parrot','fox'];const texs=['sand','rockg','rockg_n','rock','rock_n','grass','ground','dirt','waternormals'];let done=0;const tot=glbs.length+texs.length;const tick=()=>{done++;onP(done/tot);};
   const ps=[];for(const g of glbs)ps.push(new Promise((res,rej)=>GL.load(ABASE+g+'.glb',x=>{AS[g]=x;tick();res();},undefined,e=>rej(new Error(g+': '+(e.message||e))))));
   for(const t of texs)ps.push(new Promise((res,rej)=>TEXL.load(ABASE+t+'.jpg',x=>{x.wrapS=x.wrapT=THREE.RepeatWrapping;x.anisotropy=8;if(!t.endsWith('_n')&&t!=='waternormals')x.encoding=THREE.sRGBEncoding;AS[t]=x;tick();res();},undefined,()=>rej(new Error(t)))));
-  ps.push(fetch(ABASE+'anims.json').then(r=>r.json()).then(j=>{AS.clips={};for(const k in j)AS.clips[k]=THREE.AnimationClip.parse(j[k]);tick();}));return Promise.all(ps);}
+  return Promise.all(ps);}
 /* ----- input ----- */
 const keys={};addEventListener('keydown',e=>{keys[e.code]=true;onKey(e);});addEventListener('keyup',e=>{keys[e.code]=false;});
 const JOY={on:false,id:null,x0:0,y0:0,x:0,y:0};const LOOK={id:null,x:0,y:0};const CAM={yaw:2.6,pitch:.28,dist:5.2,shake:0,x:0,z:0,manual:0};
@@ -5794,10 +5794,14 @@ function campfireMesh(x,z,lit){const y=G(x,z);const g=new THREE.Group();g.positi
 /* ================= CHARACTERS (real models) ================= */
 function prepModel(root){root.traverse(o=>{if(o.isMesh||o.isSkinnedMesh){o.castShadow=true;o.receiveShadow=true;o.frustumCulled=false;if(o.material){const ms=Array.isArray(o.material)?o.material:[o.material];ms.forEach(m=>{if(m.map)m.map.anisotropy=4;m.envMapIntensity=.8;});}}});return root;}
 function boneMap(root){const b={};root.traverse(o=>{if(o.isBone)b[o.name.replace('mixamorig','').replace(':','')]=o;});return b;}
-function makePlayerModel(){const root=prepModel(THREE.SkeletonUtils.clone(AS.survivor.scene));const mixer=new THREE.AnimationMixer(root);const A={};for(const k of['anim_idle','anim_walk','anim_sit','anim_pray']){A[k.slice(5)]=mixer.clipAction(AS.clips[k]);}
+const HCLIP={idle:'unarmed_idle',walk:'unarmed_walk',run:'unarmed_run',jump:'unarmed_jump',sit:'crouch_idle',crouch:'crouch_walk',death:'death',fall:'fall',land:'land'};
+function makeHuman(tint){const root=prepModel(THREE.SkeletonUtils.clone(AS.human.scene));root.traverse(o=>{if(!o.isMesh)return;const m=o.material=o.material.clone();if(/hair|eyebrow|eyelash/.test(m.name)){m.transparent=false;m.alphaTest=.45;m.depthWrite=true;m.side=THREE.DoubleSide;}
+    if(m.name==='outfit'&&tint){m.color.set(tint);}if(m.name==='skin'){m.roughness=.62;}});
+  const mixer=new THREE.AnimationMixer(root);const A={};for(const k in HCLIP){const cl=AS.hanims.animations.find(c=>c.name===HCLIP[k]);if(cl){A[k]=mixer.clipAction(cl);if(k==='death'||k==='land'){A[k].setLoop(THREE.LoopOnce);A[k].clampWhenFinished=true;}}}
   A.idle.play();const bones=boneMap(root);return{root,mixer,A,bones,cur:'idle',w:{},base:{}};}
+function makePlayerModel(){return makeHuman(null);}
 function setAnim(c,name,fade=.25,speed=1){const a=c.A[name];if(!a)return;a.timeScale=speed;if(c.cur===name)return;const prev=c.A[c.cur];a.reset();a.setEffectiveWeight(1);a.play();if(prev)prev.crossFadeTo(a,fade,false);c.cur=name;}
-function makeSoldier(){const root=prepModel(THREE.SkeletonUtils.clone(AS.soldier.scene));const mixer=new THREE.AnimationMixer(root);const A={};for(const cl of AS.soldier.animations){if(cl.name==='TPose')continue;A[cl.name.toLowerCase()]=mixer.clipAction(cl);}A.idle.play();return{root,mixer,A,bones:boneMap(root),cur:'idle'};}
+function makeSoldier(){return makeHuman(0x4a5236);}
 /* ================= ANIMALS ================= */
 const ANIMALS=[];
 function spawnShark(x,z,o={}){const root=prepModel(THREE.SkeletonUtils.clone(AS.shark.scene));root.scale.setScalar(.2);const mixer=new THREE.AnimationMixer(root);const A={};for(const c of AS.shark.animations)A[c.name]=mixer.clipAction(c);A.swimming.play();
@@ -5872,9 +5876,9 @@ const isNight=()=>S.hour<5.5||S.hour>19;
 function addItem(k,n=1,quiet){if(!n)return;if(TOOLS[k]){if(!S.tools.includes(k)){S.tools.push(k);toast('New tool: <b>'+TOOLS[k].n+'</b>');buildHotbar();}return;}if(k==='note'){return;}S.inv[k]=(S.inv[k]||0)+n;if(!quiet)pickMsg('+'+n+' '+(ITEMS[k]?ITEMS[k].n:k));updCraftDot();}
 function cnt(k){return S.inv[k]||0;}function take(k,n){S.inv[k]=Math.max(0,cnt(k)-n);if(!S.inv[k])delete S.inv[k];}
 function hurt(d,src){if(P.dead||P.inv>0)return;P.hp-=d;P.hurtT=.4;CAM.shake=Math.min(1,CAM.shake+.3);sfx('hurt');ftext(P.x,P.y+2,P.z,'-'+Math.round(d),'#ff7a6a',18);if(P.hp<=0)die(src);}
-function die(src){if(P.dead)return;P.dead=true;P.hp=0;stat('deaths');sfx('powerdown');const why={shark:'A shark dragged you under.',fox:'Wild foxes brought you down.',thirst:'You died of thirst.',hunger:'You starved.',drown:'You drowned.',kade:'Kade was faster.',fall:'You fell.'}[src]||'You collapsed.';
+function die(src){if(P.dead)return;P.dead=true;setAnim(P.ch,'death',.2);P.hp=0;stat('deaths');sfx('powerdown');const why={shark:'A shark dragged you under.',fox:'Wild foxes brought you down.',thirst:'You died of thirst.',hunger:'You starved.',drown:'You drowned.',kade:'Kade was faster.',fall:'You fell.'}[src]||'You collapsed.';
   setTimeout(()=>{$('deathS').textContent=why+' You wake up back at camp.';$('death').hidden=false;},1200);}
-function respawn(){$('death').hidden=true;P.dead=false;const sp=S.spawn||[30,160];P.raft=false;teleport(sp[0],sp[1]);P.hp=70;P.food=Math.max(P.food,50);P.water=Math.max(P.water,50);P.sta=100;P.air=100;P.dive=false;for(const a of ANIMALS)if(a.kind==='shark')a.st='roam';persist();}
+function respawn(){$('death').hidden=true;P.dead=false;setAnim(P.ch,'idle',.1);const sp=S.spawn||[30,160];P.raft=false;teleport(sp[0],sp[1]);P.hp=70;P.food=Math.max(P.food,50);P.water=Math.max(P.water,50);P.sta=100;P.air=100;P.dive=false;for(const a of ANIMALS)if(a.kind==='shark')a.st='roam';persist();}
 function teleport(x,z){P.x=x;P.z=z;P.y=Math.max(G(x,z),0);P.vy=0;CAM.cd=null;treeLOD(x,z,true);grassLOD(x,z,true);}
 let PM=null;let TOOLMESH={};
 function buildPlayer(){PM=makePlayerModel();scene.add(PM.root);PM.root.updateMatrixWorld(true);P.ch=PM;const hand=PM.bones.RightHand;// tools in hand
@@ -5914,11 +5918,11 @@ function updPlayer(dt){if(!P.ready)return;const ch=P.ch;
   if(ml>.08){const a=Math.atan2(-mx,-mz);P.rot+=angDiff(P.rot,a)*Math.min(1,dt*10);}
   const o={x:P.x,z:P.z};pushOut(o,.4,P.y);P.x=clamp(o.x,-980,980);P.z=clamp(o.z,-980,980);
   // vertical
-  if(P.swim){if(P.dive){const tgt=-Math.max(.5,dep-.9);P.y=Math.max(tgt,P.y-dt*2.6);P.air=Math.max(0,P.air-dt*3.4);if(P.air<=0){P.hp-=dt*12;if(P.hp<=0)die('drown');}}else{P.y=lerp(P.y,wy-1.25,Math.min(1,dt*5));P.air=Math.min(100,P.air+dt*40);}P.vy=0;P.ground=false;}
+  if(P.swim){if(P.dive){const tgt=-Math.max(.5,dep-.9);P.y=Math.max(tgt,P.y-dt*2.6);P.air=Math.max(0,P.air-dt*3.4);if(P.air<=0){P.hp-=dt*12;if(P.hp<=0)die('drown');}}else{P.y=lerp(P.y,wy-(SWIMY+.42*(1-clamp((P.tilt||0)/SWIMTILT,0,1))),Math.min(1,dt*5));P.air=Math.min(100,P.air+dt*40);}P.vy=0;P.ground=false;}
   else{P.dive=false;P.air=Math.min(100,P.air+dt*40);const g2=G(P.x,P.z);P.vy-=22*dt;P.y+=P.vy*dt;if(P.y<=g2){if(P.vy<-14)hurt((-P.vy-14)*4,'fall');P.y=g2;P.vy=0;P.ground=true;}else if(P.y-g2<.35&&P.vy<=0){P.y=g2;P.vy=0;P.ground=true;}else P.ground=false;}
   // animation
   const r=ch.root;r.position.set(P.x,P.y,P.z);r.rotation.y=P.rot+PI;
-  if(P.swim){setAnim(ch,'idle',.3);}else if(P.sitT>0){setAnim(ch,'sit',.4);}else if(spd>.5){setAnim(ch,'walk',.2,spd>6?1.75:spd/3.4);}else setAnim(ch,'idle',.3);
+  if(P.swim){setAnim(ch,'idle',.3);}else if(P.sitT>0){setAnim(ch,'sit',.4);}else if(!P.ground&&P.vy>1){setAnim(ch,'jump',.15);}else if(spd>3.2){setAnim(ch,'run',.25,Math.max(.8,spd/6.4));}else if(spd>.4){setAnim(ch,'walk',.25,clamp(spd/1.6,.6,1.6));}else setAnim(ch,'idle',.3);
   ch.mixer.update(dt);poseOverlay(dt);
   if(P.swim&&R()<.2)emit(P.x+rnd(-.4,.4),wy+.05,P.z+rnd(-.4,.4),rnd(-.5,.5),.4,rnd(-.5,.5),.6,.35,COLS.water);
   if(!P.swim&&spd>4&&P.ground&&dep>-.3&&R()<.4)emit(P.x,P.y+.1,P.z,rnd(-1,1),1.5,rnd(-1,1),.4,.3,COLS.water,6);
@@ -5926,10 +5930,10 @@ function updPlayer(dt){if(!P.ready)return;const ch=P.ch;
   const lit=S.tool==='torch';P.light.intensity=lit?(1.9+Math.sin(T*17)*.15):0;P.light.position.set(P.x,P.y+2,P.z);if(lit&&TOOLMESH.torch.visible&&R()<.4){const w=TOOLMESH.torch.userData.f.getWorldPosition(_v);emit(w.x,w.y+.1,w.z,rnd(-.2,.2),1.2,rnd(-.2,.2),.5,.25,COLS.fire);}
   if(P.fish)updFishing(dt);}
 /* procedural layers on top of the clip: swing tools, swim strokes */
-const SWIMTILT=1.25;
+let SWIMTILT=1.3,SWIMY=0.95;
 function poseOverlay(dt){const b=P.ch.bones;if(!b.RightArm)return;P.swing=Math.max(0,P.swing-dt);
   if(P.swing>0){const t=1-P.swing/.45;const k=t<.35?t/.35:1-(t-.35)/.65;b.RightArm.rotation.z+= -1.2*k;b.RightArm.rotation.x+=-1.4*k;b.RightForeArm.rotation.x+=-.9*k;b.Spine1&&(b.Spine1.rotation.y+=.35*k);}
-  if(b.Hips){const H0=b.Hips.userData.r0||(b.Hips.userData.r0=b.Hips.rotation.clone());const tgt=P.swim?(P.dive||P.spd>.5?SWIMTILT:SWIMTILT*.3):0;P.tilt=lerp(P.tilt||0,tgt,Math.min(1,dt*4));b.Hips.rotation.set(H0.x+P.tilt,H0.y,H0.z);}
+  if(b.Hips){const tgt=P.swim?(P.dive||P.spd>.5?SWIMTILT:SWIMTILT*.3):0;P.tilt=lerp(P.tilt||0,tgt,Math.min(1,dt*4));if(P.tilt>.01)b.Hips.rotateX(P.tilt);}
   if(P.swim){const mv=P.spd>.5||P.dive;const s=T*(mv?4.2:2);const a=mv?1:.4;b.RightArm.rotation.z+=(Math.sin(s)*.9-.2)*a;b.LeftArm.rotation.z+=(-Math.sin(s)*.9+.2)*a;b.RightArm.rotation.x+=-.6*a;b.LeftArm.rotation.x+=-.6*a;
     if(b.LeftUpLeg){b.LeftUpLeg.rotation.x+=Math.sin(s*2)*.35*a;b.RightUpLeg.rotation.x+=Math.sin(s*2+PI)*.35*a;}if(b.LeftLeg){b.LeftLeg.rotation.x+=.25+Math.max(0,Math.sin(s*2))*.4*a;b.RightLeg.rotation.x+=.25+Math.max(0,Math.sin(s*2+PI))*.4*a;}}
   if(P.raft){const s=T*3*(P.spd>.5?1:0);b.RightArm.rotation.x+=-1+Math.sin(s)*.6;b.LeftArm.rotation.x+=-1+Math.sin(s+1)*.6;}
@@ -6076,7 +6080,7 @@ function updKade(dt){if(!KADE)return;const k=KADE,ch=k.ch;if(!ch.root.visible)re
     if(k.st!=='dash')k.rot+=angDiff(k.rot,Math.atan2(dx,dz))*Math.min(1,dt*7);k.x+=Math.sin(k.rot)*mv*dt;k.z+=Math.cos(k.rot)*mv*dt;const o={x:k.x,z:k.z};pushOut(o,.4,k.y);k.x=o.x;k.z=o.z;k.y=G(k.x,k.z);
     setAnim(ch,mv>5?'run':mv>0?'walk':'idle',.2);}
   else if(!k.dead){k.rot+=angDiff(k.rot,d<12?Math.atan2(dx,dz):k.rot)*Math.min(1,dt*3);setAnim(ch,'idle');}
-  if(k.dead){k.ddt=(k.ddt||0)+dt;ch.root.rotation.z=Math.min(PI/2,k.ddt*3);}
+  if(k.dead){setAnim(ch,'death',.2);}
   ch.root.position.set(k.x,k.y,k.z);ch.root.rotation.y=k.rot;}
 function hitKade(d){const k=KADE;if(!k||!k.boss||k.dead)return;if(k.st==='dash'&&R()<.5){ftext(k.x,k.y+2,k.z,'Blocked','#ccc');sfx('hit');return;}k.hp-=d;k.hitT=.25;ftext(k.x,k.y+2.1,k.z,String(Math.round(d)),'#fff');sfx('hit');burst(k.x,k.y+1.2,k.z,8,COLS.blood,2,.4,.3,4);if(k.st!=='dash'){k.st='rec';k.dt=.35;}if(k.hp<=0){k.dead=true;k.boss=false;onBossDead(k);}}
 function onBossDead(a){for(const qid of activeQuests()){const st=QBYID[qid].steps[S.q[qid].s];if(st&&st.t==='boss')completeStep(qid);}}
@@ -6366,7 +6370,7 @@ function boot(){const L=$('loadP'),M=$('loadM');M.textContent='Loading models an
     const next=()=>{if(i>=steps.length){$('load').hidden=true;showTitle();return;}M.textContent=steps[i][0];L.style.width=(70+i/steps.length*30)+'%';setTimeout(()=>{try{steps[i][1]();}catch(e){M.textContent='Error: '+e.message;console.error(e);throw e;}i++;next();},30);};next();})
   .catch(e=>{M.textContent='Could not load game files ('+e.message+'). Check your connection and reload.';console.error(e);});}
 RK.init;camera.position.set(200,40,300);camera.lookAt(150,0,180);requestAnimationFrame(frame);boot();
-window.__sw={rescueShip,lightBeacon,get S(){return S;},get UNDER(){return UNDER;},camera,fog:()=>[scene.fog.near,scene.fog.far],P,ANIMALS,INTS,NODES,PALMS,Q,completeStep,stepStart,teleport,addItem,equip,action,jump,useItem,craft,RECIPES,openBag,startGame,activeQuests,H,G,waveH,talkNPC,dlgNext,get DLG(){return DLG;},get CINE(){return CINE;},cineNext,doInteract,get curInt(){return curInt;},KADE:()=>KADE,CAM,JOY,keys,
+window.__sw={setSwim:(a,b)=>{SWIMTILT=a;SWIMY=b;},rescueShip,lightBeacon,get S(){return S;},get UNDER(){return UNDER;},camera,fog:()=>[scene.fog.near,scene.fog.far],P,ANIMALS,INTS,NODES,PALMS,Q,completeStep,stepStart,teleport,addItem,equip,action,jump,useItem,craft,RECIPES,openBag,startGame,activeQuests,H,G,waveH,talkNPC,dlgNext,get DLG(){return DLG;},get CINE(){return CINE;},cineNext,doInteract,get curInt(){return curInt;},KADE:()=>KADE,CAM,JOY,keys,
   boardRaft,leaveRaft,placeStruct,startPlace,checkQuests,questStep,useBeacon,WATCHERS,spawnShark,spawnFox,sim(n,f){for(let i=0;i<n;i++){const dt=1/30;T+=dt;S.time+=dt;f&&f();updPlayer(dt);updPlace();updAnimals(dt);updKade(dt);updNodes(dt);updSpawns(dt);updTasks(dt);updParticles(dt);if(i%9===0){checkQuests();updDiscovery();updInteract();}}}};
 })();
 
