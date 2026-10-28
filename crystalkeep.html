@@ -256,8 +256,8 @@ h2{font-family:var(--disp);font-weight:900;font-size:32px;margin:0;color:#e8dcff
   <div class="row"><button class="btn" id="startB">Defend!</button><button class="btn ghost" id="setupBack">Back</button></div>
 </div>
 <div id="lab" class="ov top" hidden><h2>Crystal Lab</h2><p class="sub" id="labShards"></p><div class="list" id="labList"></div><div class="row"><button class="btn ghost" id="labBack">Back</button></div></div>
-<div id="goals" class="ov top" hidden><h2>Goals</h2><p class="sub">Every goal pays shards once. Some go on forever.</p><div class="list" id="goalList"></div><div class="row"><button class="btn ghost" id="goalBack">Back</button></div></div>
-<div id="pause" class="ov" hidden><h2>Paused</h2><p class="sub">Your run saves at the start of every wave.</p><div class="row"><button class="btn" id="resumeB">Resume</button><button class="btn ghost" id="quitB">Give up run</button></div></div>
+<div id="goals" class="ov top" hidden><h2>Goals</h2><p class="sub">Shards are added automatically the moment you finish a goal, even in the middle of a run. Nothing to collect.</p><div class="list" id="goalList"></div><div class="row"><button class="btn ghost" id="goalBack">Back</button></div></div>
+<div id="pause" class="ov" hidden><h2>Paused</h2><p class="sub" id="pShards"></p><div class="row"><button class="btn" id="resumeB">Resume</button><button class="btn ghost" id="pLab">Crystal Lab</button><button class="btn ghost" id="pGoals">Goals</button></div><div class="row"><button class="btn ghost" id="pExit">Save and exit</button><button class="btn ghost" id="quitB">Give up run</button></div><p class="sub" style="font-size:13px">Shards are paid after every wave you clear. Save and exit keeps your run from the start of this wave.</p></div>
 <div id="over" class="ov" hidden><h2 id="oTitle">The crystal shattered</h2><div class="pills" id="oStats"></div><p class="sub" id="oGoals"></p><div class="row"><button class="btn" id="againB">Play again</button><button class="btn ghost" id="oLab">💎 Crystal Lab</button><button class="btn ghost" id="oHome">Home</button></div></div>
 <script>
 /* Cloud save: keeps game saves in your Claude account so they survive across devices and cleared browser storage. */
@@ -592,8 +592,8 @@ const cx=c=>GX+(c+.5)*CS,cy=r=>GY+(r+.5)*CS;
 /* ---------- run state ---------- */
 let run=null,state='title',spd=1,t=0;
 function newRun(mapId,danger,resume){try{SND.music('castle');}catch(_){}const map=MAPS.find(m=>m.id===mapId)||MAPS[0];
-  run={map,danger,wave:0,gold:200+L('gold')*25,lives:20+L('lives')*2,maxLives:20+L('lives')*2,towers:[],enemies:[],shots:[],fx:[],queue:[],spawnT:0,inWave:false,kills:0,bosses:0,sel:null,leakFlash:0,pathCells:new Set(),path:[],len:0,texts:[]};
-  if(resume){Object.assign(run,{wave:resume.wave,gold:resume.gold,lives:resume.lives,maxLives:resume.maxLives,kills:resume.kills,bosses:resume.bosses});run.towers=resume.towers.map(t=>({...t,cd:0,ang:0}));}
+  run={map,danger,wave:0,gold:200+L('gold')*25,lives:20+L('lives')*2,maxLives:20+L('lives')*2,towers:[],enemies:[],shots:[],fx:[],queue:[],spawnT:0,inWave:false,kills:0,bosses:0,paid:0,sel:null,leakFlash:0,pathCells:new Set(),path:[],len:0,texts:[]};
+  if(resume){Object.assign(run,{wave:resume.wave,gold:resume.gold,lives:resume.lives,maxLives:resume.maxLives,kills:resume.kills,bosses:resume.bosses,paid:resume.paid||0});run.towers=resume.towers.map(t=>({...t,cd:0,ang:0}));}
   buildPath();}
 function buildPath(){const pts=run.map.pts;run.path=pts.map(([c,r])=>({x:cx(c),y:cy(r)}));run.pathCells=new Set();
   for(let i=0;i<pts.length-1;i++){const[a,b]=[pts[i],pts[i+1]];const dc=Math.sign(b[0]-a[0]),dr=Math.sign(b[1]-a[1]);let c=a[0],r=a[1];run.pathCells.add(c+','+r);while(c!==b[0]||r!==b[1]){c+=dc;r+=dr;run.pathCells.add(c+','+r);}}
@@ -615,10 +615,14 @@ function startWave(){if(run.inWave)return;run.wave++;run.inWave=true;const w=run
   run.queue=q;run.spawnT=.6;}
 function spawnEnemy(k,d=0){const E=ENEMIES[k],hp=E.hp*hpMul(run.wave)*(E.boss?1+Math.floor(run.wave/10)*.3:1);run.enemies.push({k,E,hp,max:hp,d,spd:E.spd,slowT:0,ph:R()*TAU,hit:0,x:0,y:0});}
 function waveDone(){run.inWave=false;const bonus=20+run.wave*2,inter=Math.floor(run.gold*L('interest')/100),mines=run.towers.filter(t=>t.k==='mine').reduce((a,t)=>a+25+(t.lv-1)*18,0);
-  run.gold+=bonus+inter+mines;run.texts.push({x:W/2,y:H*.42,s:'+'+(bonus+inter+mines)+' gold',c:'#ffd25a',life:1.6});SFX.clear();saveRun();
+  run.gold+=bonus+inter+mines;run.texts.push({x:W/2,y:H*.42,s:'+'+(bonus+inter+mines)+' gold',c:'#ffd25a',life:1.6});SFX.clear();
+  const w=run.wave,owed=Math.floor(Math.pow(w,1.45)*(1+run.danger*.3))+run.bosses*5-run.paid;if(owed>0){save.shards+=owed;run.paid+=owed;run.texts.push({x:W/2,y:H*.49,s:'+'+owed+' shards',c:'#c9a8ff',life:1.8});}
+  save.best=Math.max(save.best,w);save.mapBest[run.map.id]=Math.max(save.mapBest[run.map.id]||0,w);save.dangerBest[run.danger]=Math.max(save.dangerBest[run.danger]||0,w);if(w>=20)save.maxDanger=Math.max(save.maxDanger,run.danger+1);
+  const gd=checkGoals();gd.forEach((g,i)=>run.texts.push({x:W/2,y:H*.56+i*26,s:'Goal done: '+g.txt+' (+'+g.rw+' shards)',c:'#ffd25a',life:3}));if(gd.length)tone(660,.3,'triangle',.06);
+  persist();saveRun();
   if(autoWave)setTimeout(()=>{if(state==='play'&&run&&!run.inWave)startWave();},900);}
 let autoWave=false;
-function saveRun(){if(!run)return;try{__store.set(RK,JSON.stringify({map:run.map.id,danger:run.danger,wave:run.wave,gold:run.gold,lives:run.lives,maxLives:run.maxLives,kills:run.kills,bosses:run.bosses,towers:run.towers.map(t=>({k:t.k,c:t.c,r:t.r,lv:t.lv,mode:t.mode}))}));}catch(_){}}
+function saveRun(){if(!run)return;try{__store.set(RK,JSON.stringify({map:run.map.id,danger:run.danger,wave:run.wave,gold:run.gold,lives:run.lives,maxLives:run.maxLives,kills:run.kills,bosses:run.bosses,paid:run.paid,towers:run.towers.map(t=>({k:t.k,c:t.c,r:t.r,lv:t.lv,mode:t.mode}))}));}catch(_){}}
 function loadRun(){try{return JSON.parse(__store.get(RK));}catch(_){return null;}}
 function clearRun(){try{__store.remove(RK);}catch(_){}}
 
@@ -653,10 +657,10 @@ function update(dt){sb=0;if(!run)return;const r=run;r.leakFlash=Math.max(0,r.lea
   if(r.inWave&&!r.queue.length&&!r.enemies.length)waveDone();
   updHud();}
 function endRun(){state='over';try{SND.music('calm');}catch(_){}const r=run;clearRun();$('hud').hidden=true;closeSheet();const w=r.wave;
-  const sh=Math.floor(Math.pow(Math.max(0,w-1),1.45)*(1+r.danger*.3))+r.bosses*5;save.shards+=sh;
+  const sh=Math.max(0,Math.floor(Math.pow(Math.max(0,w-1),1.45)*(1+r.danger*.3))+r.bosses*5-(r.paid||0));save.shards+=sh;const shTot=sh+(r.paid||0);
   save.best=Math.max(save.best,w);save.mapBest[r.map.id]=Math.max(save.mapBest[r.map.id]||0,w);save.dangerBest[r.danger]=Math.max(save.dangerBest[r.danger]||0,w);if(w>=20)save.maxDanger=Math.max(save.maxDanger,r.danger+1);
   const g=checkGoals();persist();
-  $('oStats').innerHTML=[['Wave',w],['Monsters',r.kills],['Bosses',r.bosses],['Shards','+'+sh]].map(([a,b])=>'<div class="pill"><span>'+a+'</span><b>'+b+'</b></div>').join('');
+  $('oStats').innerHTML=[['Wave',w],['Monsters',r.kills],['Bosses',r.bosses],['Shards','+'+shTot]].map(([a,b])=>'<div class="pill"><span>'+a+'</span><b>'+b+'</b></div>').join('');
   $('oGoals').innerHTML=g.length?'🏆 Goals done: '+g.map(x=>x.txt+' (+'+x.rw+' 💎)').join(' · '):(w>=20&&r.danger+1>=save.maxDanger?'Danger '+(r.danger+1)+' unlocked!':'');
   $('oTitle').textContent=w>=save.best&&w>1?'New record: wave '+w+'!':'The crystal shattered';tone(150,.8,'sawtooth',.07,50);$('over').hidden=false;}
 function checkGoals(){const done=[];for(const g of GOALS){if(save.goals[g.id])continue;if(g.test(save)){save.goals[g.id]=1;save.shards+=g.rw;done.push(g);}}return done;}
@@ -681,7 +685,11 @@ function openTower(tw){run.sel={tw};const T=TOWERS[tw.k],sh=$('sheet');const max
 function updHud(){if(!run)return;$('waveB').textContent=run.inWave?(autoWave?'Auto: on':'Auto waves'):'▶ Wave '+(run.wave+1);$('spdB').textContent='⏩ ×'+spd;}
 $('waveB').onclick=()=>{audio();if(!run.inWave)startWave();else{autoWave=!autoWave;}updHud();};
 $('spdB').onclick=()=>{spd=spd===1?2:spd===2?3:1;updHud();};
-$('pauseB').onclick=()=>{if(state!=='play')return;state='paused';$('pause').hidden=false;};
+function showPause(){hideAll();$('pShards').textContent='You have '+save.shards+' shards to spend in the Crystal Lab.';$('pause').hidden=false;}
+$('pauseB').onclick=()=>{if(state!=='play')return;state='paused';closeSheet();showPause();};
+$('pLab').onclick=()=>{hideAll();renderLab();$('lab').hidden=false;};
+$('pGoals').onclick=()=>$('goalB').onclick();
+$('pExit').onclick=()=>{if(run&&!run.inWave)saveRun();hideAll();$('hud').hidden=true;state='title';run=null;$('title').hidden=false;updTitle();};
 $('resumeB').onclick=()=>{$('pause').hidden=true;state='play';};
 $('quitB').onclick=()=>{$('pause').hidden=true;state='play';endRun();};
 
@@ -704,9 +712,9 @@ function renderLab(){$('labShards').textContent='💎 '+save.shards+' shards · 
   for(const u of LAB){const l=L(u.id),mx=u.max&&l>=u.max,c=u.cost(l);h+='<div class="it"><div class="ic">'+u.icon+'</div><div><div class="nm">'+u.name+' <span class="ds">Lv '+l+(u.max?' / '+u.max:' · no limit')+'</span></div><div class="ds">'+(l?u.desc(l)+' → ':'')+(mx?'Maxed':u.desc(l+1))+'</div></div><button data-l="'+u.id+'" '+(mx||save.shards<c?'disabled':'')+'>'+(mx?'MAX':'💎 '+c)+'</button></div>';}
   $('labList').innerHTML=h;}
 $('labList').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;if(b.dataset.u){const T=TOWERS[b.dataset.u];if(save.shards<T.unlock)return;save.shards-=T.unlock;save.unlocked[b.dataset.u]=1;}else{const u=LAB.find(x=>x.id===b.dataset.l),l=L(u.id),c=u.cost(l);if(save.shards<c||(u.max&&l>=u.max))return;save.shards-=c;save.lab[u.id]=l+1;}SFX.build();persist();renderLab();});
-$('labB').onclick=()=>{audio();hideAll();renderLab();$('lab').hidden=false;};$('oLab').onclick=$('labB').onclick;$('labBack').onclick=()=>{hideAll();$('title').hidden=false;updTitle();};
-$('goalB').onclick=()=>{audio();hideAll();$('goalList').innerHTML=GOALS.map(g=>'<div class="it'+(save.goals[g.id]?' done':'')+'"><div class="ic">'+(save.goals[g.id]?'✅':'🏆')+'</div><div><div class="nm">'+g.txt+'</div></div><button disabled>'+(save.goals[g.id]?'Done':'+'+g.rw+' 💎')+'</button></div>').join('');$('goals').hidden=false;};
-$('goalBack').onclick=()=>{hideAll();$('title').hidden=false;updTitle();};$('oHome').onclick=()=>{hideAll();$('title').hidden=false;state='title';run=null;updTitle();};
+$('labB').onclick=()=>{audio();hideAll();renderLab();$('lab').hidden=false;};$('oLab').onclick=$('labB').onclick;$('labBack').onclick=()=>{if(state==='paused'){showPause();return;}hideAll();$('title').hidden=false;updTitle();};
+$('goalB').onclick=()=>{audio();hideAll();$('goalList').innerHTML=GOALS.map(g=>'<div class="it'+(save.goals[g.id]?' done':'')+'"><div class="ic">'+(save.goals[g.id]?'✅':'🏆')+'</div><div><div class="nm">'+g.txt+'</div></div><button disabled>'+(save.goals[g.id]?'Paid +'+g.rw:'+'+g.rw+' 💎')+'</button></div>').join('');$('goals').hidden=false;};
+$('goalBack').onclick=()=>{if(state==='paused'){showPause();return;}hideAll();$('title').hidden=false;updTitle();};$('oHome').onclick=()=>{hideAll();$('title').hidden=false;state='title';run=null;updTitle();};
 addEventListener('pagehide',()=>{if(run&&state!=='over'&&!run.inWave)saveRun();});
 
 /* ---------- render ---------- */
