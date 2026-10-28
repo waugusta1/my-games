@@ -6096,7 +6096,7 @@ function persist(){try{if(P&&P.ready){S.pos=[P.x,P.y,P.z];S.yaw=CAM.yaw;S.hp=P.h
 loadSave();
 const stat=(k,n=1)=>{S.stats[k]=(S.stats[k]||0)+n;};
 /* ----- renderer ----- */
-const IOS=/iPad|iPhone|iPod/.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
+const IOS=/iPad|iPhone|iPod/.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1)||/[?&]ios=1/.test(location.search);
 const cv=$('c');const renderer=new THREE.WebGLRenderer({canvas:cv,antialias:false,powerPreference:'high-performance'});renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;
 const scene=new THREE.Scene();const camera=new THREE.PerspectiveCamera(55,1,.1,3500);scene.fog=new THREE.Fog(0xb8a890,400,2600);
 const hemi=new THREE.HemisphereLight(0xc8d0d8,0x6a5440,.4);scene.add(hemi);
@@ -6539,24 +6539,24 @@ function grassGeo(){const g=new THREE.BufferGeometry();const p=[],u=[],n=[],idx=
   g.setAttribute('position',new THREE.Float32BufferAttribute(p,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(u,2));g.setAttribute('normal',new THREE.Float32BufferAttribute(n,3));g.setIndex(idx);return g;}
 function buildVeg(){const V=RK.variants(),MM=RK.mats();const g=seeded(77);
   // dead trees: bare trunks only
-  const TL=[[],[],[]];for(let t=0;t<9000&&TL.flat().length<260;t++){const x=rnd(-760,760),z=rnd(-760,760);const y=H(x,z);if(slopeAt(x,z)>.35||polyDist(x,z,RPATH).d<14||insideCol(x,z))continue;let near=false;for(const s in SITES)if(hyp(x-SITES[s].x,z-SITES[s].z)<50)near=true;if(near)continue;
+  const TL=[[],[],[]];for(let t=0;t<9000&&TL.flat().length<(IOS?120:260);t++){const x=rnd(-760,760),z=rnd(-760,760);const y=H(x,z);if(slopeAt(x,z)>.35||polyDist(x,z,RPATH).d<14||insideCol(x,z))continue;let near=false;for(const s in SITES)if(hyp(x-SITES[s].x,z-SITES[s].z)<50)near=true;if(near)continue;
    if(polyDist(x,z,ARROYO).d>40&&g()<.8)continue;const v=(g()*3)|0;const s=.6+g()*.5;TL[v].push({x,y:y-.2,z,ry:g()*TAU,s,c:[.62,.55,.5]});addCol({x,z,r:.35*s,y0:y,y1:y+6});}
   const tm=MM.trunk.clone();tm.color=new THREE.Color(0x9a8a7a);TL.forEach((L,i)=>{if(L.length)world.add(RK.inst(V.oak[i].near.trunk,tm,L,{cast:true}));});
   // scrub bushes, dry olive and brown
-  const BL=[[],[]];for(let t=0;t<30000&&BL[0].length+BL[1].length<2400;t++){const x=rnd(-780,780),z=rnd(-780,780);const y=H(x,z);if(slopeAt(x,z)>.45||polyDist(x,z,RPATH).d<9||hyp(x-LAKE.x,(z-LAKE.z)*1.15)<LAKE.r-10||insideCol(x,z))continue;
+  const BL=[[],[]];for(let t=0;t<30000&&BL[0].length+BL[1].length<(IOS?800:2400);t++){const x=rnd(-780,780),z=rnd(-780,780);const y=H(x,z);if(slopeAt(x,z)>.45||polyDist(x,z,RPATH).d<9||hyp(x-LAKE.x,(z-LAKE.z)*1.15)<LAKE.r-10||insideCol(x,z))continue;
    const s=.35+g()*.55;const dry=g();BL[(g()*2)|0].push({x,y:y-.15,z,ry:g()*TAU,s,c:dry<.5?[.52,.5,.36]:[.6,.5,.38]});SCRUB.push({x,z,s});}
   const lm=MM.leaf.clone();lm.color=new THREE.Color(0xa09070);BL.forEach((L,i)=>{if(L.length)world.add(RK.inst(V.bush[i].leaves,lm,L,{cast:true,depth:MM.leafDepth}));});
   // rocks and boulders with the photo rock texture
-  const RL=[[],[],[]];for(let t=0;t<4200;t++){const x=rnd(-800,800),z=rnd(-800,800);const y=H(x,z);const sl=slopeAt(x,z);if(polyDist(x,z,RPATH).d<10||insideCol(x,z))continue;let near=false;for(const s in SITES)if(hyp(x-SITES[s].x,z-SITES[s].z)<45)near=true;if(near)continue;
+  const RL=[[],[],[]];for(let t=0;t<(IOS?1500:4200);t++){const x=rnd(-800,800),z=rnd(-800,800);const y=H(x,z);const sl=slopeAt(x,z);if(polyDist(x,z,RPATH).d<10||insideCol(x,z))continue;let near=false;for(const s in SITES)if(hyp(x-SITES[s].x,z-SITES[s].z)<45)near=true;if(near)continue;
    if(sl<.25&&g()<.6)continue;const s=.3+g()*g()*(sl>.4?4.5:2.2);RL[(g()*3)|0].push({x,y:y-.25*s,z,ry:g()*TAU,rx:g(),s,c:[.85,.78,.7]});if(s>1)addCol({x,z,r:s*.72,y0:y-1,y1:y+s*1.1});}
   const rm=MM.rock.clone();rm.map=AS.rocky;rm.normalMap=AS.rocky_n;rm.color=new THREE.Color(0xd8ccc0);RL.forEach((L,i)=>{if(L.length)world.add(RK.inst(V.rock[i].geo,rm,L,{cast:true}));});
   const gm=new THREE.MeshStandardMaterial({map:grassTex,alphaTest:.4,side:THREE.DoubleSide,roughness:1,color:0xe8dcc0,emissive:0x120e09});RK.swayShader&&0;
   gm.onBeforeCompile=sh=>{sh.uniforms.uTime=RK.timeU;sh.vertexShader=sh.vertexShader.replace('#include <common>','#include <common>\nuniform float uTime;').replace('#include <begin_vertex>','#include <begin_vertex>\nvec4 ip=instanceMatrix*vec4(0.,0.,0.,1.);float sw=sin(uTime*1.7+ip.x*.3+ip.z*.2)*.12*position.y;transformed.x+=sw;transformed.z+=sw*.6;');};
-  GRASS=new THREE.InstancedMesh(grassGeo(),gm,5000);GRASS.count=0;GRASS.frustumCulled=false;GRASS.receiveShadow=true;world.add(GRASS);}
+  GRASS=new THREE.InstancedMesh(grassGeo(),gm,IOS?2000:5000);GRASS.count=0;GRASS.frustumCulled=false;GRASS.receiveShadow=true;world.add(GRASS);}
 function hsh(a,b){let h=Math.imul(a*374761393+b*668265263|0,1274126177);h^=h>>>13;return((h>>>0)%10000)/10000;}
-function grassLOD(px,pz,force){if(!GRASS||(!force&&hyp(px-lastGrass.x,pz-lastGrass.z)<6))return;lastGrass={x:px,z:pz};const R0=46,cs=1.25;let n=0;
+function grassLOD(px,pz,force){if(!GRASS||(!force&&hyp(px-lastGrass.x,pz-lastGrass.z)<6))return;lastGrass={x:px,z:pz};const R0=IOS?32:46,cs=1.25,NMAX=IOS?2000:5000;let n=0;
   const i0=Math.floor((px-R0)/cs),i1=Math.floor((px+R0)/cs),j0=Math.floor((pz-R0)/cs),j1=Math.floor((pz+R0)/cs);
-  for(let i=i0;i<=i1&&n<5000;i++)for(let j=j0;j<=j1&&n<5000;j++){const h1=hsh(i,j),h2=hsh(j+77,i);const x=(i+h1)*cs,z=(j+h2)*cs;if((x-px)**2+(z-pz)**2>R0*R0)continue;
+  for(let i=i0;i<=i1&&n<NMAX;i++)for(let j=j0;j<=j1&&n<NMAX;j++){const h1=hsh(i,j),h2=hsh(j+77,i);const x=(i+h1)*cs,z=(j+h2)*cs;if((x-px)**2+(z-pz)**2>R0*R0)continue;
    const dens=NOI.fbm(x/40,z/40,81,2);if(h1*2.2>dens)continue;if(slopeAt(x,z)>.4||polyDist(x,z,RPATH).d<6.5||hyp(x-LAKE.x,(z-LAKE.z)*1.15)<LAKE.r||insideCol(x,z))continue;
    let st=1;for(const[L,w]of NOGRASS)if(polyDist(x,z,L).d<w){st=0;break;}if(!st&&hsh(i+5,j+9)>.07)continue;
    const s=(.5+h2*.7)*(st?1:.45);_m4.compose(_v.set(x,H(x,z)-.05,z),_q.setFromAxisAngle(_v2.set(0,1,0),h1*TAU),_v3.set(s*1.2,s*(.45+h1*.45),s*1.2));GRASS.setMatrixAt(n++,_m4);}
@@ -7203,12 +7203,12 @@ function boot(){const msg=t=>$('loadM').textContent=t;msg('Loading the Basin');
     if(crashed){if(S.set.qual>0)S.set.qual=0;else S.set.ultra=1;SAFEMODE=true;persist();}__store.set('ll-boot','1');}catch(_){}
   if(crashed)$('loadN').textContent='Last time loading stopped at "'+(lastStep||'the start')+'". Trying again with '+(S.set.ultra?'the lightest':'lighter')+' graphics.';
   const crumb=t=>{try{__store.set('ll-step',t);}catch(_){}};crumb('Loading models');
-  cv.addEventListener('webglcontextlost',e=>{e.preventDefault();$('load').hidden=false;$('loadM').textContent='Your iPad ran out of graphics memory. Close this tab and open Last Light again.';});
+  cv.addEventListener('webglcontextlost',e=>{e.preventDefault();try{S.set.qual=0;S.set.ultra=1;persist();}catch(_){}$('load').hidden=false;$('loadM').textContent='Your iPad ran out of graphics memory. Close this tab and open Last Light again.';});
   loadAssets(p=>{$('loadP').style.width=(p*70)+'%';}).then(()=>{
     const steps=[['Raising the mesas',()=>{mkMats();buildTerrain();}],['Paving Route 40',()=>{buildRoad();}],['Rusting the cars',()=>{buildSites();scene.traverse(m=>{if(m.isMesh&&m.name==='ICE_ICE_0'){m.material=m.material.clone();m.material.color.setRGB(.5,.48,.43);}if(m.isMesh&&m.material&&m.material.emissive&&/Light_0|Sign_0|Neon|Lamp/.test(m.name)){m.material=m.material.clone();m.material.emissive.setRGB(0,0,0);m.material.emissiveMap=null;}});}],['Scattering scrub',()=>{buildVeg();buildTumble();buildDust();buildCollect();}],
-      ['Waking the Basin',()=>{if(S.set.ultra&&GRASS){GRASS.parent.remove(GRASS);GRASS.geometry.dispose();GRASS=null;}if(AS.hdr&&!S.set.ultra){const pm=new THREE.PMREMGenerator(renderer);ENVT=pm.fromEquirectangular(AS.hdr).texture;scene.environment=ENVT;}buildJeep();buildPlayer();buildNPCs();buildMapCanvas();bindJoy();bindUI();collectEnvMats();applyQuality();updLight(0,true);}]];let i=0;
-    const next=()=>{if(i>=steps.length){$('load').hidden=true;BOOTED=true;showTitle();crumb('Title screen');setTimeout(()=>{try{__store.remove('ll-boot');__store.remove('ll-step');}catch(_){}if(SAFEMODE)toast('Graphics were lowered so Last Light fits in memory. You can raise them in Journal, Settings.',7);},6000);return;}msg(steps[i][0]+'...');crumb(steps[i][0]);$('loadP').style.width=(70+i/steps.length*30)+'%';setTimeout(()=>{try{steps[i][1]();}catch(e){msg('Error: '+e.message);console.error(e);return;}i++;next();},30);};next();}).catch(e=>{msg('Could not load: '+e.message);console.error(e);});}
-window.__ll={WX,scene,sky,get ROADM(){return ROADM;},RPATH,get TERR(){return TERR;},get S(){return S;},P,ACTORS,ENEMIES,NPCOBJ,LOOT,COLLECT,QITEMS,Q,GROUPLIVE,CAM,JOY,JIN,keys,camera,get JEEP(){return JEEP;},get BOSS(){return BOSS;},H,G,teleport,addItem,equipGun,completeStep,stepStart,activeQuests,questStep,checkQuests,doInteract,get curInt(){return curInt;},
+      ['Waking the Basin',()=>{if(S.set.ultra&&GRASS){GRASS.parent.remove(GRASS);GRASS.geometry.dispose();GRASS=null;}if(AS.hdr&&!S.set.ultra&&!IOS){const pm=new THREE.PMREMGenerator(renderer);ENVT=pm.fromEquirectangular(AS.hdr).texture;scene.environment=ENVT;}buildJeep();buildPlayer();buildNPCs();buildMapCanvas();bindJoy();bindUI();collectEnvMats();applyQuality();updLight(0,true);}]];let i=0;
+    const next=()=>{if(i>=steps.length){$('load').hidden=true;BOOTED=true;showTitle();crumb('Playing');setTimeout(()=>{try{__store.remove('ll-boot');__store.remove('ll-step');}catch(_){}if(SAFEMODE)toast('Graphics were lowered so Last Light fits in memory. You can raise them in Journal, Settings.',7);},60000);return;}msg(steps[i][0]+'...');crumb(steps[i][0]);$('loadP').style.width=(70+i/steps.length*30)+'%';setTimeout(()=>{try{steps[i][1]();}catch(e){msg('Error: '+e.message);console.error(e);return;}i++;next();},30);};next();}).catch(e=>{msg('Could not load: '+e.message);console.error(e);});}
+window.__ll={WX,renderer,scene,sky,get ROADM(){return ROADM;},RPATH,get TERR(){return TERR;},get S(){return S;},P,ACTORS,ENEMIES,NPCOBJ,LOOT,COLLECT,QITEMS,Q,GROUPLIVE,CAM,JOY,JIN,keys,camera,get JEEP(){return JEEP;},get BOSS(){return BOSS;},H,G,teleport,addItem,equipGun,completeStep,stepStart,activeQuests,questStep,checkQuests,doInteract,get curInt(){return curInt;},
   talkNPC,dlgNext,DLG,CINE,cineNext,startGame,enterJeep,leaveJeep,spawnGroup,reload,tryFire,aimSolve,placeJeep,searchLoot,openBench,updLight,WX,
   sim(n,f){for(let i=0;i<n;i++){const dt=1/30;TT+=dt;S.time+=dt;f&&f();updTasks(dt);updPlayer(dt);updJeep(dt);for(const a of ACTORS){if(a.update)a.update(dt);}updFX(dt);updCamera(dt);if(i%5===0){updInteract();checkQuests();updDiscovery();}}}};
 requestAnimationFrame(frame);boot();
