@@ -6269,6 +6269,9 @@ function slopeAt(x,z){const a=H(x+1.5,z)-H(x-1.5,z),b=H(x,z+1.5)-H(x,z-1.5);retu
 const FLOORS=[];
 function G(x,z){let y=H(x,z);for(const f of FLOORS){const v=f(x,z);if(v!==null&&v>y)y=v;}return y;}
 const world=new THREE.Group();scene.add(world);
+/* far-away scenery is skipped when drawing (big help on iPad) */
+const CULL=[];function cullAdd(o,x,z,r){if(r<150)CULL.push({o,x,z,r});}
+let cullT=0;function updCull(dt){cullT-=dt;if(cullT>0)return;cullT=.35;const cx=camera.position.x,cz=camera.position.z,D=IOS?(S.set.ultra?190:240):430;for(const c of CULL)c.o.visible=hyp(c.x-cx,c.z-cz)-c.r<D;}
 let TERR=null;
 function computeHeights(){// road profile: smoothed terrain heights along the road
   const raw=RPATH.map(p=>baseH(p[0],p[1]));ROADY=raw.map((v,i)=>{let s=0,w=0;for(let k=-8;k<=8;k++){const j=clamp(i+k,0,raw.length-1);const ww=1-Math.abs(k)/9;s+=raw[j]*ww;w+=ww;}return s/w;});
@@ -6330,7 +6333,7 @@ function buildRoad(){const W=4.8;const pos=[],uv=[],nrm=[],idx=[];let acc=0;
   ROADM=new THREE.Mesh(g,m);ROADM.receiveShadow=true;ROADM.renderOrder=1;world.add(ROADM);}
 /* ================= GEOMETRY HELPERS ================= */
 class Batch{constructor(){this.g=new Map();}add(geo,mat,m){let e=this.g.get(mat);if(!e){e={p:[],n:[],u:[]};this.g.set(mat,e);}const g=(geo.index?geo.toNonIndexed():geo.clone());g.applyMatrix4(m);const p=g.attributes.position.array,n=g.attributes.normal.array,u=g.attributes.uv?g.attributes.uv.array:new Float32Array(p.length/3*2);for(let i=0;i<p.length;i++){e.p.push(p[i]);e.n.push(n[i]);}for(let i=0;i<u.length;i++)e.u.push(u[i]);g.dispose();}
-  build(parent,cast=true){const out=[];for(const[mat,e]of this.g){const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(e.p,3));g.setAttribute('normal',new THREE.Float32BufferAttribute(e.n,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(e.u,2));g.computeBoundingSphere();const m=new THREE.Mesh(g,mat);m.castShadow=cast;m.receiveShadow=true;parent.add(m);out.push(m);}this.g.clear();return out;}}
+  build(parent,cast=true){const out=[];for(const[mat,e]of this.g){const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(e.p,3));g.setAttribute('normal',new THREE.Float32BufferAttribute(e.n,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(e.u,2));g.computeBoundingSphere();const m=new THREE.Mesh(g,mat);m.castShadow=cast;m.receiveShadow=true;parent.add(m);out.push(m);if(parent===world){const bs=g.boundingSphere;cullAdd(m,bs.center.x,bs.center.z,bs.radius);}}this.g.clear();return out;}}
 const BT=new Batch();const _M=new THREE.Matrix4(),_Q=new THREE.Quaternion(),_E=new THREE.Euler(),_S=new V3(),_P=new V3();
 function mtx(x,y,z,ry=0,rx=0,rz=0,sx=1,sy=1,sz=1){_E.set(rx,ry,rz,'YXZ');_Q.setFromEuler(_E);_S.set(sx,sy,sz);_P.set(x,y,z);return _M.compose(_P,_Q,_S);}
 function boxGeo(sx,sy,sz,ts=3){const g=new THREE.BoxGeometry(sx,sy,sz);const uv=g.attributes.uv.array;const dims=[[sz,sy],[sz,sy],[sx,sz],[sx,sz],[sx,sy],[sx,sy]];for(let f=0;f<6;f++)for(let k=0;k<4;k++){const i=(f*4+k)*2;uv[i]*=dims[f][0]/ts;uv[i+1]*=dims[f][1]/ts;}return g;}
@@ -6386,7 +6389,7 @@ function colFromObject(obj,o={}){obj.updateMatrixWorld(true);const ry=obj.rotati
 /* model placement */
 function place(key,x,z,ry=0,o={}){const src=AS[key].scene;const m=src.clone(true);m.position.set(x,o.y??(o.ground?G(x,z):H(x,z))+(o.dy||0),z);m.rotation.set(o.rx||0,ry,o.rz||0);if(o.s)m.scale.setScalar(o.s);
   m.traverse(c=>{if(c.isMesh){c.castShadow=o.cast!==false;c.receiveShadow=true;const ms=Array.isArray(c.material)?c.material:[c.material];ms.forEach(mm=>{mm.envMapIntensity=o.env??.9;if(mm.map)mm.map.anisotropy=8;if(o.dusty&&!mm.userData.dust){mm.userData.dust=1;mm.color.multiply(new THREE.Color(o.dusty));}});}});
-  world.add(m);if(o.col!==false)colFromObject(m,o);return m;}
+  world.add(m);if(o.col!==false)colFromObject(m,o);{m.updateMatrixWorld(true);const bb=new THREE.Box3().setFromObject(m),sp=new THREE.Sphere();if(!bb.isEmpty()){bb.getBoundingSphere(sp);cullAdd(m,sp.center.x,sp.center.z,sp.radius);}}return m;}
 /* ================= SITES ================= */
 const LOOT=[];// searchable containers
 function lootSpot(id,x,z,kind,o={}){const L={id,x,z,y:o.y??G(x,z),kind,label:o.label||'Search',table:o.table||kind,once:o.once};LOOT.push(L);return L;}
@@ -6686,8 +6689,8 @@ function updPlayer(dt){if(!P.ready)return;const ch=P.ch;P.inv=Math.max(0,P.inv-d
   const block=DLG.on||CINE.on||!$('jour').hidden||!$('modal').hidden;let ix=0,iz=0;if(!block){if(JOY.on){ix=JOY.x;iz=JOY.y;}ix+=(keys.KeyD?1:0)-(keys.KeyA?1:0);iz+=(keys.KeyS?1:0)-(keys.KeyW?1:0);}
   const ml=Math.min(1,hyp(ix,iz));const fx=-Math.sin(CAM.yaw),fz=-Math.cos(CAM.yaw),rx=Math.cos(CAM.yaw),rz=-Math.sin(CAM.yaw);let mx=fx*-iz+rx*ix,mz=fz*-iz+rz*ix;const l=hyp(mx,mz)||1;mx/=l;mz/=l;
   P.aiming=(P.aimHeld||keys.KeyQ||mouseAim)&&!!P.gun&&!block&&P.reloadT<=0;P.aimK=clamp(P.aimK+(P.aiming?dt*6:-dt*5),0,1);
-  const sprint=P.sprint&&!P.aiming&&!P.crouch&&P.sta>2&&ml>.5&&iz<0;
-  let spd=(sprint?6.4:P.crouch?1.7:P.aiming?2.3:3.7)*ml;if(sprint)P.sta=Math.max(0,P.sta-dt*12);else P.sta=Math.min(100,P.sta+dt*16);if(P.sta<=0)P.sprint=false;
+  if(P.sta<=1&&!P.tired){P.tired=true;P.sprint=false;$('bSprint').classList.remove('on');}else if(P.tired&&P.sta>35)P.tired=false;const sprint=P.sprint&&!P.tired&&!P.aiming&&!P.crouch&&ml>.5&&iz<0;
+  let spd=(sprint?6.4:P.crouch?1.7:P.aiming?2.3:3.7)*ml;if(sprint)P.sta=Math.max(0,P.sta-dt*12);else P.sta=Math.min(100,P.sta+dt*16);
   P.x+=mx*spd*dt;P.z+=mz*spd*dt;P.spd=spd;
   // facing: strafe while aiming, otherwise turn toward movement
   if(P.aimK>.3||P.firing&&P.gun){P.rot+=angDiff(P.rot,CAM.yaw+PI)*Math.min(1,dt*14);}else if(ml>.08){P.rot+=angDiff(P.rot,Math.atan2(mx,mz))*Math.min(1,dt*10);}
@@ -6797,11 +6800,15 @@ function updJeep(dt){const J=JEEP;if(!J)return;if(!P.drive){J.v*=Math.pow(.2,dt)
   for(const a of ACTORS){if(a.dead||a.kind==='npc')continue;const d=hyp(a.x-J.x,a.z-J.z);if(d<1.9&&Math.abs(J.v)>5){a.damage(Math.abs(J.v)*7,P,'body',new V3(fx,0,fz));J.v*=.75;CAM.shake+=.3;}}
   J.x=clamp(J.x,-800,800);J.z=clamp(J.z,-800,800);placeJeep(dt);lightsJeep();
   // driver sits in the seat
-  const c=Math.cos(J.ry),s=Math.sin(J.ry);const seat=new V3(-.36,.42,-.15*JFRONT).applyEuler(J.m.rotation).add(J.m.position);P.x=seat.x;P.z=seat.z;P.y=seat.y;P.ch.root.position.copy(seat);P.ch.root.quaternion.copy(J.m.quaternion);setAnim(P.ch,'crouch',.3);P.ch.mixer.update(0);
+  const c=Math.cos(J.ry),s=Math.sin(J.ry);const seat=new V3(-.36,.42,-.15*JFRONT).applyEuler(J.m.rotation).add(J.m.position);P.x=seat.x;P.z=seat.z;P.y=seat.y;P.ch.root.position.copy(seat);P.ch.root.quaternion.copy(J.m.quaternion);if(JFRONT<0)P.ch.root.rotateY(PI);setAnim(P.ch,'crouch',.3);P.ch.mixer.update(0);
   driverPose();engineSound(fuelOK,clamp(Math.abs(J.v)/vmax,0,1)+(gas?.15:0),gas?1:0);
   $('spd').textContent=Math.round(Math.abs(J.v)*3.6);$('fuelB').firstChild.style.width=(S.jeep.fuel*100)+'%';}
-function driverPose(){const b=P.ch.bones;if(!b.RightArm)return;P.ch.root.updateMatrixWorld(true);// hands on the wheel
-  const J=JEEP;const wc=new V3(-.36,1.18,.38*JFRONT).applyEuler(J.m.rotation).add(J.m.position);const right=new V3(Math.cos(J.ry),0,-Math.sin(J.ry));const a=J.steer*.9;
+function driverPose(){const b=P.ch.bones;if(!b.RightArm)return;P.ch.root.updateMatrixWorld(true);const J=JEEP;
+  // sit up straight (the crouch clip leans forward), leaning back a touch
+  {const hp=b.Hips.getWorldPosition(new V3()),np=b.Neck.getWorldPosition(new V3());const L=hp.distanceTo(np);const fw=new V3(Math.sin(J.ry)*JFRONT,0,Math.cos(J.ry)*JFRONT);
+   const want=new V3(0,1,0).applyEuler(J.m.rotation).multiplyScalar(Math.cos(.12)).addScaledVector(fw,-Math.sin(.12)).normalize();rotBoneTo(b.Spine,b.Neck,hp.addScaledVector(want,L));P.ch.root.updateMatrixWorld(true);}
+  // hands on the wheel
+const wc=new V3(-.36,1.18,.38*JFRONT).applyEuler(J.m.rotation).add(J.m.position);const right=new V3(Math.cos(J.ry),0,-Math.sin(J.ry)).multiplyScalar(JFRONT);const a=J.steer*.9;
   const r=wc.clone().addScaledVector(right,-.17*Math.cos(a)).add(new V3(0,.17*Math.sin(a),0)),l=wc.clone().addScaledVector(right,.17*Math.cos(a)).add(new V3(0,-.17*Math.sin(a),0));
   const up=new V3(0,1,0);ik2(b.RightArm,b.RightForeArm,b.RightHand,r,b.RightArm.getWorldPosition(new V3()).addScaledVector(up,-1).addScaledVector(right,-.5));ik2(b.LeftArm,b.LeftForeArm,b.LeftHand,l,b.LeftArm.getWorldPosition(new V3()).addScaledVector(up,-1).addScaledVector(right,.5));}
 function lightsJeep(){const J=JEEP;const on=J.lights&&S.jeep.hp>0;J.hl.intensity=on?2.2:0;J.sl.intensity=on&&S.mods.lamp?3:0;J.hlGlow.forEach(g=>g.material.opacity=on?.9:0);}
@@ -6823,6 +6830,7 @@ class Enemy extends Actor{constructor(o){const K=KINDS[o.kind];super(Object.assi
   // body can be searched
   const L=lootSpot('body'+ENEMIES.indexOf(this)+'_'+Math.floor(S.time),this.x,this.z,'body',{label:'Search body',once:1});L.body=this;}
  update(dt){const ch=this.ch;const d=hyp(P.x-this.x,P.z-this.z);if(d>220&&!this.boss){ch.root.visible=false;if(this.gun)this.gun.holder.visible=false;return;}ch.root.visible=true;
+  this._acc=(this._acc||0)+dt;if(IOS&&d>70&&this.st!=='combat'&&!this.boss&&this._acc<.2)return;dt=Math.min(this._acc,.25);this._acc=0;
   if(this.dead){ch.mixer.update(dt);if(this.gun){const g=this.gun.holder,f=g.userData.fall;if(f&&g.position.y>H(g.position.x,g.position.z)+.05){f.vy-=9*dt;g.position.y+=f.vy*dt;g.rotateX(f.rx*dt);g.rotateZ(f.rz*dt);}}return;}
   this.t-=dt;this.fireT-=dt;this.flinch=Math.max(0,(this.flinch||0)-dt);const tgt=P.drive?{x:JEEP.x,z:JEEP.z,y:JEEP.y+1}:{x:P.x,z:P.z,y:P.y+(P.crouch?.9:1.3)};
   // perception
@@ -6880,7 +6888,7 @@ function updCamps(){for(const C of CAMPS){const id='camp_'+C.id;const live=group
 const NPCOBJ={};
 class NPC extends Actor{constructor(id){const D=NPCS[id];super({x:D.at?D.at[0]:0,z:D.at?D.at[1]:0,rot:D.ry||0,tint:D.tint,pants:D.pants,scale:D.scale,kind:'npc',gun:D.gun,hair:D.hair?0x6a6a66:undefined,gear:D.gear});this.id=id;this.D=D;this.n=D.n;this.ry0=D.ry||0;}
  damage(){}
- update(dt){const d=hyp(P.x-this.x,P.z-this.z);if(d>140||this.hidden){this.ch.root.visible=false;if(this.gun)this.gun.holder.visible=false;return;}this.ch.root.visible=true;if(this.gun)this.gun.holder.visible=true;const want=d<6?Math.atan2(P.x-this.x,P.z-this.z):this.ry0;this.rot+=angDiff(this.rot,want)*Math.min(1,dt*3);
+ update(dt){const d=hyp(P.x-this.x,P.z-this.z);if(d>140||this.hidden){this.ch.root.visible=false;if(this.gun)this.gun.holder.visible=false;return;}this.ch.root.visible=true;if(this.gun)this.gun.holder.visible=true;this._acc=(this._acc||0)+dt;if(IOS&&d>25&&this._acc<.16)return;dt=this._acc;this._acc=0;const want=d<6?Math.atan2(P.x-this.x,P.z-this.z):this.ry0;this.rot+=angDiff(this.rot,want)*Math.min(1,dt*3);
   setAnim(this.ch,this.gun?'ridle':'idle',.4);this.y=G(this.x,this.z);this.place();this.ch.mixer.update(dt);if(this.gun){const b=this.ch.bones;this.ch.root.updateMatrixWorld(true);poseGun(this.ch,this.gun,0,new V3(Math.sin(this.rot),0,Math.cos(this.rot)),{roll:.3});}}}
 const GUARDS=[];
 function buildNPCs(){for(const id of['marta','eli','rosa','vale','pike','sable'])NPCOBJ[id]=new NPC(id);NPCOBJ.tomas=new NPC('tomas');NPCOBJ.sable2=new NPC('sable2');
@@ -7189,7 +7197,7 @@ function frame(now){requestAnimationFrame(frame);let dt=Math.min(.05,(now-last)/
   if(!TITLE.on&&!CINE.on&&!DLG.on&&$('jour').hidden&&$('modal').hidden){S.time+=dt;S.hour+=dt/60;if(S.hour>=24){S.hour-=24;S.day++;}}else if(CINE.on||TITLE.on){S.hour+=dt/240;if(S.hour>=24)S.hour-=24;}
   updTasks(dt);dlgTick(dt);updPlayer(dt);updJeep(dt);for(const a of ACTORS){if(a instanceof Enemy)a.update(dt);else if(a.update)a.update(dt);}updFX(dt);updTumble(dt);
   for(const f of FIRES){const k=.8+Math.sin(TT*13+f.p)*.1+Math.sin(TT*7.3+f.p)*.1;f.f.scale.set(1.3*k,1.7*k,1);f.L.intensity*=1;}
-  updCamera(dt);updWeather(dt);updLight(dt);placeSun();if(DUST)DUST.material.uniforms.uCam.value.copy(camera.position);
+  updCamera(dt);updCull(dt);updWeather(dt);updLight(dt);placeSun();if(DUST)DUST.material.uniforms.uCam.value.copy(camera.position);
   if(P.ready&&!TITLE.on){grassLOD(P.x,P.z);iT-=dt;if(iT<=0){iT=.15;updInteract();}qT-=dt;if(qT<=0){qT=.5;checkQuests();updDiscovery();updCamps();}cT-=dt;if(cT<=0){cT=10;cleanupDead();persist();}updHUD(dt);drawMini(dt);}
   for(const q of QITEMS)q.mesh.children[0].material.opacity=.45+Math.sin(TT*4)*.25;for(const c of COLLECT)c.g.children[1].material.opacity=.3+Math.sin(TT*3+c.x)*.25;
   drawOverlay(dt);if(bannerT>0){bannerT-=dt;if(bannerT<=0)$('banner').classList.remove('on');}
@@ -7208,7 +7216,7 @@ function boot(){const msg=t=>$('loadM').textContent=t;msg('Loading the Basin');
     const steps=[['Raising the mesas',()=>{mkMats();buildTerrain();}],['Paving Route 40',()=>{buildRoad();}],['Rusting the cars',()=>{buildSites();scene.traverse(m=>{if(m.isMesh&&m.name==='ICE_ICE_0'){m.material=m.material.clone();m.material.color.setRGB(.5,.48,.43);}if(m.isMesh&&m.material&&m.material.emissive&&/Light_0|Sign_0|Neon|Lamp/.test(m.name)){m.material=m.material.clone();m.material.emissive.setRGB(0,0,0);m.material.emissiveMap=null;}});}],['Scattering scrub',()=>{buildVeg();buildTumble();buildDust();buildCollect();}],
       ['Waking the Basin',()=>{if(S.set.ultra&&GRASS){GRASS.parent.remove(GRASS);GRASS.geometry.dispose();GRASS=null;}if(AS.hdr&&!S.set.ultra&&!IOS){const pm=new THREE.PMREMGenerator(renderer);ENVT=pm.fromEquirectangular(AS.hdr).texture;scene.environment=ENVT;}buildJeep();buildPlayer();buildNPCs();buildMapCanvas();bindJoy();bindUI();collectEnvMats();applyQuality();updLight(0,true);}]];let i=0;
     const next=()=>{if(i>=steps.length){$('load').hidden=true;BOOTED=true;showTitle();crumb('Playing');setTimeout(()=>{try{__store.remove('ll-boot');__store.remove('ll-step');}catch(_){}if(SAFEMODE)toast('Graphics were lowered so Last Light fits in memory. You can raise them in Journal, Settings.',7);},60000);return;}msg(steps[i][0]+'...');crumb(steps[i][0]);$('loadP').style.width=(70+i/steps.length*30)+'%';setTimeout(()=>{try{steps[i][1]();}catch(e){msg('Error: '+e.message);console.error(e);return;}i++;next();},30);};next();}).catch(e=>{msg('Could not load: '+e.message);console.error(e);});}
-window.__ll={WX,renderer,scene,sky,get ROADM(){return ROADM;},RPATH,get TERR(){return TERR;},get S(){return S;},P,ACTORS,ENEMIES,NPCOBJ,LOOT,COLLECT,QITEMS,Q,GROUPLIVE,CAM,JOY,JIN,keys,camera,get JEEP(){return JEEP;},get BOSS(){return BOSS;},H,G,teleport,addItem,equipGun,completeStep,stepStart,activeQuests,questStep,checkQuests,doInteract,get curInt(){return curInt;},
+window.__ll={WX,LOOK,renderer,scene,sky,get ROADM(){return ROADM;},RPATH,get TERR(){return TERR;},get S(){return S;},P,ACTORS,ENEMIES,NPCOBJ,LOOT,COLLECT,QITEMS,Q,GROUPLIVE,CAM,JOY,JIN,keys,camera,get JEEP(){return JEEP;},get BOSS(){return BOSS;},H,G,teleport,addItem,equipGun,completeStep,stepStart,activeQuests,questStep,checkQuests,doInteract,get curInt(){return curInt;},
   talkNPC,dlgNext,DLG,CINE,cineNext,startGame,enterJeep,leaveJeep,spawnGroup,reload,tryFire,aimSolve,placeJeep,searchLoot,openBench,updLight,WX,
   sim(n,f){for(let i=0;i<n;i++){const dt=1/30;TT+=dt;S.time+=dt;f&&f();updTasks(dt);updPlayer(dt);updJeep(dt);for(const a of ACTORS){if(a.update)a.update(dt);}updFX(dt);updCamera(dt);if(i%5===0){updInteract();checkQuests();updDiscovery();}}}};
 requestAnimationFrame(frame);boot();
