@@ -6435,7 +6435,9 @@ function buildSites(){
    const nx=Math.cos(dir),nz=-Math.sin(dir);const px=x+nx*off,pz=z+nz*off;let near=false;for(const s in SITES)if(hyp(px-SITES[s].x,pz-SITES[s].z)<60)near=true;if(near)continue;
    const key=pick(['car_sedan','car_bmw','car_alfa','car_sedan']);const roll=g()<.12;place(key,px,pz,dir+(g()<.5?0:PI)+rnd(-.5,.5),{dusty:0xd8ccb8,rz:roll?PI*.5:rnd(-.06,.06),dy:roll?.6:0});if(g()<.5)lootSpot('car'+i,px+1.5,pz,'car',{label:'Search car'});}
  // crash site start
- {const C=SITES.crash;lootSpot('q1a',-536,58,'car');}
+ {const C=SITES.crash;lootSpot('q1a',-536,58,'car');
+  // the three wrecks the first quest sends you to search (the glow sits by the driver door)
+  [[-536,58,'car_sedan',.5],[-588,30,'car_bmw',2.2],[-602,66,'car_alfa',-1.1]].forEach(([x,z,k,r])=>place(k,x+Math.cos(r)*1.9,z-Math.sin(r)*1.9,r,{dusty:0xd8ccb8}));}
  // power poles along the road, many leaning, wires down
  poles();signs();}
 /* ----- procedural structures (all textured with the photo materials) ----- */
