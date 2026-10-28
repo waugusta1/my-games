@@ -211,22 +211,25 @@ html,body{height:100%;margin:0;background:#0a0e12;overflow:hidden;font-family:va
 canvas{display:block}#c{position:fixed;inset:0;width:100%;height:100%}#ov2{position:fixed;inset:0;width:100%;height:100%;pointer-events:none}
 .sh{text-shadow:0 1px 2px rgba(0,0,0,.85),0 0 8px rgba(0,0,0,.45)}
 #hud{position:fixed;inset:0;pointer-events:none}
-#stats{position:fixed;left:calc(14px + var(--sl));top:calc(12px + var(--st));display:grid;grid-template-columns:auto 1fr;gap:5px 8px;align-items:center;width:min(250px,36vw)}
-#stats svg{width:16px;height:16px}.bar{height:9px;border-radius:5px;background:rgba(0,0,0,.45);overflow:hidden;position:relative;box-shadow:inset 0 0 0 1px rgba(255,255,255,.12)}.bar i{position:absolute;left:0;top:0;bottom:0;border-radius:5px;transition:width .2s}
-#bHp i{background:#e5533d}#bFood i{background:#e9a23b}#bWater i{background:#3fa6e8}#bSta i{background:#d8e8c8}#bAir i{background:#9ae0ff}
-.bar.low{animation:pulse 1s infinite}@keyframes pulse{50%{box-shadow:inset 0 0 0 1px #ff6a5a,0 0 8px #ff6a5a}}
-#track{position:fixed;left:calc(14px + var(--sl));top:calc(112px + var(--st));max-width:min(330px,44vw);font-size:14px;line-height:1.35}
-#track .qn{font-weight:700;color:var(--acc);font-size:13px;letter-spacing:.8px;text-transform:uppercase}#track .qs::before{content:"";display:inline-block;width:6px;height:6px;border:1.5px solid var(--acc);transform:rotate(45deg);margin-right:7px;vertical-align:1px}
-#track .side{opacity:.75;font-size:13px;margin-top:4px}
-#mmW{position:fixed;right:calc(12px + var(--sr));top:calc(10px + var(--st));width:140px;height:140px;border-radius:50%;overflow:hidden;border:2px solid rgba(255,255,255,.55);box-shadow:0 2px 10px rgba(0,0,0,.4);pointer-events:auto}#mm{width:140px;height:140px}
+#stats{position:fixed;left:calc(14px + var(--sl));top:calc(12px + var(--st));display:flex;gap:11px;align-items:flex-end;padding:8px 13px 6px;background:linear-gradient(180deg,rgba(58,38,20,.8),rgba(34,22,11,.8));border:1.5px solid rgba(206,160,80,.7);border-radius:12px;box-shadow:0 3px 12px rgba(0,0,0,.35),inset 0 1px 0 rgba(255,220,160,.2)}
+.bar{height:9px;border-radius:5px;background:rgba(0,0,0,.45);overflow:hidden;position:relative;box-shadow:inset 0 0 0 1px rgba(255,255,255,.12)}.bar i{position:absolute;left:0;top:0;bottom:0;border-radius:5px;transition:width .2s}
+.vial{display:flex;flex-direction:column;align-items:center;gap:4px}.vial svg{width:17px;height:17px;filter:drop-shadow(0 1px 1px #000)}
+.tube{width:15px;height:46px;border-radius:8px 8px 6px 6px;background:rgba(6,10,14,.55);border:1.5px solid rgba(225,238,250,.6);position:relative;overflow:hidden}.tube::before{content:"";position:absolute;left:2px;top:4px;bottom:4px;width:3px;border-radius:2px;background:rgba(255,255,255,.28);z-index:2}
+.tube i{position:absolute;left:0;right:0;bottom:0;transition:height .3s}.tube i::after{content:"";position:absolute;left:0;right:0;top:0;height:2px;background:rgba(255,255,255,.6)}
+#bHp i{background:linear-gradient(#ff7a5a,#b82a18)}#bFood i{background:linear-gradient(#f4c060,#b06a16)}#bWater i{background:linear-gradient(#70ccff,#1662a8)}#bSta i{background:linear-gradient(#eef6d8,#8aa860)}#bAir i{background:linear-gradient(#d0f4ff,#4aa8dc)}
+.vial.low .tube{animation:vlow 1s infinite}@keyframes vlow{50%{border-color:#ff6a5a;box-shadow:0 0 9px #ff6a5a}}
+#track{position:fixed;left:calc(14px + var(--sl));top:calc(112px + var(--st));max-width:min(330px,44vw);font:14px/1.4 var(--h);background:linear-gradient(172deg,#f0e2c0,#d8c294);color:#3a2614;padding:8px 13px 9px;border-radius:3px;box-shadow:0 4px 12px rgba(0,0,0,.35);text-shadow:none;transform:rotate(-.5deg)}#track:empty{display:none}
+#track .qn{font:italic 700 16px var(--h);color:#7a2e10}#track .qs::before{content:"";display:inline-block;width:6px;height:6px;border:1.5px solid #7a2e10;transform:rotate(45deg);margin-right:7px;vertical-align:1px}
+#track .side{color:#5a4026;font-size:13px;margin-top:5px;padding-top:4px;border-top:1px dashed rgba(90,64,38,.4)}
+#mmW{position:fixed;right:calc(12px + var(--sr));top:calc(10px + var(--st));width:140px;height:140px;border-radius:50%;overflow:hidden;border:5px solid #b8893c;box-shadow:0 0 0 2px #4a2e10,inset 0 0 0 2px rgba(255,230,170,.45),0 4px 14px rgba(0,0,0,.5);box-sizing:border-box;pointer-events:auto}#mm{width:140px;height:140px}
 #topR{position:fixed;right:calc(160px + var(--sr));top:calc(12px + var(--st));display:flex;gap:8px;pointer-events:auto}
-.ib{width:46px;height:46px;border-radius:14px;border:1px solid var(--line);background:rgba(14,18,22,.66);color:#fff;display:flex;align-items:center;justify-content:center;padding:0;position:relative}.ib svg{width:24px;height:24px}.ib .dot{position:absolute;right:-3px;top:-3px;width:12px;height:12px;border-radius:6px;background:var(--acc)}
-#clock{position:fixed;right:calc(12px + var(--sr));top:calc(154px + var(--st));width:140px;text-align:center;font-size:12px;font-weight:600;opacity:.9}
+.ib{width:46px;height:46px;border-radius:50%;border:2px solid #b8893c;background:radial-gradient(circle at 35% 30%,#6e4826,#2c1a0c);box-shadow:0 2px 8px rgba(0,0,0,.4);color:#fff;display:flex;align-items:center;justify-content:center;padding:0;position:relative}.ib svg{width:24px;height:24px}.ib .dot{position:absolute;right:-3px;top:-3px;width:12px;height:12px;border-radius:6px;background:var(--acc)}
+#clock{position:fixed;right:calc(12px + var(--sr));top:calc(154px + var(--st));width:140px;text-align:center;font:italic 600 14px var(--h);opacity:.95}
 #ctl{position:fixed;inset:0;pointer-events:none}
 #joyZ{position:fixed;left:0;bottom:0;width:45%;height:62%;pointer-events:auto}
 #joy{position:fixed;width:130px;height:130px;margin:-65px 0 0 -65px;border-radius:50%;border:2px solid rgba(255,255,255,.28);background:rgba(0,0,0,.15);pointer-events:none}#joy i{position:absolute;left:50%;top:50%;width:54px;height:54px;margin:-27px;border-radius:50%;background:rgba(255,255,255,.3);border:2px solid rgba(255,255,255,.55)}
 #lookZ{position:fixed;right:0;top:0;width:55%;height:100%;pointer-events:auto}
-.cb{position:fixed;border-radius:50%;border:2px solid rgba(255,255,255,.45);background:rgba(16,22,28,.55);color:#fff;pointer-events:auto;display:flex;align-items:center;justify-content:center;padding:0;box-shadow:0 3px 10px rgba(0,0,0,.35);font:700 12px var(--f)}
+.cb{position:fixed;border-radius:50%;border:3px solid rgba(206,160,80,.82);background:rgba(44,28,14,.5);color:#fff;pointer-events:auto;display:flex;align-items:center;justify-content:center;padding:0;box-shadow:0 3px 10px rgba(0,0,0,.35);font:700 12px var(--f)}
 .cb svg{width:52%;height:52%}.cb.on{background:rgba(242,195,90,.45);border-color:#ffe2a0}
 #bAct{right:calc(24px + var(--sr));bottom:calc(28px + var(--sb));width:94px;height:94px}
 #bJump{right:calc(132px + var(--sr));bottom:calc(20px + var(--sb));width:66px;height:66px}
@@ -234,12 +237,12 @@ canvas{display:block}#c{position:fixed;inset:0;width:100%;height:100%}#ov2{posit
 #bUse{right:calc(124px + var(--sr));bottom:calc(112px + var(--sb));height:46px;border-radius:23px;padding:0 18px;font:700 15px var(--f);color:#ffe8b0;white-space:nowrap;width:auto}
 #bDive{right:calc(210px + var(--sr));bottom:calc(20px + var(--sb));width:60px;height:60px}
 #hot{position:fixed;left:50%;bottom:calc(14px + var(--sb));transform:translateX(-50%);display:flex;gap:6px;pointer-events:auto}
-#hot button{width:52px;height:52px;border-radius:12px;border:1.5px solid rgba(255,255,255,.22);background:rgba(14,18,22,.62);padding:7px;position:relative}#hot button.sel{border-color:var(--acc);box-shadow:0 0 0 2px rgba(242,195,90,.35)}#hot svg{width:100%;height:100%}
+#hot button{width:52px;height:52px;border-radius:50%;border:2px solid rgba(206,160,80,.62);background:rgba(44,28,14,.66);padding:7px;position:relative}#hot button.sel{border-color:var(--acc);box-shadow:0 0 0 2px rgba(242,195,90,.35)}#hot svg{width:100%;height:100%}
 #hot button b{position:absolute;right:3px;bottom:1px;font:700 11px var(--f);color:#fff;text-shadow:0 1px 2px #000}
 #banner{position:fixed;left:50%;top:20%;transform:translateX(-50%);text-align:center;pointer-events:none;transition:opacity .6s;opacity:0;width:90%}#banner.on{opacity:1}
 #banner .a{font:600 13px var(--f);letter-spacing:5px;color:var(--acc);text-transform:uppercase}#banner .b{font:400 42px var(--h);margin-top:4px}
 #toasts{position:fixed;left:50%;top:calc(12px + var(--st));transform:translateX(-50%);display:flex;flex-direction:column;gap:6px;align-items:center;pointer-events:none;z-index:5}
-#toasts div{background:var(--pan);border:1px solid var(--line);border-radius:12px;padding:7px 14px;font-size:14px;animation:tin .3s;max-width:70vw;text-align:center}@keyframes tin{from{opacity:0;transform:translateY(-8px)}}
+#toasts div{background:rgba(240,226,192,.96);color:#3a2614;border:1px solid #a87a3a;border-radius:3px;font-family:var(--h);text-shadow:none;padding:7px 14px;font-size:14px;animation:tin .3s;max-width:70vw;text-align:center}@keyframes tin{from{opacity:0;transform:translateY(-8px)}}
 #pick{position:fixed;left:calc(14px + var(--sl));bottom:calc(150px + var(--sb));display:flex;flex-direction:column;gap:4px;pointer-events:none}#pick div{background:rgba(14,18,22,.7);border-radius:9px;padding:4px 10px;font-size:13px;animation:tin .25s}
 #dlg{position:fixed;left:50%;bottom:calc(20px + var(--sb));transform:translateX(-50%);width:min(760px,94vw);background:rgba(12,16,20,.94);border:1px solid var(--line);border-radius:16px;padding:16px 22px 18px;box-sizing:border-box;z-index:50;pointer-events:auto;box-shadow:0 10px 40px rgba(0,0,0,.6)}
 #dName{font-weight:700;color:var(--acc);font-size:15px;letter-spacing:.5px}#dText{font:19px/1.5 var(--h);margin-top:6px;min-height:56px}#dNext{position:absolute;right:16px;bottom:10px;font-size:12px;opacity:.55}
@@ -4894,7 +4897,7 @@ const PVS=`varying vec2 vUv;void main(){vUv=uv;gl_Position=vec4(position.xy,0.,1
 const DEPTH=`uniform sampler2D tDepth;uniform mat4 uInvProj;vec3 vpos(vec2 uv){float d=texture2D(tDepth,uv).x;vec4 v=uInvProj*vec4(uv*2.-1.,d*2.-1.,1.);return v.xyz/v.w;}`;
 const PU={tDepth:{value:null},uInvProj:{value:new THREE.Matrix4()},uProj:{value:new THREE.Matrix4()},uCamW:{value:new THREE.Matrix4()},uCamPos:{value:new V3()},uSunDir:{value:new V3(0,1,0)},uSunCol:{value:new THREE.Color()},
   uSunUV:{value:new THREE.Vector2()},uRes:{value:new THREE.Vector2()},uExp:{value:.9},uDay:{value:1},uFogCol:{value:new THREE.Color()},uCloud:{value:.3},uCOff:{value:new THREE.Vector2()},tC:{value:null},
-  uFlash:{value:0},uLeg:{value:1},uTime:timeU,uFogD:{value:.0011},uFogY:{value:1.5},uFogH:{value:.03},uCShadow:{value:1},uSat:{value:1.07},uAOon:{value:1},uRays:{value:0},uMist:{value:0},uUnder:{value:0},uRain:rainU};
+  uFlash:{value:0},uLeg:{value:1},uTime:timeU,uFogD:{value:.0011},uFogY:{value:1.5},uFogH:{value:.03},uCShadow:{value:1},uSat:{value:1.07},uAOon:{value:1},uRays:{value:0},uMist:{value:0},uUnder:{value:0},uRain:rainU,uTint:{value:new V3(1,1,1)},uVig:{value:0},uGrain:{value:0},uCon:{value:.16},uLift:{value:new V3(0,0,0)}};
 const PM={};
 function pmat(extra,fs){return new THREE.ShaderMaterial({uniforms:Object.assign({},PU,extra),vertexShader:PVS,fragmentShader:'varying vec2 vUv;\n'+fs,depthTest:false,depthWrite:false});}
 function makePost(){
@@ -4920,7 +4923,7 @@ uniform sampler2D tIn;uniform mat4 uCamW;uniform vec3 uSunDir;
    void main(){vec2 dl=(vUv-uSunUV)*(.92/56.);vec2 uv=vUv;vec3 c=vec3(0.);float dec=1.;for(int i=0;i<56;i++){uv-=dl;c+=texture2D(tIn,uv).rgb*dec;dec*=.972;}gl_FragColor=vec4(c/56.,1.);}`);
   PM.comp=pmat({tScene:{value:null},tAO:{value:null},tB1:{value:null},tB2:{value:null},tRays:{value:null}},DEPTH+`uniform float uLeg;vec3 LG(vec3 c){return uLeg>.5?pow(max(c,0.),vec3(2.2)):c;}
 
-   uniform sampler2D tScene,tAO,tB1,tB2,tRays,tC;uniform mat4 uCamW;uniform vec3 uCamPos,uSunDir,uSunCol,uFogCol;uniform float uExp,uDay,uCloud,uFlash,uAOon,uRays,uMist,uUnder,uRain,uFogD,uFogY,uFogH,uCShadow,uSat;uniform vec2 uCOff;
+   uniform sampler2D tScene,tAO,tB1,tB2,tRays,tC;uniform mat4 uCamW;uniform vec3 uCamPos,uSunDir,uSunCol,uFogCol;uniform float uExp,uDay,uCloud,uFlash,uAOon,uRays,uMist,uUnder,uRain,uFogD,uFogY,uFogH,uCShadow,uSat,uVig,uGrain,uCon,uTime;uniform vec3 uTint,uLift;uniform vec2 uCOff;
    vec3 RRT(vec3 v){vec3 a=v*(v+.0245786)-.000090537;vec3 b=v*(.983729*v+.4329510)+.238081;return a/b;}
    vec3 ACES(vec3 c){const mat3 I=mat3(vec3(.59719,.07600,.02840),vec3(.35458,.90834,.13383),vec3(.04823,.01566,.83777));const mat3 O=mat3(vec3(1.60475,-.10208,-.00327),vec3(-.53108,1.10813,-.07276),vec3(-.07367,-.00605,1.07602));c*=uExp/.6;c=I*c;c=RRT(c);c=O*c;return clamp(c,0.,1.);}
    float cov(vec2 p){return texture2D(tC,p/900.+uCOff).r*.68+texture2D(tC,p/290.+uCOff*1.9).g*.32;}
@@ -4931,8 +4934,8 @@ uniform sampler2D tIn;uniform mat4 uCamW;uniform vec3 uSunDir;
      float sg=pow(max(dot(dir,uSunDir),0.),7.);vec3 fc=uFogCol+uSunCol*sg*.45*uDay;c=mix(c,fc,clamp(f,0.,1.));}
     else{c=mix(c,uFogCol*1.1,smoothstep(.55,1.,uCloud)*.85);}
     c+=texture2D(tB1,vUv).rgb*.09+texture2D(tB2,vUv).rgb*.13;c+=texture2D(tRays,vUv).rgb*uRays*uSunCol;c+=uFlash*vec3(.75,.82,1.)*.5;
-    vec3 t=ACES(c);float l=dot(t,vec3(.2126,.7152,.0722));t=mix(vec3(l),t,uSat-uRain*.28);t=mix(t,t*t*(3.-2.*t),.16);
-    t=pow(t,vec3(1./2.2));gl_FragColor=vec4(t,1.);}`);
+    vec3 t=ACES(c);float l=dot(t,vec3(.2126,.7152,.0722));t=mix(vec3(l),t,uSat-uRain*.28);t=mix(t,t*t*(3.-2.*t),uCon);t=t*uTint+uLift*(1.-t);
+    vec2 q=vUv-.5;t*=1.-uVig*dot(q,q)*1.6;t=pow(max(t,0.),vec3(1./2.2));t+=(fract(sin(dot(vUv*1000.+fract(uTime*7.1),vec2(12.9898,78.233)))*43758.5453)-.5)*uGrain;gl_FragColor=vec4(t,1.);}`);
   PM.fxaa=pmat({tIn:{value:null},uTexel:{value:new THREE.Vector2()}},`uniform sampler2D tIn;uniform vec2 uTexel;uniform float uTime;
    void main(){vec2 t=uTexel;vec3 nw=texture2D(tIn,vUv+vec2(-t.x,-t.y)).rgb,ne=texture2D(tIn,vUv+vec2(t.x,-t.y)).rgb,sw=texture2D(tIn,vUv+vec2(-t.x,t.y)).rgb,se=texture2D(tIn,vUv+vec2(t.x,t.y)).rgb,m=texture2D(tIn,vUv).rgb;
     vec3 L=vec3(.299,.587,.114);float a=dot(nw,L),b=dot(ne,L),c2=dot(sw,L),e=dot(se,L),lm=dot(m,L);float mn=min(lm,min(min(a,b),min(c2,e))),mx=max(lm,max(max(a,b),max(c2,e)));
@@ -4968,9 +4971,9 @@ const _ds=new THREE.Vector2();function render(overlay){if(POST.on){renderer.getD
   const fu=PM.fxaa.uniforms;fu.tIn.value=r.ldr.texture;fu.uTexel.value.set(1/r.ldr.width,1/r.ldr.height);fsPass(PM.fxaa,null);
   if(overlay){renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.clearDepth();overlay();renderer.toneMapping=THREE.NoToneMapping;}renderer.autoClear=ac;}
 /* params each frame: sunDir (normalized V3), sunCol (Color, already *intensity), fogCol, day 0..1, cloud 0..1, exp */
-function setEnv(o){if(o.sunDir)PU.uSunDir.value.copy(o.sunDir);if(o.sunCol)PU.uSunCol.value.copy(o.sunCol);if(o.fogCol)PU.uFogCol.value.copy(o.fogCol);for(const k of['day','cloud','exp','flash','mist','fogD','fogY','fogH','cShadow','sat','under']){if(o[k]!==undefined){const key='u'+k[0].toUpperCase()+k.slice(1);if(PU[key])PU[key].value=o[k];}}
+function setEnv(o){if(o.sunDir)PU.uSunDir.value.copy(o.sunDir);if(o.sunCol)PU.uSunCol.value.copy(o.sunCol);if(o.fogCol)PU.uFogCol.value.copy(o.fogCol);for(const k of['day','cloud','exp','flash','mist','fogD','fogY','fogH','cShadow','sat','under','vig','grain','con']){if(o[k]!==undefined){const key='u'+k[0].toUpperCase()+k.slice(1);if(PU[key])PU[key].value=o[k];}}
   if(o.cloud!==undefined)PU.uCloud.value=o.cloud;
-  for(const k in PM){const u=PM[k].uniforms;for(const n of['uSunDir','uSunCol','uFogCol'])u[n].value.copy(PU[n].value);for(const n of['uExp','uDay','uCloud','uFlash','uMist','uUnder','uFogD','uFogY','uFogH','uCShadow','uSat'])u[n].value=PU[n].value;u.tC.value=cloudT;if(cloudU)u.uCOff.value.copy(cloudU.uOff.value);}
+  for(const k in PM){const u=PM[k].uniforms;for(const n of['uSunDir','uSunCol','uFogCol'])u[n].value.copy(PU[n].value);for(const n of['uExp','uDay','uCloud','uFlash','uMist','uUnder','uFogD','uFogY','uFogH','uCShadow','uSat','uVig','uGrain','uCon'])u[n].value=PU[n].value;if(o.tint)PU.uTint.value.copy(o.tint);if(o.lift)PU.uLift.value.copy(o.lift);u.tC.value=cloudT;if(cloudU)u.uCOff.value.copy(cloudU.uOff.value);}
   wU.uSun.value.copy(PU.uSunDir.value);}
 /* auto quality: drop SSAO, then post, then pixel ratio if the frame rate is low */
 let prBase=1;
@@ -5001,7 +5004,7 @@ function realify(root,o={}){const sat=o.sat??.82,rough=o.rough??.85;root.travers
       roughness:m.isMeshPhongMaterial?clamp(1-(m.shininess||30)/140,.08,.7):rough,metalness:0,normalMap:m.normalMap||null});
     if(!m.map){n.color.getHSL(_hsl);n.color.setHSL(_hsl.h,_hsl.s*sat,_hsl.l);}if(m.onBeforeCompile&&m.onBeforeCompile.toString().length>40)n.onBeforeCompile=m.onBeforeCompile;n.name=m.name;n.userData=m.userData;
     CONV.set(m,n);return n;});obj.material=Array.isArray(obj.material)?out:out[0];});}
-const API={patchMaterials,envFromSky,ENVI,get leg(){return LEG;},get timeU(){return timeU;},get windU(){return windU;},get rainU(){return rainU;},noise:{h2,vn,fbm,mulberry32,pf},tex,TX,GB,mats,M,terrainMat,variants,VAR,inst,tree,makeSky,waterMat,init,render,setEnv,frame,realify,setupPost,QS,
+const API={get cloudU(){return cloudU;},patchMaterials,envFromSky,ENVI,get leg(){return LEG;},get timeU(){return timeU;},get windU(){return windU;},get rainU(){return rainU;},noise:{h2,vn,fbm,mulberry32,pf},tex,TX,GB,mats,M,terrainMat,variants,VAR,inst,tree,makeSky,waterMat,init,render,setEnv,frame,realify,setupPost,QS,
   get clouds(){return clouds;},get motes(){return motes;},get rain(){return rainMesh;},get cloudU(){return cloudU;},buildRock,buildBroadleaf,buildPine,buildBush,buildGrass,buildFlower,leafCards,randDir,swayShader,noFlip,
   get post(){return POST.on;},canvasTex,clamp,lerp,smooth};
 return API;})();
@@ -5240,12 +5243,12 @@ return{
 </head><body>
 <canvas id="c"></canvas><canvas id="ov2"></canvas>
 <div id="hud" hidden>
- <div id="stats" class="sh">
-  <svg viewBox="0 0 24 24"><path d="M12 21C9 18 2 13.5 2 8.2 2 5.3 4.2 3 7 3c2 0 3.8 1.2 5 3 1.2-1.8 3-3 5-3 2.8 0 5 2.3 5 5.2C22 13.5 15 18 12 21z" fill="#e5533d"/></svg><div class="bar" id="bHp"><i></i></div>
-  <svg viewBox="0 0 24 24"><path d="M5 11h14a7 7 0 0 1-14 0z" fill="#e9a23b"/><path d="M12 4c1 2-1 3 0 5M8 6c.6 1.4-.6 2 0 3.4M16 6c.6 1.4-.6 2 0 3.4" stroke="#e9a23b" stroke-width="1.6" fill="none"/></svg><div class="bar" id="bFood"><i></i></div>
-  <svg viewBox="0 0 24 24"><path d="M12 2C9 7 5 10.5 5 14.5a7 7 0 0 0 14 0C19 10.5 15 7 12 2z" fill="#3fa6e8"/></svg><div class="bar" id="bWater"><i></i></div>
-  <svg viewBox="0 0 24 24"><path d="M13 2 5 13h6l-1 9 8-12h-6z" fill="#d8e8c8"/></svg><div class="bar" id="bSta"><i></i></div>
-  <svg id="airI" viewBox="0 0 24 24" hidden><circle cx="8" cy="15" r="4" fill="none" stroke="#9ae0ff" stroke-width="2"/><circle cx="16" cy="9" r="3" fill="none" stroke="#9ae0ff" stroke-width="2"/></svg><div class="bar" id="bAir" hidden><i></i></div>
+ <div id="stats">
+  <div class="vial" id="bHp"><div class="tube"><i></i></div><svg viewBox="0 0 24 24"><path d="M12 21C9 18 2 13.5 2 8.2 2 5.3 4.2 3 7 3c2 0 3.8 1.2 5 3 1.2-1.8 3-3 5-3 2.8 0 5 2.3 5 5.2C22 13.5 15 18 12 21z" fill="#e5533d"/></svg></div>
+  <div class="vial" id="bFood"><div class="tube"><i></i></div><svg viewBox="0 0 24 24"><path d="M5 11h14a7 7 0 0 1-14 0z" fill="#e9a23b"/><path d="M12 4c1 2-1 3 0 5M8 6c.6 1.4-.6 2 0 3.4M16 6c.6 1.4-.6 2 0 3.4" stroke="#e9a23b" stroke-width="1.6" fill="none"/></svg></div>
+  <div class="vial" id="bWater"><div class="tube"><i></i></div><svg viewBox="0 0 24 24"><path d="M12 2C9 7 5 10.5 5 14.5a7 7 0 0 0 14 0C19 10.5 15 7 12 2z" fill="#3fa6e8"/></svg></div>
+  <div class="vial" id="bSta"><div class="tube"><i></i></div><svg viewBox="0 0 24 24"><path d="M13 2 5 13h6l-1 9 8-12h-6z" fill="#d8e8c8"/></svg></div>
+  <div class="vial" id="bAir" hidden><div class="tube"><i></i></div><svg viewBox="0 0 24 24"><circle cx="8" cy="15" r="4" fill="none" stroke="#9ae0ff" stroke-width="2"/><circle cx="16" cy="9" r="3" fill="none" stroke="#9ae0ff" stroke-width="2"/></svg></div>
  </div>
  <div id="track" class="sh"></div>
  <div id="mmW"><canvas id="mm" width="280" height="280"></canvas></div><div id="clock" class="sh"></div>
@@ -6191,7 +6194,9 @@ function onKey(e){if(!$('title').hidden||CINE.on){if(e.code==='Space'||e.code===
   const n=parseInt(e.key);if(n>=1&&n<=8){const L=['hand','axe_stone','axe_metal','spear','knife','machete','rod','torch'].filter(k=>S.tools.includes(k));if(L[n-1])equip(L[n-1]);}}
 let hudT=0;
 function setBar(id,v){const e=$(id);e.firstChild.style.width=clamp(v,0,100)+'%';e.classList.toggle('low',v<20);}
-function updHUD(dt){setBar('bHp',P.hp);setBar('bFood',P.food);setBar('bWater',P.water);setBar('bSta',P.sta);const sw=P.swim||P.air<100;$('bAir').hidden=$('airI').hidden=!sw;if(sw)setBar('bAir',P.air);$('bDive').hidden=!P.swim;$('bDive').classList.toggle('on',P.dive);
+function setVial(id,v){const e=$(id);e.querySelector('i').style.height=clamp(v,0,100)+'%';e.classList.toggle('low',v<20);}
+let staFull=0;
+function updHUD(dt){setVial('bHp',P.hp);setVial('bFood',P.food);setVial('bWater',P.water);setVial('bSta',P.sta);staFull=P.sta>=99.5?staFull+dt:0;$('bSta').hidden=staFull>1.5;const sw=P.swim||P.air<100;$('bAir').hidden=!sw;if(sw)setVial('bAir',P.air);$('bDive').hidden=!P.swim;$('bDive').classList.toggle('on',P.dive);
   hudT-=dt;if(hudT<=0){hudT=.5;updTracker();const h=Math.floor(S.hour),m=Math.floor((S.hour-h)*60);$('clock').textContent='Day '+S.day+' · '+String(h).padStart(2,'0')+':'+String(m).padStart(2,'0')+(LOCN?' · '+LOCN:'');buildHotbarLazy();}}
 let hbSig='';function buildHotbarLazy(){const sig=S.tools.join()+S.tool+['coconut','water_clean','fish_cooked','meat_cooked','crab_cooked','cans','banana','berry','bandage'].map(cnt).join();if(sig!==hbSig){hbSig=sig;buildHotbar();}}
 let LOCN='';
