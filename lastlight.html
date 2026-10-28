@@ -7194,11 +7194,14 @@ function frame(now){requestAnimationFrame(frame);let dt=Math.min(.05,(now-last)/
   updMusic(dt);RK.frame(dt);RK.render();}
 /* ================= BOOT ================= */
 let BOOTED=false;
+let SAFEMODE=false;
 function boot(){const msg=t=>$('loadM').textContent=t;msg('Loading the Basin');
+  /* if the last launch never finished loading (the iPad ran out of memory), start with lighter graphics */
+  try{if(__store.get('ll-boot')==='1'&&S.set.qual>0){S.set.qual=0;SAFEMODE=true;persist();}__store.set('ll-boot','1');}catch(_){}
   loadAssets(p=>{$('loadP').style.width=(p*70)+'%';}).then(()=>{
     const steps=[['Raising the mesas',()=>{mkMats();buildTerrain();}],['Paving Route 40',()=>{buildRoad();}],['Rusting the cars',()=>{buildSites();scene.traverse(m=>{if(m.isMesh&&m.name==='ICE_ICE_0'){m.material=m.material.clone();m.material.color.setRGB(.5,.48,.43);}if(m.isMesh&&m.material&&m.material.emissive&&/Light_0|Sign_0|Neon|Lamp/.test(m.name)){m.material=m.material.clone();m.material.emissive.setRGB(0,0,0);m.material.emissiveMap=null;}});}],['Scattering scrub',()=>{buildVeg();buildTumble();buildDust();buildCollect();}],
       ['Waking the Basin',()=>{if(AS.hdr){const pm=new THREE.PMREMGenerator(renderer);ENVT=pm.fromEquirectangular(AS.hdr).texture;scene.environment=ENVT;}buildJeep();buildPlayer();buildNPCs();buildMapCanvas();bindJoy();bindUI();collectEnvMats();applyQuality();updLight(0,true);}]];let i=0;
-    const next=()=>{if(i>=steps.length){$('load').hidden=true;BOOTED=true;showTitle();return;}msg(steps[i][0]+'...');$('loadP').style.width=(70+i/steps.length*30)+'%';setTimeout(()=>{try{steps[i][1]();}catch(e){msg('Error: '+e.message);console.error(e);return;}i++;next();},30);};next();}).catch(e=>{msg('Could not load: '+e.message);console.error(e);});}
+    const next=()=>{if(i>=steps.length){$('load').hidden=true;BOOTED=true;showTitle();setTimeout(()=>{try{__store.remove('ll-boot');}catch(_){}if(SAFEMODE)toast('Graphics were lowered so Last Light fits in memory. You can raise them in Journal, Settings.',7);},6000);return;}msg(steps[i][0]+'...');$('loadP').style.width=(70+i/steps.length*30)+'%';setTimeout(()=>{try{steps[i][1]();}catch(e){msg('Error: '+e.message);console.error(e);return;}i++;next();},30);};next();}).catch(e=>{msg('Could not load: '+e.message);console.error(e);});}
 window.__ll={WX,scene,sky,get ROADM(){return ROADM;},RPATH,get TERR(){return TERR;},get S(){return S;},P,ACTORS,ENEMIES,NPCOBJ,LOOT,COLLECT,QITEMS,Q,GROUPLIVE,CAM,JOY,JIN,keys,camera,get JEEP(){return JEEP;},get BOSS(){return BOSS;},H,G,teleport,addItem,equipGun,completeStep,stepStart,activeQuests,questStep,checkQuests,doInteract,get curInt(){return curInt;},
   talkNPC,dlgNext,DLG,CINE,cineNext,startGame,enterJeep,leaveJeep,spawnGroup,reload,tryFire,aimSolve,placeJeep,searchLoot,openBench,updLight,WX,
   sim(n,f){for(let i=0;i<n;i++){const dt=1/30;TT+=dt;S.time+=dt;f&&f();updTasks(dt);updPlayer(dt);updJeep(dt);for(const a of ACTORS){if(a.update)a.update(dt);}updFX(dt);updCamera(dt);if(i%5===0){updInteract();checkQuests();updDiscovery();}}}};
