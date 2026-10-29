@@ -243,7 +243,7 @@ canvas{display:block}#c{position:fixed;inset:0;width:100%;height:100%}#ov2{posit
 #bSprint{left:calc(24px + var(--sl));bottom:calc(200px + var(--sb));width:56px;height:56px}
 #bUse{right:calc(170px + var(--sr));bottom:calc(122px + var(--sb));height:46px;border-radius:6px;padding:2px 18px 0;font:700 18px var(--c);letter-spacing:1.2px;text-transform:uppercase;color:#ffe0b0;white-space:nowrap;width:auto}
 #bWep{right:calc(176px + var(--sr));bottom:calc(30px + var(--sb));width:0;height:0;opacity:0}
-#drv{position:fixed;inset:0;pointer-events:none}#bGas{right:calc(26px + var(--sr));bottom:calc(30px + var(--sb));width:96px;height:96px}#bBrake{right:calc(136px + var(--sr));bottom:calc(30px + var(--sb));width:72px;height:72px}#bHorn{right:calc(30px + var(--sr));bottom:calc(140px + var(--sb));width:60px;height:60px}#bLights{right:calc(102px + var(--sr));bottom:calc(118px + var(--sb));width:56px;height:56px}
+#drv{position:fixed;inset:0;pointer-events:none}#steerZ{position:fixed;left:0;bottom:0;width:45%;height:70%;pointer-events:auto}#steer{position:fixed;width:126px;height:126px;margin:-63px 0 0 -63px;border-radius:30%;border:2px solid rgba(232,190,140,.34);background:rgba(0,0,0,.18);pointer-events:none}#steer i{position:absolute;left:50%;top:50%;width:52px;height:52px;margin:-26px;border-radius:30%;background:rgba(255,255,255,.26);border:2px solid rgba(255,255,255,.5)}#steerHint{position:fixed;left:calc(40px + var(--sl));bottom:calc(60px + var(--sb));font:700 16px var(--c);letter-spacing:1.5px;text-transform:uppercase;opacity:.7;pointer-events:none}#bGas{right:calc(26px + var(--sr));bottom:calc(30px + var(--sb));width:96px;height:96px}#bBrake{right:calc(136px + var(--sr));bottom:calc(30px + var(--sb));width:72px;height:72px}#bHorn{right:calc(30px + var(--sr));bottom:calc(140px + var(--sb));width:60px;height:60px}#bLights{right:calc(102px + var(--sr));bottom:calc(118px + var(--sb));width:56px;height:56px}
 #speedo{position:fixed;left:50%;bottom:calc(18px + var(--sb));transform:translateX(-50%);text-align:center;font:700 44px var(--c)}#speedo small{display:block;font-size:11px;letter-spacing:2px;opacity:.65}#fuelB{width:140px;margin:6px auto 0}#fuelB i{background:#c8903a}
 #hot{position:fixed;left:50%;bottom:calc(14px + var(--sb));transform:translateX(-50%);display:flex;gap:6px;pointer-events:auto}
 #hot button{width:50px;height:50px;border-radius:3px;border:1.5px solid rgba(255,255,255,.18);background:rgba(16,14,12,.6);padding:7px;position:relative}#hot button.sel{border-color:var(--acc);box-shadow:0 0 0 2px rgba(232,160,74,.3)}#hot svg{width:100%;height:100%}
@@ -5889,7 +5889,7 @@ return{
  <button class="cb" id="bSprint" aria-label="Sprint"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round"><path d="M4 12h9M4 7h6M4 17h6M14 6l6 6-6 6"/></svg></button>
  <button class="cb" id="bUse" hidden></button>
 </div>
-<div id="drv" hidden>
+<div id="drv" hidden><div id="steerZ"></div><div id="steer" hidden><i></i></div><div id="steerHint" class="sh">Drag here to steer</div>
  <button class="cb" id="bGas" aria-label="Accelerate"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round"><path d="M12 20V5M6 11l6-6 6 6"/></svg></button>
  <button class="cb" id="bBrake" aria-label="Brake and reverse"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round"><path d="M12 4v15M6 13l6 6 6-6"/></svg></button>
  <button class="cb" id="bHorn" aria-label="Horn"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8"><path d="M4 10h4l8-5v14l-8-5H4z"/><path d="M19 9c1 2 1 4 0 6"/></svg></button>
@@ -6123,10 +6123,12 @@ function loadAssets(onP){let done=0;const tot=GLBS.length+Object.keys(TEXS).leng
 /* ----- input ----- */
 const keys={};addEventListener('keydown',e=>{keys[e.code]=true;onKey(e);});addEventListener('keyup',e=>{keys[e.code]=false;});
 const JOY={on:false,id:null,x0:0,y0:0,x:0,y:0};const LOOK={id:null,x:0,y:0,vx:0,vy:0};const CAM={yaw:-1.4,pitch:.12,dist:3.2,shake:0,x:0,z:0,aim:0,kick:0,fov:55};
-function bindJoy(){const z=$('joyZ'),j=$('joy'),k=j.firstChild;
+function bindJoy(){bindPad($('joyZ'),$('joy'));bindPad($('steerZ'),$('steer'));bindLook();}
+function bindPad(z,j){const k=j.firstChild;
   z.addEventListener('pointerdown',e=>{if(JOY.id!==null)return;JOY.id=e.pointerId;JOY.x0=e.clientX;JOY.y0=e.clientY;JOY.x=JOY.y=0;JOY.on=true;j.hidden=false;j.style.left=e.clientX+'px';j.style.top=e.clientY+'px';k.style.transform='';z.setPointerCapture(e.pointerId);});
   z.addEventListener('pointermove',e=>{if(e.pointerId!==JOY.id)return;let dx=e.clientX-JOY.x0,dy=e.clientY-JOY.y0;const d=Math.hypot(dx,dy),m=55;if(d>m){dx*=m/d;dy*=m/d;}JOY.x=dx/m;JOY.y=dy/m;k.style.transform=`translate(${dx}px,${dy}px)`;});
-  const end=e=>{if(e.pointerId!==JOY.id)return;JOY.id=null;JOY.on=false;JOY.x=JOY.y=0;j.hidden=true;};z.addEventListener('pointerup',end);z.addEventListener('pointercancel',end);
+  const end=e=>{if(e.pointerId!==JOY.id)return;JOY.id=null;JOY.on=false;JOY.x=JOY.y=0;j.hidden=true;};z.addEventListener('pointerup',end);z.addEventListener('pointercancel',end);}
+function bindLook(){
   const look=el=>{el.addEventListener('pointerdown',e=>{if(LOOK.id!==null)return;LOOK.id=e.pointerId;LOOK.x=e.clientX;LOOK.y=e.clientY;try{el.setPointerCapture(e.pointerId);}catch(_){}});
    el.addEventListener('pointermove',e=>{if(e.pointerId!==LOOK.id)return;const dx=e.clientX-LOOK.x,dy=e.clientY-LOOK.y;LOOK.x=e.clientX;LOOK.y=e.clientY;const s=.0052*S.set.sens*(CAM.aim>.5?.55:1);CAM.yaw-=dx*s;CAM.pitch=clamp(CAM.pitch+dy*s*.8,-.75,1.05);});
    const lend=e=>{if(e.pointerId===LOOK.id)LOOK.id=null;};el.addEventListener('pointerup',lend);el.addEventListener('pointercancel',lend);};
@@ -6785,7 +6787,7 @@ function leaveJeep(force){if(!P.drive)return;const J=JEEP;if(!force&&Math.abs(J.
   const c=Math.cos(J.ry),s=Math.sin(J.ry);const lx=-1.4;let x=J.x+lx*c,z=J.z-lx*s;if(insideCol(x,z)){x=J.x-lx*c;z=J.z+lx*s;}teleport(x,z);P.rot=J.ry;CAM.yaw=J.ry+PI;sfx('door');engineSound(false,0,0);J.v=0;JIN.gas=JIN.brake=0;persist();}
 function damageJeep(d){S.jeep.hp=Math.max(0,S.jeep.hp-d*(S.mods.armor1?.5:1));if(S.jeep.hp<=0&&P.drive){toast('The engine dies in a cloud of steam.');leaveJeep(true);}}
 function updJeep(dt){const J=JEEP;if(!J)return;if(!P.drive){J.v*=Math.pow(.2,dt);placeJeep(dt);lightsJeep();return;}
-  const block=DLG.on||CINE.on;let st=0;if(!block){if(JOY.on)st=-JOY.x;st+=(keys.KeyA?1:0)-(keys.KeyD?1:0);}const gas=block?0:(JIN.gas||keys.KeyW?1:0),brk=block?0:(JIN.brake||keys.KeyS?1:0);
+  const block=DLG.on||CINE.on;if(JOY.on&&!S.steered)S.steered=1;$('steerHint').hidden=!!S.steered;let st=0;if(!block){if(JOY.on)st=-JOY.x;st+=(keys.KeyA?1:0)-(keys.KeyD?1:0);}const gas=block?0:(JIN.gas||keys.KeyW?1:0),brk=block?0:(JIN.brake||keys.KeyS?1:0);
   const tyres=S.mods.tyres?1.35:1,eng=S.mods.engine1?1.25:1;const off=polyDist(J.x,J.z,RPATH).d>7;const grip=(off?.7:1)*tyres;const vmax=(off?19:27)*eng;
   const fuelOK=S.jeep.fuel>0&&S.jeep.hp>0;
   if(gas&&fuelOK){J.v+=(J.v<0?14:lerp(8.5,2.5,clamp(J.v/vmax,0,1)))*eng*dt;}else if(brk){if(J.v>.5)J.v-=16*dt;else J.v=Math.max(-6,J.v-5*dt);}else J.v*=Math.pow(off?.55:.75,dt);
