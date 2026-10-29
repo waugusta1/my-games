@@ -6611,9 +6611,9 @@ const HANDQ={R:new THREE.Quaternion().setFromEuler(new THREE.Euler(-1.1,PI*.5,PI
 function poseGun(H,G,aimK,dir,o={}){const b=H.bones;if(!b.RightShoulder||!G)return;H.root.updateMatrixWorld(true);const sh=b.RightArm.getWorldPosition(_v4);
   const fwd=_v.copy(dir).normalize();const right=_v2.crossVectors(fwd,new V3(0,1,0)).normalize();const up=_v3.crossVectors(right,fwd).normalize();
   // shouldered: stock at the shoulder pocket, cheek on the stock; low ready: muzzle down and across the body
-  const low=new V3().copy(fwd).multiplyScalar(.28).addScaledVector(right,-.06).addScaledVector(up,-.26);const shld=new V3().copy(fwd).multiplyScalar(.2).addScaledVector(right,-.08).addScaledVector(up,-.04);
+  const low=new V3().copy(fwd).multiplyScalar(.3).addScaledVector(right,-.1).addScaledVector(up,-.2);const shld=new V3().copy(fwd).multiplyScalar(.2).addScaledVector(right,-.08).addScaledVector(up,-.04);
   const off=low.lerp(shld,aimK);const gp=sh.clone().add(off);
-  const lowDir=fwd.clone().addScaledVector(up,-.75).addScaledVector(right,-.25).normalize();const gdir=lowDir.lerp(fwd,aimK).normalize();
+  const lowDir=fwd.clone().addScaledVector(up,-.42).addScaledVector(right,-.38).normalize();const gdir=lowDir.lerp(fwd,aimK).normalize();
   const m=new THREE.Matrix4().lookAt(new V3(0,0,0),gdir,new V3(0,1,0));// matrix z = -gdir, so the gun (which faces -Z) points along gdir
   G.holder.quaternion.setFromRotationMatrix(m);if(o.roll)G.holder.rotateZ(o.roll*(1-aimK));if(o.kick)G.holder.rotateX(o.kick);
   // grip sits where the stock meets the shoulder, so offset the holder by the grip socket
@@ -6679,7 +6679,8 @@ function respawn(){$('death').hidden=true;P.dead=false;const sp=S.done.q2?[SITES
   for(const e of ENEMIES)if(!e.dead&&e.st!=='idle'){e.st='idle';e.alert=0;}persist();}
 function teleport(x,z){P.x=x;P.z=z;P.y=G(x,z)+.05;P.vy=0;if(P.ch)P.ch.root.position.set(P.x,P.y,P.z);grassLOD(x,z,true);}
 function buildPlayer(){P.ch=makeHuman({shirt:0x8a7a62,pants:0xc8c0b0,gear:{}});scene.add(P.ch.root);P.ch.root.traverse(o=>{if(o.isMesh)o.layers.enable(1);});equipGun(S.gun);}
-function equipGun(k){if(P.gun){scene.remove(P.gun.holder);P.gun=null;}S.gun=k||null;if(k){P.gun=makeGun(k);if(S.mag==null)S.mag=GUNS[k].mag;}$('ammo').hidden=!k;updAmmo();buildHot();}
+function equipGun(k){S.magOf=S.magOf||{};if(S.gun)S.magOf[S.gun]=S.mag;if(P.gun){scene.remove(P.gun.holder);P.gun=null;}S.gun=k||null;if(k){P.gun=makeGun(k);S.mag=S.magOf[k]??S.mag??0;}else{P.aimHeld=false;$('bAim').classList.remove('on');P.reloadT=0;}
+  $('ammo').hidden=!k;$('bAim').hidden=$('bReload').hidden=!k;updAmmo();buildHot();}
 const magSize=()=>S.gun?(S.gun==='rifle'&&S.mods.mag?40:GUNS[S.gun].mag):0;
 function updAmmo(){if(!S.gun)return;$('wName').textContent=GUNS[S.gun].n.toUpperCase();$('aMag').textContent=S.mag;$('aRes').textContent=cnt('ammo');}
 /* ----- per-frame player update ----- */
@@ -6692,6 +6693,8 @@ function updPlayer(dt){if(!P.ready)return;const ch=P.ch;P.inv=Math.max(0,P.inv-d
   // input
   const block=DLG.on||CINE.on||!$('jour').hidden||!$('modal').hidden;let ix=0,iz=0;if(!block){if(JOY.on){ix=JOY.x;iz=JOY.y;}ix+=(keys.KeyD?1:0)-(keys.KeyA?1:0);iz+=(keys.KeyS?1:0)-(keys.KeyW?1:0);}
   const ml=Math.min(1,hyp(ix,iz));const fx=-Math.sin(CAM.yaw),fz=-Math.cos(CAM.yaw),rx=Math.cos(CAM.yaw),rz=-Math.sin(CAM.yaw);let mx=fx*-iz+rx*ix,mz=fz*-iz+rz*ix;const l=hyp(mx,mz)||1;mx/=l;mz/=l;
+  // a left-on aim toggle makes you walk backwards facing away; drop it when you walk toward the camera
+  if(P.aimHeld&&iz>.5&&!P.firing){P.backT=(P.backT||0)+dt;if(P.backT>.6){P.aimHeld=false;$('bAim').classList.remove('on');}}else P.backT=0;
   P.aiming=(P.aimHeld||keys.KeyQ||mouseAim)&&!!P.gun&&!block&&P.reloadT<=0;P.aimK=clamp(P.aimK+(P.aiming?dt*6:-dt*5),0,1);
   if(P.sta<=1&&!P.tired){P.tired=true;P.sprint=false;$('bSprint').classList.remove('on');}else if(P.tired&&P.sta>35)P.tired=false;const sprint=P.sprint&&!P.tired&&!P.aiming&&!P.crouch&&ml>.5&&iz<0;
   let spd=(sprint?6.4:P.crouch?1.7:P.aiming?2.3:3.7)*ml;if(sprint)P.sta=Math.max(0,P.sta-dt*12);else P.sta=Math.min(100,P.sta+dt*16);
@@ -6742,7 +6745,7 @@ function useItem(k){const I=ITEMS[k];if(!I||!cnt(k))return;if(I.food===undefined
   if(I.sick&&R()<I.sick){P.sick=20;toast('Your stomach turns.');}sfx(I.water>0&&!I.food?'drink':I.heal?'pickup':'eat');updHot();}
 /* ================= CAMERA ================= */
 let CAMMODE='player';
-function updCamera(dt){if(CINE.on){cineCam(dt);return;}if(TITLE.on){titleCam(dt);return;}if(!P.ready)return;if(P.drive){jeepCam(dt);return;}
+function updCamera(dt){if(window.__camFix){const f=window.__camFix;camera.position.set(P.x+f[0],P.y+f[1],P.z+f[2]);camera.lookAt(P.x,P.y+1.1,P.z);return;}if(CINE.on){cineCam(dt);return;}if(TITLE.on){titleCam(dt);return;}if(!P.ready)return;if(P.drive){jeepCam(dt);return;}
   const aimK=P.aimK;const sh=lerp(.55,.62,aimK);const dist=lerp(3.1,1.35,aimK)*S.set.cam*(P.crouch?.9:1);const hgt=(P.crouch?1.12:1.6)+P.y;
   const fx=-Math.sin(CAM.yaw),fz=-Math.cos(CAM.yaw),rx=Math.cos(CAM.yaw),rz=-Math.sin(CAM.yaw);const cp=Math.cos(CAM.pitch),sp=Math.sin(CAM.pitch);
   const piv=_v.set(P.x+rx*sh,hgt,P.z+rz*sh);let want=dist;for(let i=1;i<=Math.ceil(dist/.25);i++){const d=i*.25;const x=piv.x-fx*cp*d,y=piv.y+sp*d,z=piv.z-fz*cp*d;if(y<H(x,z)+.25||insideCol(x,z,y)){want=Math.max(.35,d-.3);break;}}
@@ -7019,7 +7022,9 @@ function stepText(qid){const qs=S.q[qid],st=questStep(qid);if(!st)return'';let t
 
 /* ================= HUD ================= */
 const HOTK=['medkit','bandage','stims','water','cans','jerky','water_dirty'];
-function buildHot(){const h=$('hot');h.innerHTML='';for(const g of Object.keys(S.guns)){const b=document.createElement('button');b.innerHTML=icon(g);b.className=S.gun===g?'sel':'';b.setAttribute('aria-label',GUNS[g].n);b.addEventListener('pointerdown',e=>{e.stopPropagation();if(S.gun!==g){S.mag=0;equipGun(g);toast(GUNS[g].n+'. Reload to load it.');}});h.appendChild(b);}
+const HANDS_SVG='<svg viewBox="0 0 24 24" fill="none" stroke="#f0e2c8" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M8 12V5.5a1.3 1.3 0 0 1 2.6 0V11M10.6 10.5V4.2a1.3 1.3 0 0 1 2.6 0v6.3M13.2 10.5V5a1.3 1.3 0 0 1 2.6 0v6.5M15.8 11V7.6a1.3 1.3 0 0 1 2.6 0V14c0 4-2.6 7-6.4 7-2.6 0-4-1.2-5.3-3.2L4.3 14.2a1.4 1.4 0 0 1 2.3-1.6L8 14.4"/></svg>';
+function buildHot(){const h=$('hot');h.innerHTML='';if(Object.keys(S.guns).length){const b=document.createElement('button');b.innerHTML=HANDS_SVG;b.className=S.gun?'':'sel';b.setAttribute('aria-label','Hands (put the gun away)');b.addEventListener('pointerdown',e=>{e.stopPropagation();if(S.gun){equipGun(null);sfx('pickup');}});h.appendChild(b);}
+  for(const g of Object.keys(S.guns)){const b=document.createElement('button');b.innerHTML=icon(g);b.className=S.gun===g?'sel':'';b.setAttribute('aria-label',GUNS[g].n);b.addEventListener('pointerdown',e=>{e.stopPropagation();if(S.gun===g){equipGun(null);return;}equipGun(g);if(!S.mag&&cnt('ammo'))toast(GUNS[g].n+'. Reload to load it.');});h.appendChild(b);}
   for(const k of HOTK){if(!cnt(k))continue;const b=document.createElement('button');b.innerHTML=icon(k)+'<b>'+cnt(k)+'</b>';b.setAttribute('aria-label',ITEMS[k].n);b.addEventListener('pointerdown',e=>{e.stopPropagation();useItem(k);});h.appendChild(b);if(h.children.length>=6)break;}
   $('bFireI').innerHTML=S.gun?ICO.fire:ICO.hand;}
 let hotSig='';function updHot(){const sig=Object.keys(S.guns).join()+S.gun+HOTK.map(cnt).join();if(sig!==hotSig){hotSig=sig;buildHot();}updAmmo();}
