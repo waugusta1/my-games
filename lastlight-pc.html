@@ -273,7 +273,7 @@ canvas{display:block}#c{position:fixed;inset:0;width:100%;height:100%}#ov2{posit
 .need{font-size:12px;opacity:.85;margin-top:4px}.need span{display:inline-block;margin-right:8px}.need .no{color:#ff8a7a}
 .lore{font:18px/1.7 var(--h);max-width:660px}
 .rep{display:flex;gap:10px;align-items:center;margin:6px 0}.rep .bar{flex:1;height:8px}
-#mapC{width:100%;border-radius:10px;touch-action:none;background:#2a2218}
+#mapC{display:block;margin:0 auto;width:auto;height:auto;max-width:100%;max-height:calc(100vh - 150px);aspect-ratio:1;border-radius:2px;touch-action:none;background:#2a2218;border:1px solid rgba(214,140,56,.3)}
 #title{position:fixed;inset:0;z-index:40;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;padding-bottom:11vh;text-align:center;background:linear-gradient(180deg,rgba(0,0,0,0) 35%,rgba(0,0,0,.72));pointer-events:auto}
 #title h1{font:400 min(13vw,92px) var(--h);margin:0;letter-spacing:10px;color:#fff;text-shadow:0 4px 30px rgba(0,0,0,.6)}
 #title .sub{font:italic 19px var(--h);opacity:.85;margin-bottom:26px}#title .btn{font-size:18px;padding:13px 40px;margin:5px;min-width:230px}#title .meta{margin-top:16px;font-size:13px;opacity:.65}
@@ -284,6 +284,22 @@ canvas{display:block}#c{position:fixed;inset:0;width:100%;height:100%}#ov2{posit
 #load{position:fixed;inset:0;z-index:60;background:#0d0b09;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px}#load .t{font:400 40px var(--h);letter-spacing:8px}#load .p{width:240px;height:3px;background:rgba(255,255,255,.12);overflow:hidden}#load .p i{display:block;height:100%;width:0;background:var(--acc);transition:width .3s}#load .m{font-size:13px;opacity:.65}
 .kbm #joyZ,.kbm #lookZ,.kbm #steerZ,.kbm #steerHint,.kbm .cb:not(#bUse){display:none!important}.kbm #bUse{pointer-events:none}
 #keys{position:fixed;left:50%;bottom:calc(76px + var(--sb));transform:translateX(-50%);font:600 13px var(--f);opacity:.75;text-align:center;pointer-events:none;white-space:nowrap}
+
+/* ---- Last Light menu theme: worn metal, stencil type, square corners ---- */
+.book{background:linear-gradient(180deg,#1b1611,#120e0b);border:1px solid rgba(214,140,56,.28);border-radius:3px;box-shadow:0 20px 60px rgba(0,0,0,.7),inset 0 1px 0 rgba(255,220,170,.06)}
+.tabs{border-bottom:1px solid rgba(214,140,56,.22);background:rgba(0,0,0,.25)}.tabs button{font:700 17px var(--c);letter-spacing:1.6px;text-transform:uppercase;padding:12px 14px 9px}.tabs .x{font:700 15px var(--c)}
+.body h3{font:700 30px var(--c);letter-spacing:1.5px;text-transform:uppercase}.body h4{font:700 14px var(--c);letter-spacing:2.6px}
+.it{border-radius:2px;background:rgba(255,235,200,.035);border:1px solid rgba(255,235,200,.07);border-left:3px solid rgba(214,140,56,.35)}.it.on{border-color:var(--acc)}
+.btn{border-radius:2px;font:700 17px var(--c);letter-spacing:1.4px;text-transform:uppercase;padding:9px 16px 7px;clip-path:polygon(7px 0,100% 0,100% calc(100% - 7px),calc(100% - 7px) 100%,0 100%,0 7px)}
+.slot,.ic{border-radius:2px}.slot{background:rgba(255,235,200,.04);border:1px solid rgba(255,235,200,.09)}
+#dlg{border-radius:2px;border:1px solid rgba(214,140,56,.3);border-top:3px solid var(--acc);background:linear-gradient(180deg,rgba(24,19,14,.96),rgba(14,11,8,.96))}#dName{font:700 18px var(--c);letter-spacing:2.4px}
+#dCh button{border-radius:2px;border-left:3px solid var(--acc)}
+#toasts div{font-family:var(--f)}
+#title .btn{font-size:22px;padding:13px 44px 10px}#load .t{font:700 46px var(--c);letter-spacing:12px}#title h1{font-family:var(--c);font-weight:700;letter-spacing:16px}
+#death h2{font:700 56px var(--c);letter-spacing:6px;text-transform:uppercase}
+input[type=range]{accent-color:#d68c38;width:100%}
+.bar{height:6px;background:rgba(0,0,0,.5);overflow:hidden;position:relative;box-shadow:inset 0 0 0 1px rgba(255,235,200,.12)}.bar i{position:absolute;left:0;top:0;bottom:0;transition:width .25s}.rep .bar{height:9px}#fuelB{height:7px}
+body.dlgon #ctl,body.dlgon #drv{visibility:hidden}
 </style>
 <script>/**
  * @license
@@ -5888,7 +5904,7 @@ return{
  <button class="cb" id="bJump" aria-label="Jump"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round"><path d="M12 19V6M6 11l6-6 6 6"/></svg></button>
  <button class="cb" id="bCrouch" aria-label="Crouch"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v13M6 13l6 6 6-6"/></svg></button>
  <button class="cb" id="bReload" aria-label="Reload"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round"><path d="M20 12a8 8 0 1 1-2.3-5.7"/><path d="M20 4v5h-5"/></svg></button>
- <button class="cb" id="bSprint" aria-label="Sprint"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round"><path d="M4 12h9M4 7h6M4 17h6M14 6l6 6-6 6"/></svg></button>
+ <button class="cb" id="bSprint" aria-label="Sprint"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round"><circle cx="14.5" cy="4.2" r="2" fill="#fff" stroke="none"/><path d="M13.5 8.2l-3.2 3.6 3.2 2.6-2.2 5.6M13.5 8.2l3 3.2 3.2.6M10.3 11.8l-3.6-.6M13.3 14.4l3.4 1.9-.8 4"/></svg></button>
  <button class="cb" id="bUse" hidden></button>
 </div>
 <div id="drv" hidden><div id="steerZ"></div><div id="steer" hidden><i></i></div><div id="steerHint" class="sh">Drag here to steer</div>
@@ -6920,12 +6936,12 @@ function talkNPC(id){for(const qid of activeQuests()){const st=questStep(qid);if
 const GUARD_MAG=()=>GUNS.rifle.mag;
 /* ================= DIALOG & CINEMATICS ================= */
 const DLG={on:false,lines:null,i:0,cb:null,shown:0,full:'',choice:false};
-function talk(lines,cb){if(!lines||!lines.length){cb&&cb();return;}DLG.on=true;DLG.lines=lines;DLG.i=0;DLG.cb=cb;DLG.choice=false;$('dlg').hidden=false;P.firing=false;P.aimHeld=false;showLine();}
+function talk(lines,cb){if(!lines||!lines.length){cb&&cb();return;}DLG.on=true;DLG.lines=lines;DLG.i=0;DLG.cb=cb;DLG.choice=false;$('dlg').hidden=false;document.body.classList.add('dlgon');P.firing=false;P.aimHeld=false;showLine();}
 function showLine(){const[sp,tx]=DLG.lines[DLG.i];$('dlg').classList.toggle('narr',sp==='narr');$('dName').textContent=SPEAK[sp]??sp;DLG.full=tx;DLG.shown=0;$('dText').textContent='';$('dCh').innerHTML='';$('dNext').hidden=false;if(sp==='pike'||sp==='vale')sfx('radio');}
 function dlgTick(dt){if(!DLG.on||DLG.choice)return;if(DLG.shown<DLG.full.length){DLG.shown=Math.min(DLG.full.length,DLG.shown+dt*55);$('dText').textContent=DLG.full.slice(0,Math.floor(DLG.shown));}}
-function dlgNext(){if(!DLG.on||DLG.choice)return;if(DLG.shown<DLG.full.length){DLG.shown=DLG.full.length;$('dText').textContent=DLG.full;return;}DLG.i++;if(DLG.i>=DLG.lines.length){DLG.on=false;$('dlg').hidden=true;const cb=DLG.cb;DLG.cb=null;cb&&cb();}else showLine();}
-function choose(title,text,opts){DLG.on=true;DLG.choice=true;$('dlg').hidden=false;$('dlg').classList.remove('narr');$('dName').textContent=title;$('dText').textContent=text;$('dNext').hidden=true;const c=$('dCh');c.innerHTML='';
-  opts.forEach(o=>{const b=document.createElement('button');b.innerHTML=o.t;if(o.dis){b.disabled=true;b.style.opacity=.4;}b.onclick=e=>{e.stopPropagation();if(o.dis)return;DLG.on=false;DLG.choice=false;$('dlg').hidden=true;sfx('ui');o.cb&&o.cb();};c.appendChild(b);});}
+function dlgNext(){if(!DLG.on||DLG.choice)return;if(DLG.shown<DLG.full.length){DLG.shown=DLG.full.length;$('dText').textContent=DLG.full;return;}DLG.i++;if(DLG.i>=DLG.lines.length){DLG.on=false;$('dlg').hidden=true;document.body.classList.remove('dlgon');const cb=DLG.cb;DLG.cb=null;cb&&cb();}else showLine();}
+function choose(title,text,opts){DLG.on=true;DLG.choice=true;$('dlg').hidden=false;document.body.classList.add('dlgon');$('dlg').classList.remove('narr');$('dName').textContent=title;$('dText').textContent=text;$('dNext').hidden=true;const c=$('dCh');c.innerHTML='';
+  opts.forEach(o=>{const b=document.createElement('button');b.innerHTML=o.t;if(o.dis){b.disabled=true;b.style.opacity=.4;}b.onclick=e=>{e.stopPropagation();if(o.dis)return;DLG.on=false;DLG.choice=false;$('dlg').hidden=true;sfx('ui');document.body.classList.remove('dlgon');o.cb&&o.cb();};c.appendChild(b);});}
 $('dlg').addEventListener('pointerdown',e=>{e.stopPropagation();dlgNext();});
 const CINE={on:false,shots:null,i:0,t:0,cb:null};
 function cine(shots,cb){CINE.on=true;CINE.shots=shots;CINE.i=0;CINE.t=0;CINE.cb=cb;$('cine').hidden=false;$('hud').hidden=true;$('ctl').hidden=true;$('drv').hidden=true;cineShow();}
@@ -7175,7 +7191,7 @@ function updLight(dt,force){lightT-=dt;if(lightT>0&&!force)return;lightT=.2;cons
   const su=sky.material.uniforms;su.sunPosition.value.copy(_sd);dayK=smooth(-.06,.2,el);const dusk=smooth(.32,.03,Math.abs(el))*dayK;const st=WX.dust;
   su.turbidity.value=lerp(3.4,12,Math.max(dusk,st));su.rayleigh.value=lerp(2.5,3.2,dusk)*(1-st*.6);su.uEnvK.value=lerp(.3,.42,dusk)*(1+st*.6);su.mieCoefficient.value=lerp(.005,.02,st);
   const night=1-dayK;const ld=night>.5?_v3.set(-_sd.x,Math.max(.45,-_sd.y),-_sd.z).normalize():_sd.clone();
-  sun.color.setRGB(1,lerp(.9,.62,dusk),lerp(.78,.38,dusk)).lerp(_c2.setRGB(.5,.6,.95),night).lerp(_c2.setRGB(.9,.7,.5),st*.6);sun.intensity=lerp(.12,1.35,dayK)*(1-dusk*.25)*(1-st*.65);hemi.intensity=lerp(.12,.42,dayK)*(1-st*.2);
+  sun.color.setRGB(1,lerp(.9,.62,dusk),lerp(.78,.38,dusk)).lerp(_c2.setRGB(.5,.6,.95),night).lerp(_c2.setRGB(.9,.7,.5),st*.6);sun.intensity=lerp(.12,1.35,dayK)*(1-dusk*.25)*(1-st*.65);hemi.intensity=lerp(.12,.42,dayK)*(1-st*.2)*(scene.environment?1:1.75)+(scene.environment?0:.06);
   hemi.color.setRGB(lerp(.35,.82,dayK),lerp(.4,.8,dayK),lerp(.55,.82,dayK));hemi.groundColor.setRGB(lerp(.12,.5,dayK),lerp(.1,.4,dayK),lerp(.1,.3,dayK));
   const fc=_c1.setRGB(lerp(.04,.66,dayK),lerp(.05,.6,dayK),lerp(.08,.54,dayK)).lerp(_c2.setRGB(.9,.58,.36),dusk*.55).lerp(_c2.setRGB(.66,.5,.34),st*dayK+st*.15);scene.fog.color.copy(fc);
   RK.setEnv({sunDir:ld,sunCol:_c2.copy(sun.color).multiplyScalar(sun.intensity*1.4),fogCol:fc,day:lerp(.15,1,dayK),cloud:.18+st*.82,fogD:.0010+st*.03+night*.0006,fogY:2,fogH:.012,cShadow:.8,sat:.86-st*.15,exp:lerp(1.2,.78,dayK),
@@ -7233,7 +7249,7 @@ function boot(){const msg=t=>$('loadM').textContent=t;msg('Loading the Basin');
     const steps=[['Raising the mesas',()=>{mkMats();buildTerrain();}],['Paving Route 40',()=>{buildRoad();}],['Rusting the cars',()=>{buildSites();scene.traverse(m=>{if(m.isMesh&&m.name==='ICE_ICE_0'){m.material=m.material.clone();m.material.color.setRGB(.5,.48,.43);}if(m.isMesh&&m.material&&m.material.emissive&&/Light_0|Sign_0|Neon|Lamp/.test(m.name)){m.material=m.material.clone();m.material.emissive.setRGB(0,0,0);m.material.emissiveMap=null;}});}],['Scattering scrub',()=>{buildVeg();buildTumble();buildDust();buildCollect();}],
       ['Waking the Basin',()=>{if(S.set.ultra&&GRASS){GRASS.parent.remove(GRASS);GRASS.geometry.dispose();GRASS=null;}if(AS.hdr&&!S.set.ultra&&!IOS){const pm=new THREE.PMREMGenerator(renderer);ENVT=pm.fromEquirectangular(AS.hdr).texture;scene.environment=ENVT;}buildJeep();buildPlayer();buildNPCs();buildMapCanvas();bindJoy();bindUI();collectEnvMats();applyQuality();updLight(0,true);}]];let i=0;
     const next=()=>{if(i>=steps.length){$('load').hidden=true;BOOTED=true;showTitle();crumb('Playing');if(KBM){$('keys').hidden=false;setTimeout(()=>$('keys').hidden=true,25000);}setTimeout(()=>{try{__store.remove('ll-boot');__store.remove('ll-step');}catch(_){}if(SAFEMODE)toast('Graphics were lowered so Last Light fits in memory. You can raise them in Journal, Settings.',7);},60000);return;}msg(steps[i][0]+'...');crumb(steps[i][0]);$('loadP').style.width=(70+i/steps.length*30)+'%';setTimeout(()=>{try{steps[i][1]();}catch(e){msg('Error: '+e.message);console.error(e);return;}i++;next();},30);};next();}).catch(e=>{msg('Could not load: '+e.message);console.error(e);});}
-window.__ll={WX,LOOK,hurt,respawn,renderer,scene,sky,get ROADM(){return ROADM;},RPATH,get TERR(){return TERR;},get S(){return S;},P,ACTORS,ENEMIES,NPCOBJ,LOOT,COLLECT,QITEMS,Q,GROUPLIVE,CAM,JOY,JIN,keys,camera,get JEEP(){return JEEP;},get BOSS(){return BOSS;},H,G,teleport,addItem,equipGun,completeStep,stepStart,activeQuests,questStep,checkQuests,doInteract,get curInt(){return curInt;},
+window.__ll={dlgNext,WX,LOOK,hurt,respawn,talk,spawnGroup,enterJeep,renderer,scene,sky,get ROADM(){return ROADM;},RPATH,get TERR(){return TERR;},get S(){return S;},P,ACTORS,ENEMIES,NPCOBJ,LOOT,COLLECT,QITEMS,Q,GROUPLIVE,CAM,JOY,JIN,keys,camera,get JEEP(){return JEEP;},get BOSS(){return BOSS;},H,G,teleport,addItem,equipGun,completeStep,stepStart,activeQuests,questStep,checkQuests,doInteract,get curInt(){return curInt;},
   talkNPC,dlgNext,DLG,CINE,cineNext,startGame,enterJeep,leaveJeep,spawnGroup,reload,tryFire,aimSolve,placeJeep,searchLoot,openBench,updLight,WX,
   sim(n,f){for(let i=0;i<n;i++){const dt=1/30;TT+=dt;S.time+=dt;f&&f();updTasks(dt);updPlayer(dt);updJeep(dt);for(const a of ACTORS){if(a.update)a.update(dt);}updFX(dt);updCamera(dt);if(i%5===0){updInteract();checkQuests();updDiscovery();}}}};
 requestAnimationFrame(frame);boot();
