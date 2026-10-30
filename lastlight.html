@@ -6110,7 +6110,7 @@ const SK='lastlight-v1';
 const freshSave=()=>({v:1,started:0,pos:[-566,0,52],yaw:-1.4,hp:100,food:75,water:65,sta:100,inv:{bandage:2,water:1,cans:1},gun:null,guns:{},mag:0,mods:{},q:{},main:'q1',done:{},tapes:{},photos:{},locs:{},flags:{},stats:{},
   jeep:{x:-560,z:44,ry:-1.45,fuel:0,hp:100},hour:16.5,day:1,time:0,loot:{},camps:{},rep:{lantern:0,kings:0,signal:0},xp:0,ending:null,set:{music:1,sfx:1,sens:1,cam:1,qual:2,aimAssist:1}});
 let S=freshSave();
-function loadSave(){try{const s=JSON.parse(__store.get(SK));if(s&&s.v===1){S=Object.assign(freshSave(),s);S.set=Object.assign(freshSave().set,s.set||{});S.jeep=Object.assign(freshSave().jeep,s.jeep||{});S.jeep.hp=100;return true;}}catch(_){}return false;}
+function loadSave(){try{const s=JSON.parse(__store.get(SK));if(s&&s.v===1){S=Object.assign(freshSave(),s);S.set=Object.assign(freshSave().set,s.set||{});S.jeep=Object.assign(freshSave().jeep,s.jeep||{});S.jeep.hp=100;if(S.flags&&S.flags.fueled)S.jeep.fuel=1;return true;}}catch(_){}return false;}
 function persist(){try{if(P&&P.ready){S.pos=[P.x,P.y,P.z];S.yaw=CAM.yaw;S.hp=P.hp;S.food=P.food;S.water=P.water;if(JEEP){S.jeep.x=JEEP.x;S.jeep.z=JEEP.z;S.jeep.ry=JEEP.ry;}}__store.set(SK,JSON.stringify(S));}catch(_){}}
 loadSave();
 const stat=(k,n=1)=>{S.stats[k]=(S.stats[k]||0)+n;};
@@ -6867,7 +6867,7 @@ function updJeep(dt){const J=JEEP;if(!J)return;if(!P.drive){J.v*=Math.pow(.2,dt)
   const fuelOK=S.jeep.fuel>0&&S.jeep.hp>0;
   if(gas&&fuelOK){J.v+=(J.v<0?14:lerp(8.5,2.5,clamp(J.v/vmax,0,1)))*eng*dt;}else if(brk){if(J.v>.5)J.v-=16*dt;else J.v=Math.max(-6,J.v-5*dt);}else J.v*=Math.pow(off?.55:.75,dt);
   J.v=clamp(J.v,-6,vmax);if(Math.abs(J.v)<.05&&!gas&&!brk)J.v=0;
-  if(gas&&fuelOK)S.jeep.fuel=Math.max(0,S.jeep.fuel-dt*.0045*(S.mods.tank?.5:1)*(.4+Math.abs(J.v)/vmax));if(S.jeep.fuel<=0&&gas&&!J.fuelMsg){J.fuelMsg=1;toast('Out of fuel.');}if(S.jeep.fuel>0)J.fuelMsg=0;
+  if(gas&&fuelOK)S.jeep.fuel=S.flags.fueled?1:S.jeep.fuel;if(S.jeep.fuel<=0&&gas&&!J.fuelMsg){J.fuelMsg=1;toast('Out of fuel.');}if(S.jeep.fuel>0)J.fuelMsg=0;
   J.steer=lerp(J.steer,st,Math.min(1,dt*(Math.abs(st)>.05?4:6)));const turn=J.steer*clamp(Math.abs(J.v)/6,0,1)*(1.15-clamp(Math.abs(J.v)/vmax,0,1)*.55)*grip;J.ry+=turn*dt*Math.sign(J.v||1)*1.15;
   // slide a little sideways when turning hard on loose ground
   const fx=Math.sin(J.ry)*JFRONT,fz=Math.cos(J.ry)*JFRONT;const slip=off?Math.abs(J.steer)*J.v*.05:0;J.x+=fx*J.v*dt+fz*slip*dt;J.z+=fz*J.v*dt-fx*slip*dt;
@@ -7021,7 +7021,7 @@ function interactables(){const L=[];
   for(const c of COLLECT)L.push({x:c.x,z:c.z,y:c.y,range:2,label:()=>c.kind==='tape'?'Play cassette':'Look at photo',act:()=>takeCollect(c)});
   for(const id in NPCOBJ){const n=NPCOBJ[id];if(n.hidden)continue;L.push({x:n.x,z:n.z,y:n.y,range:3,label:()=>id==='eli'?'Trade with Eli':'Talk to '+n.n.split(' ')[0],act:()=>talkNPC(id)});}
   for(const g of GUARDS)L.push({x:g.x,z:g.z,y:g.y,range:2.6,label:()=>'Talk',act:()=>talkNPC(g.id)});
-  if(JEEP&&!P.drive){L.push({x:JEEP.x,z:JEEP.z,y:JEEP.y,range:3.3,label:()=>S.jeep.fuel<.99&&cnt('fuel')?'Refuel jeep':'Get in',act:()=>{if(S.jeep.fuel<.99&&cnt('fuel')){take('fuel',1);S.jeep.fuel=Math.min(1,S.jeep.fuel+.25);sfx('fuel');toast('Fuel '+Math.round(S.jeep.fuel*100)+'%');S.flags.fueled=1;checkQuests();}else enterJeep();}});}
+  if(JEEP&&!P.drive){L.push({x:JEEP.x,z:JEEP.z,y:JEEP.y,range:3.3,label:()=>S.jeep.fuel<.99&&cnt('fuel')?'Refuel jeep':'Get in',act:()=>{if(S.jeep.fuel<.99&&cnt('fuel')){take('fuel',1);S.jeep.fuel=1;sfx('fuel');toast('Fuel '+Math.round(S.jeep.fuel*100)+'%');S.flags.fueled=1;checkQuests();}else enterJeep();}});}
   for(const q of QITEMS)L.push(q);return L;}
 function updInteract(){const b=$('bUse');if(P.drive){curInt=null;return;}let best=null,bd=1e9;if(!P.dead&&!DLG.on)for(const it of interactables()){const d=hyp(it.x-P.x,it.z-P.z);if(d<it.range&&Math.abs((it.y??P.y)-P.y)<2.5){const dp=d-(it.qid?2:0);if(dp<bd){bd=dp;best=it;}}}
   curInt=best;if(best){b.hidden=false;const l=best.label();if(b.textContent!==l)b.textContent=(KBM?'[E]  ':'')+l;}else b.hidden=true;}
