@@ -210,7 +210,7 @@ C2.measureText=function(s){var r=oM.call(this,s);if(typeof s==='string'){RE.last
 html,body{height:100%;margin:0;background:#0d0b09;overflow:hidden;font-family:var(--f);touch-action:none;user-select:none;-webkit-user-select:none;-webkit-tap-highlight-color:transparent;color:var(--ink)}
 canvas{display:block}#c{position:fixed;inset:0;width:100%;height:100%}#ov2{position:fixed;inset:0;width:100%;height:100%;pointer-events:none}
 .sh{text-shadow:0 1px 2px rgba(0,0,0,.9),0 0 8px rgba(0,0,0,.5)}
-#hud{position:fixed;inset:0;pointer-events:none}
+#hud{position:fixed;inset:0;pointer-events:none;z-index:3}
 #stats{position:fixed;left:calc(16px + var(--sl));top:calc(14px + var(--st));display:flex;gap:7px;transition:opacity .8s}#stats.idle{opacity:.3}
 .core{width:44px;height:44px;position:relative;transition:width .35s,opacity .35s,margin .35s;flex-shrink:0}.core.gone{width:0;opacity:0;margin-left:-7px}
 .core svg.r{position:absolute;inset:0;width:44px;height:44px;transform:rotate(-90deg)}.core .bg{fill:rgba(14,11,8,.78)}.core .tk{fill:none;stroke:rgba(255,235,200,.16);stroke-width:3;stroke-dasharray:2.2 2.6}
@@ -221,8 +221,8 @@ canvas{display:block}#c{position:fixed;inset:0;width:100%;height:100%}#ov2{posit
 #track{position:fixed;left:calc(16px + var(--sl));top:calc(70px + var(--st));max-width:min(320px,42vw);font-size:14px;line-height:1.35}
 #track .qn{display:inline-block;background:rgba(214,140,56,.92);color:#1c1208;font:700 15px var(--c);letter-spacing:2.4px;text-transform:uppercase;padding:3px 9px 1px;text-shadow:none;transform:rotate(-.6deg)}#track .qs{margin-top:6px;padding-left:9px;border-left:2px solid var(--acc)}
 #track .side{opacity:.7;font-size:13px;margin-top:5px;padding-left:11px}
-#mmW{position:fixed;right:calc(14px + var(--sr));top:calc(12px + var(--st));width:132px;height:132px;border-radius:3px;overflow:hidden;border:3px solid #1c1610;outline:1px solid rgba(214,140,56,.45);box-shadow:0 3px 12px rgba(0,0,0,.6);filter:sepia(.25) contrast(1.05);pointer-events:auto}#mm{width:132px;height:132px}
-#topR{position:fixed;right:calc(156px + var(--sr));top:calc(14px + var(--st));display:flex;gap:8px;pointer-events:auto}
+#mmW{z-index:6;position:fixed;right:calc(14px + var(--sr));top:calc(12px + var(--st));width:132px;height:132px;border-radius:3px;overflow:hidden;border:3px solid #1c1610;outline:1px solid rgba(214,140,56,.45);box-shadow:0 3px 12px rgba(0,0,0,.6);filter:sepia(.25) contrast(1.05);pointer-events:auto}#mm{width:132px;height:132px}
+#topR{z-index:6;position:fixed;right:calc(156px + var(--sr));top:calc(14px + var(--st));display:flex;gap:8px;pointer-events:auto}
 .ib{width:44px;height:44px;border-radius:3px;border:1px solid rgba(214,140,56,.32);background:rgba(18,14,10,.74);clip-path:polygon(9px 0,100% 0,100% calc(100% - 9px),calc(100% - 9px) 100%,0 100%,0 9px);color:#fff;display:flex;align-items:center;justify-content:center;padding:0;position:relative}.ib svg{width:23px;height:23px}.ib .dot{position:absolute;right:3px;top:3px;width:11px;height:11px;border-radius:6px;background:var(--acc)}
 #clock{position:fixed;right:calc(14px + var(--sr));top:calc(150px + var(--st));text-align:right;white-space:nowrap;font:700 14px var(--c);letter-spacing:1.4px;text-transform:uppercase;opacity:.9}
 #ammo{position:fixed;right:calc(24px + var(--sr));bottom:calc(250px + var(--sb));text-align:right;font:700 38px var(--c);letter-spacing:1px}#ammo small{font-size:15px;opacity:.65;font-weight:600}#ammo div{font-size:11px;letter-spacing:2px;opacity:.7;font-weight:700}
@@ -5892,7 +5892,7 @@ return{
  <div id="comp"><canvas id="compC" width="760" height="68"></canvas></div>
  <div id="track" class="sh"></div>
  <div id="mmW"><canvas id="mm" width="264" height="264"></canvas></div><div id="clock" class="sh"></div>
- <div id="topR"><button class="ib" id="bBag" aria-label="Inventory and crafting"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8"><path d="M5 8h14l-1 13H6z"/><path d="M9 8V5h6v3"/></svg><span class="dot" id="craftDot" hidden></span></button><button class="ib" id="bJour" aria-label="Journal"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8"><path d="M5 3h12a2 2 0 0 1 2 2v16H7a2 2 0 0 1-2-2z"/><path d="M9 8h6M9 12h6"/></svg></button><button class="ib" id="bMap" aria-label="Map"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8"><path d="M3 6l6-2 6 2 6-2v14l-6 2-6-2-6 2z"/><path d="M9 4v14M15 6v14"/></svg></button></div>
+ <div id="topR"><button class="ib" id="bCall" aria-label="Bring the jeep to me" hidden><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8"><path d="M3 16v-4l3-1 2-4h7l2 4 3 1v4z"/><circle cx="7.5" cy="16.5" r="2" fill="#1c1610"/><circle cx="16.5" cy="16.5" r="2" fill="#1c1610"/><path d="M12 1.5v3.5M10.3 3.4L12 5l1.7-1.6" stroke-width="1.5"/></svg></button><button class="ib" id="bBag" aria-label="Inventory and crafting"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8"><path d="M5 8h14l-1 13H6z"/><path d="M9 8V5h6v3"/></svg><span class="dot" id="craftDot" hidden></span></button><button class="ib" id="bJour" aria-label="Journal"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8"><path d="M5 3h12a2 2 0 0 1 2 2v16H7a2 2 0 0 1-2-2z"/><path d="M9 8h6M9 12h6"/></svg></button><button class="ib" id="bMap" aria-label="Map"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8"><path d="M3 6l6-2 6 2 6-2v14l-6 2-6-2-6 2z"/><path d="M9 4v14M15 6v14"/></svg></button></div>
  <div id="ammo" class="sh" hidden><div id="wName">RIFLE</div><span id="aMag">30</span> <small>/ <span id="aRes">90</span></small></div>
  <div id="xh"><i class="a"></i><i class="b"></i><i class="c"></i><i class="d"></i><i class="e"></i></div>
  <svg id="lockM" viewBox="0 0 44 44"><path d="M3 13V3h10M31 3h10v10M41 31v10H31M13 41H3V31" fill="none" stroke="#e8863a" stroke-width="2.6"/><circle cx="22" cy="22" r="2" fill="#e8863a"/></svg>
@@ -6732,6 +6732,14 @@ function respawn(){$('death').hidden=true;P.dead=false;const sp=S.done.q2?[SITES
   if(JEEP&&S.done.q2&&hyp(JEEP.x-P.x,JEEP.z-P.z)>60){parkAtLantern();setTimeout(()=>toast('Eli towed your jeep back. It is parked under the pump canopy, right next to you.',6),900);}
   for(const e of ENEMIES)if(!e.dead&&e.st!=='idle'){e.st='idle';e.alert=0;}persist();}
 function parkAtLantern(){const L=SITES.lantern;JEEP.x=L.x-9;JEEP.z=L.z+3.5;JEEP.v=0;JEEP.ry=0;placeJeep(0);}
+// bring the jeep to wherever you are standing (needs fuel in the tank first)
+function callJeep(){if(!JEEP||P.drive||P.dead)return;if(!S.flags.fueled){toast('The jeep has no fuel yet. Fill it up first.',3);return;}
+  if(hyp(JEEP.x-P.x,JEEP.z-P.z)<12){toast('Your jeep is right here.',2);return;}
+  const fx=Math.sin(P.rot),fz=Math.cos(P.rot);let best=null;
+  search:for(const d of[5,7,9,12])for(const a of[1.2,-1.2,.6,-.6,2,-2,0,PI]){const c=Math.cos(a),s=Math.sin(a);const x=P.x+(fx*c-fz*s)*d,z=P.z+(fz*c+fx*s)*d;
+    let ok=slopeAt(x,z)<.35;for(const[ox,oz]of[[0,0],[1.4,0],[-1.4,0],[0,2.4],[0,-2.4]])if(insideCol(x+ox,z+oz,G(x,z)+.8))ok=false;if(ok){best=[x,z];break search;}}
+  if(!best){toast('No room for the jeep here. Try a more open spot.',3);return;}
+  JEEP.x=best[0];JEEP.z=best[1];JEEP.v=0;JEEP.ry=P.rot+PI;placeJeep(0);sfx('horn');toast('Your jeep is here.',2);}
 function teleport(x,z){P.x=x;P.z=z;P.y=G(x,z)+.05;P.vy=0;if(P.ch)P.ch.root.position.set(P.x,P.y,P.z);grassLOD(x,z,true);}
 function buildPlayer(){P.ch=makeHuman({shirt:0x8a7a62,pants:0xc8c0b0,gear:{}});scene.add(P.ch.root);P.ch.root.traverse(o=>{if(o.isMesh)o.layers.enable(1);});equipGun(S.gun);}
 function equipGun(k){S.magOf=S.magOf||{};if(S.gun)S.magOf[S.gun]=S.mag;if(P.gun){scene.remove(P.gun.holder);P.gun=null;}S.gun=k||null;if(k){P.gun=makeGun(k);S.mag=S.magOf[k]??S.mag??0;}else{P.aimHeld=false;$('bAim').classList.remove('on');P.reloadT=0;}
@@ -7102,7 +7110,7 @@ function bindUI(){
   hold('bGas',()=>{JIN.gas=1;$('bGas').classList.add('on');},()=>{JIN.gas=0;$('bGas').classList.remove('on');});hold('bBrake',()=>{JIN.brake=1;$('bBrake').classList.add('on');},()=>{JIN.brake=0;$('bBrake').classList.remove('on');});
   hold('bHorn',()=>{sfx('horn');alertNoise(JEEP.x,JEEP.z,90);});hold('bLights',()=>{JEEP.lights=!JEEP.lights;$('bLights').classList.toggle('on',JEEP.lights);});
   const lv=document.createElement('button');lv.className='cb';lv.id='bLeave';lv.style.cssText='right:calc(170px + var(--sr));bottom:calc(122px + var(--sb));height:46px;border-radius:23px;padding:0 18px;font:700 15px var(--f);color:#ffe0b0;width:auto';lv.textContent='Get out';$('drv').appendChild(lv);hold('bLeave',()=>leaveJeep());
-  $('bBag').onclick=()=>openBag('bag');$('bJour').onclick=()=>openJournal('quests');$('bMap').onclick=()=>openJournal('map');$('mmW').onclick=()=>openJournal('map');$('mClose').onclick=closeModal;$('bRevive').onclick=respawn;
+  $('bBag').onclick=()=>openBag('bag');$('bCall').onclick=callJeep;$('bJour').onclick=()=>openJournal('quests');$('bMap').onclick=()=>openJournal('map');$('mmW').onclick=()=>openJournal('map');$('mClose').onclick=closeModal;$('bRevive').onclick=respawn;
   cv.addEventListener('mousedown',e=>{if(e.button===2){mouseAim=true;}else if(e.button===0&&!P.drive&&$('title').hidden){if(document.pointerLockElement!==cv&&!matchMedia('(pointer:coarse)').matches)try{cv.requestPointerLock();}catch(_){}P.firing=!!S.gun;}});
   addEventListener('mouseup',e=>{if(e.button===2)mouseAim=false;else P.firing=false;});cv.addEventListener('contextmenu',e=>e.preventDefault());}
 function onKey(e){ensureAudio();
@@ -7115,7 +7123,7 @@ let hudT=0;
 function setBar(id,v){const e=$(id);e.firstChild.style.width=clamp(v,0,100)+'%';e.classList.toggle('low',v<20);}
 function setCore(id,v){const e=$(id);e.querySelector('.fg').style.strokeDashoffset=(113.1*(1-clamp(v,0,100)/100)).toFixed(1)+'px';e.classList.toggle('low',v<20);}
 let hudWake=6,staFull=0,lastHp=100;
-function updHUD(dt){setCore('bHp',P.hp);setCore('bWater',P.water);setCore('bFood',P.food);setCore('bSta',P.sta);
+function updHUD(dt){{const cb=$('bCall'),hc=!(S.flags.fueled&&!P.drive&&!P.dead);if(cb.hidden!==hc)cb.hidden=hc;}setCore('bHp',P.hp);setCore('bWater',P.water);setCore('bFood',P.food);setCore('bSta',P.sta);
   const fight=ENEMIES.some(e=>!e.dead&&e.st==='combat');if(P.hp<lastHp-.5||P.hp<55||P.water<35||P.food<35||fight||P.sta<98)hudWake=4;lastHp=P.hp;hudWake-=dt;$('stats').classList.toggle('idle',hudWake<=0&&!P.drive);
   staFull=P.sta>=99.5?staFull+dt:0;$('bSta').classList.toggle('gone',staFull>1.2);$('beat').classList.toggle('on',P.hp<30&&!P.dead);drawCompass();
   const xh=$('xh');xh.style.opacity=P.drive||!S.gun?0:1;const sp=(P.aimK>.5?4:14)+P.spread*500+(P.spd>.5?6:0);xh.style.width=xh.style.height=(30+sp*2)+'px';xh.style.margin=(-(15+sp))+'px';
@@ -7290,7 +7298,7 @@ function boot(){const msg=t=>$('loadM').textContent=t;msg('Loading the Basin');
     const steps=[['Raising the mesas',()=>{mkMats();buildTerrain();}],['Paving Route 40',()=>{buildRoad();}],['Rusting the cars',()=>{buildSites();scene.traverse(m=>{if(m.isMesh&&m.name==='ICE_ICE_0'){m.material=m.material.clone();m.material.color.setRGB(.5,.48,.43);}if(m.isMesh&&m.material&&m.material.emissive&&/Light_0|Sign_0|Neon|Lamp/.test(m.name)){m.material=m.material.clone();m.material.emissive.setRGB(0,0,0);m.material.emissiveMap=null;}});}],['Scattering scrub',()=>{buildVeg();buildTumble();buildDust();buildCollect();}],
       ['Waking the Basin',()=>{if(S.set.ultra&&GRASS){GRASS.parent.remove(GRASS);GRASS.geometry.dispose();GRASS=null;}if(AS.hdr&&!S.set.ultra&&!IOS){const pm=new THREE.PMREMGenerator(renderer);ENVT=pm.fromEquirectangular(AS.hdr).texture;scene.environment=ENVT;}buildJeep();buildPlayer();buildNPCs();buildMapCanvas();bindJoy();bindUI();collectEnvMats();applyQuality();updLight(0,true);}]];let i=0;
     const next=()=>{if(i>=steps.length){$('load').hidden=true;BOOTED=true;showTitle();crumb('Playing');if(KBM){$('keys').hidden=false;setTimeout(()=>$('keys').hidden=true,25000);}setTimeout(()=>{try{__store.remove('ll-boot');__store.remove('ll-step');}catch(_){}if(SAFEMODE)toast('Graphics were lowered so Last Light fits in memory. You can raise them in Journal, Settings.',7);},60000);return;}msg(steps[i][0]+'...');crumb(steps[i][0]);$('loadP').style.width=(70+i/steps.length*30)+'%';setTimeout(()=>{try{steps[i][1]();}catch(e){msg('Error: '+e.message);console.error(e);return;}i++;next();},30);};next();}).catch(e=>{msg('Could not load: '+e.message);console.error(e);});}
-window.__ll={COL,AS,tryFire,lockTarget,dlgNext,WX,LOOK,hurt,respawn,talk,spawnGroup,enterJeep,renderer,scene,sky,get ROADM(){return ROADM;},RPATH,get TERR(){return TERR;},get S(){return S;},P,ACTORS,ENEMIES,NPCOBJ,LOOT,COLLECT,QITEMS,Q,GROUPLIVE,CAM,JOY,JIN,keys,camera,get JEEP(){return JEEP;},get BOSS(){return BOSS;},H,G,teleport,addItem,equipGun,completeStep,stepStart,activeQuests,questStep,checkQuests,doInteract,get curInt(){return curInt;},
+window.__ll={COL,AS,callJeep,tryFire,lockTarget,dlgNext,WX,LOOK,hurt,respawn,talk,spawnGroup,enterJeep,renderer,scene,sky,get ROADM(){return ROADM;},RPATH,get TERR(){return TERR;},get S(){return S;},P,ACTORS,ENEMIES,NPCOBJ,LOOT,COLLECT,QITEMS,Q,GROUPLIVE,CAM,JOY,JIN,keys,camera,get JEEP(){return JEEP;},get BOSS(){return BOSS;},H,G,teleport,addItem,equipGun,completeStep,stepStart,activeQuests,questStep,checkQuests,doInteract,get curInt(){return curInt;},
   talkNPC,dlgNext,DLG,CINE,cineNext,startGame,enterJeep,leaveJeep,spawnGroup,reload,tryFire,aimSolve,placeJeep,searchLoot,openBench,updLight,WX,
   sim(n,f){for(let i=0;i<n;i++){const dt=1/30;TT+=dt;S.time+=dt;f&&f();updTasks(dt);updPlayer(dt);updJeep(dt);for(const a of ACTORS){if(a.update)a.update(dt);}updFX(dt);updCamera(dt);if(i%5===0){updInteract();checkQuests();updDiscovery();}}}};
 requestAnimationFrame(frame);boot();
