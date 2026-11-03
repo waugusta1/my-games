@@ -271,15 +271,15 @@ class Match{
   const faceAway=stick&&((gx-p.x)*dx+(-p.z)*dz)/(dist*1)<-.2;
   if(dist>48||faceAway){const fx=stick?dx:Math.sin(p.yaw),fz=stick?dz:Math.cos(p.yaw);const q=this.pickReceiver(p,fx,fz,'lob');if(q){this.lobTo(p,clamp(q.x+fx*4,-50,50),clamp(q.z+fz*4,-32,32),q);return;}}
   this.shoot(p,pw,stick&&Math.abs(dz)>.25?clamp(dz*1.15,-1,1):null);}
- tryTackle(p){if(p.tackleCd>0||p.act>0)return;const b=this.ball;p.tackleCd=.75;this.play(p,'poke',.5);const o=b.owner;if(o&&o.team!==p.team){const d=hyp(o.x-p.x,o.z-p.z);if(d<1.7){this.resolveTackle(p,o,false);}else{const l=d||1;p.vx+=(o.x-p.x)/l*3;p.vz+=(o.z-p.z)/l*3;}}else if(!o&&hyp(b.x-p.x,b.z-p.z)<1.6&&b.y<.7){this.pokeAway(p);}}
+ tryTackle(p){if(p.tackleCd>0||p.act>0)return;const b=this.ball;if(b.owner&&b.owner.hold>0)return;p.tackleCd=.75;this.play(p,'poke',.5);const o=b.owner;if(o&&o.team!==p.team){const d=hyp(o.x-p.x,o.z-p.z);if(d<1.7){this.resolveTackle(p,o,false);}else{const l=d||1;p.vx+=(o.x-p.x)/l*3;p.vz+=(o.z-p.z)/l*3;}}else if(!o&&hyp(b.x-p.x,b.z-p.z)<1.6&&b.y<.7){this.pokeAway(p);}}
  pokeAway(p){const b=this.ball,d=this.dir[p.team];const a=Math.atan2(p.vz+Math.random()*2-1,p.vx+d*4);b.vx=Math.cos(a)*7;b.vz=Math.sin(a)*7;b.vy=.5;b.owner=null;b.last=p;b.lastTeam=p.team;b.noTouch=p;b.noT=.12;b.target=null;b.shot=null;this.emit('kick',{p:.2,x:b.x,z:b.z});}
- resolveTackle(p,o,slide){const beh=this.isBehind(p,o);const skill=p.s.def*(this.humans[p.team]?1.05:this.aiLevel(p.team));const chance=clamp((slide?.62:.45)+skill*.4-(o.s.pas*.25)-hyp(o.vx,o.vz)*.012,.12,.92);this.st[p.team].tackles++;
+ resolveTackle(p,o,slide){if(o.hold>0)return;const beh=this.isBehind(p,o);const skill=p.s.def*(this.humans[p.team]?1.05:this.aiLevel(p.team));const chance=clamp((slide?.62:.45)+skill*.4-(o.s.pas*.25)-hyp(o.vx,o.vz)*.012,.12,.92);this.st[p.team].tackles++;
   if(beh&&Math.random()<(slide?.55:.12)){this.foul(p,o,slide);return;}
   if(Math.random()<chance){const b=this.ball;b.owner=null;b.y=.11;const a=Math.atan2(o.z-p.z,o.x-p.x)+(Math.random()-.5)*1.6;const pw=slide?9:6;b.vx=Math.cos(a)*pw;b.vz=Math.sin(a)*pw;b.vy=.3;b.last=p;b.lastTeam=p.team;b.noTouch=o;b.noT=.55;b.target=null;b.shot=null;p.tk++;o.stun=.42;if(slide&&Math.random()<.4){this.play(o,'fall',1.5);o.stun=1.6;}this.emit('tackle',{x:b.x,z:b.z});if(this.humans[p.team]&&p===this.cursor[p.team])p.pm+=.05;}
   else{p.stun=slide?0:.28;o.vx*=1.05;o.vz*=1.05;}}
  isBehind(p,o){const fx=Math.sin(o.yaw),fz=Math.cos(o.yaw);const d=hyp(p.x-o.x,p.z-o.z)||1;return((p.x-o.x)*fx+(p.z-o.z)*fz)/d<-.45;}
  startSlide(p,dx,dz){if(p.tackleCd>0)return;p.tackleCd=1.3;p.slideT=.72;p.slideDx=dx;p.slideDz=dz;p.yaw=Math.atan2(dx,dz);p.vx=dx*Math.max(9.2,hyp(p.vx,p.vz));p.vz=dz*Math.max(9.2,hyp(p.vx,p.vz));this.play(p,'slide',1.25);this.emit('slide',{});}
- checkTackleContacts(dt){const b=this.ball;for(const p of this.players){if(p.off||p.slideT<=0)continue;p.slideT-=dt;if(!b.owner&&b.y<.5&&hyp(b.x-p.x,b.z-p.z)<1.25&&b.noTouch!==p){this.pokeAway(p);p.slideT=0;}else if(b.owner&&b.owner.team!==p.team&&hyp(b.owner.x-p.x,b.owner.z-p.z)<1.35){this.resolveTackle(p,b.owner,true);p.slideT=0;}}}
+ checkTackleContacts(dt){const b=this.ball;for(const p of this.players){if(p.off||p.slideT<=0)continue;p.slideT-=dt;if(!b.owner&&b.y<.5&&hyp(b.x-p.x,b.z-p.z)<1.25&&b.noTouch!==p){this.pokeAway(p);p.slideT=0;}else if(b.owner&&b.owner.team!==p.team&&!(b.owner.hold>0)&&hyp(b.owner.x-p.x,b.owner.z-p.z)<1.35){this.resolveTackle(p,b.owner,true);p.slideT=0;}}}
  foul(p,o,slide){const t=o.team;this.st[p.team].fouls++;p.fouls++;this.play(o,'fall',1.5);o.stun=1.7;const d=this.dir[t],ax=o.x*d;const inBox=ax>PITCH.L-PITCH.BOXX&&Math.abs(o.z)<PITCH.BOXZ;let card=false;if(slide&&Math.random()<.42||inBox&&Math.random()<.3){card=true;p.yc++;this.st[p.team].yellow++;this.cards.push({team:p.team,name:p.name,min:Math.floor(this.min),red:p.yc>=2});this.emit('card',{name:p.name,team:p.team,red:p.yc>=2});if(p.yc>=2){this.sendOff(p);}}
   const fx=clamp(o.x,-51,51),fz=clamp(o.z,-33,33);this.emit('foul',{});if(inBox)this.startDead('pen',t,PITCH.L*d-PITCH.PEN*d,0,{delay:1.2});else this.startDead('fk',t,fx,fz,{delay:1.1});}
  sendOff(p){p.off=true;p.x=0;p.z=60;if(this.cursor[p.team]===p)this.cursor[p.team]=null;this.say(p.name+' is sent off!',3);}
@@ -293,6 +293,7 @@ class Match{
    if(this.humans[p.team]&&this.cursor[p.team]===p){continue;}
    p.thinkT-=dt;const own=b.owner&&b.owner.team===p.team;
    if(b.owner===p){this.aiCarry(p,dt);continue;}
+   if(b.owner&&b.owner.hold>0&&b.owner.team!==p.team){const a=this.anchor(p),o=b.owner,dk=hyp(a.x-o.x,a.z-o.z);if(dk<12){const l=dk||1;a.x=o.x+(a.x-o.x)/l*12;a.z=clamp(o.z+(a.z-o.z)/l*12,-32,32);}p.tx=a.x;p.tz=a.z;p.run=hyp(p.tx-p.x,p.tz-p.z)>5;continue;}
    if(!b.owner&&b.target===p&&this.t<(p.recv||0)){const tp=b.y>.5?b.tpt:null;if(b.tpt){const T=hyp(b.tpt.x-b.x,b.tpt.z-b.z)/(hyp(b.vx,b.vz)||1);const q=this.pred(clamp(T*.7,.05,1.5));p.tx=b.y>.9?b.tpt.x:q.x;p.tz=b.y>.9?b.tpt.z:q.z;}p.run=true;this.aiFirstTouch(p);continue;}
    const c=ci[p.team];if(!b.owner&&c.p===p){p.tx=c.pt.x;p.tz=c.pt.z;p.run=true;if(b.y>.5)this.aiHeaderMove(p);continue;}
    if(b.owner&&!own&&c.p===p){this.aiPress(p,dt);continue;}
