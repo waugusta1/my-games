@@ -148,8 +148,8 @@ class Match{
   if(!best){let bd=1e9;for(const p of this.team(t)){if(p.i===0)continue;const d=hyp(p.x-this.ball.x,p.z-this.ball.z);if(d<bd){bd=d;best=p;}}pt=this.pred(1);bT=4;}return{p:best,pt,T:bT};}
 
  /* ---------- Kicks ---------- */
- release(p,clip,vx,vy,vz,o={}){const b=this.ball;b.owner=null;b.vx=vx;b.vy=vy;b.vz=vz;b.spin=o.spin||0;b.last=p;b.lastTeam=p.team;b.noTouch=p;b.noT=o.noT||.34;b.target=o.target||null;b.tpt=o.tpt||null;b.shot=o.shot?{team:p.team,by:p,t:this.t,saved:false}:null;b.kicker=p;
-  if(b.y<.08)b.y=.11;if(clip)this.play(p,clip,CLIPD[clip]*.72);this.emit('kick',{p:hyp(vx,vy,vz)/30,x:b.x,z:b.z});
+ release(p,clip,vx,vy,vz,o={}){const b=this.ball;if(clip&&(clip==='kick'||clip==='pass')){const ddx=b.x-p.x,ddz=b.z-p.z,dd=hyp(ddx,ddz);if(dd>.62&&dd<2.2){/* step up to the ball so the foot actually reaches it */const k=(dd-.56)/dd;p.x+=ddx*k*.75;p.z+=ddz*k*.75;}}b.owner=null;b.vx=vx;b.vy=vy;b.vz=vz;b.spin=o.spin||0;b.last=p;b.lastTeam=p.team;b.noTouch=p;b.noT=o.noT||.34;b.target=o.target||null;b.tpt=o.tpt||null;b.shot=o.shot?{team:p.team,by:p,t:this.t,saved:false}:null;b.kicker=p;
+  if(b.y<.08)b.y=.11;if(clip){const c0=KICK_AT[clip]||0;this.play(p,clip,(CLIPD[clip]-c0)*.8);p.ct=c0;p.fade=.35;p.faceYaw=Math.atan2(vx,vz);p.faceT=.3;if(clip==='kick'||clip==='pass'){const k=clip==='kick'?.55:.78;p.vx*=k;p.vz*=k;}}this.emit('kick',{p:hyp(vx,vy,vz)/30,x:b.x,z:b.z});
   /* offside snapshot */ b.offs=null;if(this.offsideOn&&o.pass){const line=this.offsideLine(p.team),d=this.dir[p.team],bx=b.x*d;const set=[];for(const q of this.team(p.team)){if(q===p)continue;const a=q.x*d;if(a>0&&a>line+.2&&a>bx)set.push(q.id);}if(set.length)b.offs={ids:set,t:this.t,x:b.x};}
   if(this.sp)this.finishSetPiece();}
  passScore(p,q,dx,dz,kind){const d=hyp(q.x-p.x,q.z-p.z);if(d<3||d>(kind==='lob'?58:46))return -1e9;const ux=(q.x-p.x)/d,uz=(q.z-p.z)/d;const dot=dx*ux+dz*uz;let open=9;for(const o of this.team(1-p.team)){const m=segDist(o.x,o.z,p.x,p.z,q.x,q.z);if(m<open)open=m;}
@@ -167,7 +167,7 @@ class Match{
   const facing=Math.abs(p.vz)+Math.abs(p.vx)<1?1:clamp(((gx-b.x)*p.vx+(0-b.z)*p.vz)/(dist*(hyp(p.vx,p.vz)||1)),-1,1);
   const press=this.pressure(p);const err=(1-skill*.92)*(1.5+dist*.11)*(1+pw*.55)*(1+press*.8)*(facing<0?1.6:1);tz+=(Math.random()-.5)*2*err;
   let ty=over!=null?over:.25+pw*pw*1.5+Math.random()*.25;ty+=(Math.random()-.25)*err*.42;if(dist<8)ty=Math.min(ty,1.7);
-  const T=dist/speed;const vh=speed;const a=Math.atan2(tz-b.z,gx-b.x);const vy=(ty-b.y+.5*9.8*T*T)/T;const curve=clamp(-(tz-b.z)*0,-1,1);
+  const T=dist/speed;const vh=speed;const A=(b.z>tz?-1:1)*(Math.random()<.7?1:-1)*(1.2+Math.random()*3)*clamp(dist/24,.25,1);const a=Math.atan2(tz-.5*A*T*T-b.z,gx-b.x);const vy=(ty-b.y+.5*9.8*T*T)/T;const curve=A/3;
   if(hyp(gx-b.x,tz-b.z)<52&&Math.abs(tz)<PITCH.GW+.1&&ty<2.44)st.onT++;
   this.release(p,'kick',Math.cos(a)*vh,clamp(vy,0,14),Math.sin(a)*vh,{shot:1,spin:curve,noT:.4});this.say(p.name+' shoots!',1.2);}
  pressure(p){let m=9;for(const o of this.team(1-p.team)){const d=hyp(o.x-p.x,o.z-p.z);if(d<m)m=d;}return clamp(1-m/4,0,1);}
@@ -178,9 +178,9 @@ class Match{
    const px=(p.i?clamp(ax*.72-14,-40,-1.2):-50.5)*d,pz=p.i?p.fz*28:0;p.tx=px;p.tz=pz;if(tele){p.x=px;p.z=pz;p.vx=p.vz=0;p.yaw=Math.atan2(d,0);p.clip=p.i?'idle':'gkIdle';}}
   const tk=this.takerFor(team,0,0);this.sp.taker=tk;if(tele){tk.x=-this.dir[team]*.6;tk.z=0;tk.yaw=Math.atan2(this.dir[team],0);}this.cursorFix();}
  takerFor(team,x,z,gk){if(gk)return this.team(team).find(p=>p.i===0);let best=null,bd=1e9;for(const p of this.team(team)){if(p.i===0)continue;const d=hyp(p.x-x,p.z-z);if(d<bd){bd=d;best=p;}}return best;}
- startDead(type,team,x,z,o={}){const b=this.ball;this.sp={type,team,x,z,t:0,ready:false,delay:o.delay==null?.8:o.delay,placed:false,...o};b.owner=null;b.target=null;b.shot=null;b.offs=null;this.phase='dead';this.emit('whistle',{short:1});
+ startDead(type,team,x,z,o={}){const b=this.ball;this.sp={type,team,x,z,t:0,ready:false,delay:o.delay==null?1.1:o.delay,placed:false,...o};b.owner=null;b.target=null;b.shot=null;b.offs=null;this.phase='dead';this.emit('whistle',{short:1});
   if(type==='corner')this.st[team].corners++;this.say({throw:'Throw-in',corner:'Corner kick',goalkick:'Goal kick',fk:'Free kick',pen:'Penalty!'}[type]||'',1.6);}
- placeSetPiece(){const s=this.sp,b=this.ball;b.x=s.x;b.z=s.z;b.y=s.type==='throw'?2.1:.11;b.vx=b.vy=b.vz=0;b.inNet=0;s.placed=true;s.taker=this.takerFor(s.team,s.x,s.z,s.type==='goalkick');
+ placeSetPiece(){const s=this.sp,b=this.ball;b.x=s.x;b.z=s.z;b.y=.11;b.vx=b.vy=b.vz=0;b.inNet=0;s.placed=true;s.taker=this.takerFor(s.team,s.x,s.z,s.type==='goalkick');
   if(s.type==='fk'){this.buildWall(s);}
   if(s.type==='throw'){s.taker.y=0;}this.cursorFix();}
  buildWall(s){const d=this.dir[s.team],gx=PITCH.L*d,dist=hyp(gx-s.x,s.z);if(dist>34)return;const n=dist<20?5:dist<27?4:3;const ux=(gx-s.x)/dist,uz=-s.z/dist;const defs=this.team(1-s.team).filter(p=>p.i).sort((a,b)=>hyp(a.x-s.x,a.z-s.z)-hyp(b.x-s.x,b.z-s.z)).slice(0,n);s.wall=defs.map(p=>p.id);defs.forEach((p,i)=>{const o=(i-(n-1)/2)*.7;p.wallPt={x:s.x+ux*9.15-uz*o,z:s.z+uz*9.15+ux*o};p.x=p.wallPt.x+(Math.random()-.5)*3;p.z=p.wallPt.z+(Math.random()-.5)*3;});}
@@ -227,8 +227,8 @@ class Match{
  stepDead(dt){const s=this.sp;if(!s){this.phase='play';return;}s.t+=dt;if(s.type!=='kickoff'&&!s.placed){if(s.t<s.delay)return;this.placeSetPiece();s.t=0;}
   const b=this.ball,p=s.taker;if(!p)return;
   if(s.type==='pen'){this.phase='pens';this.startPenalty(s.team,false,s.x,s.z);return;}
-  const dx=b.x-p.x,dz=b.z-p.z,d=hyp(dx,dz);const hd=this.dir[s.team];const back=s.type==='throw'?{x:s.x,z:s.z+Math.sign(s.z)*.55}:{x:s.x-hd*.7,z:s.z+(s.type==='corner'?Math.sign(s.z)*.5:0)};
-  p.tx=back.x;p.tz=back.z;p.run=true;const dd=hyp(back.x-p.x,back.z-p.z);if(dd<.5||(s.t>2.4)){p.x=lerp(p.x,back.x,.5);p.z=lerp(p.z,back.z,.5);s.ready=true;p.vx=p.vz=0;p.yaw=Math.atan2((s.type==='throw'?0:hd),(s.type==='throw'?-Math.sign(s.z):0));if(s.type==='throw'){if(p.clip!=='throw'){this.play(p,'throw');}p.ct=0;}}
+  const dx=b.x-p.x,dz=b.z-p.z,d=hyp(dx,dz);const hd=this.dir[s.team];const back=s.type==='throw'?{x:s.x,z:s.z+Math.sign(s.z)*.28}:{x:s.x-hd*.7,z:s.z+(s.type==='corner'?Math.sign(s.z)*.5:0)};
+  p.tx=back.x;p.tz=back.z;p.run=true;const dd=hyp(back.x-p.x,back.z-p.z);if(dd<.5||(s.t>2.4)){p.x=lerp(p.x,back.x,.5);p.z=lerp(p.z,back.z,.5);s.ready=true;p.vx=p.vz=0;p.yaw=Math.atan2((s.type==='throw'?0:hd),(s.type==='throw'?-Math.sign(s.z):0));if(s.type==='throw'){if(p.clip!=='throw'){this.play(p,'throw');}p.ct=0;b.y=2.12;}}
   if(s.ready){if(s.readyT==null)s.readyT=this.t;b.owner=null;const hum=this.humans[s.team];
    if(hum&&this.humans[s.team]){const inp=this.input[s.team];s.aim=inp.mag>.15?{x:inp.mx,z:inp.mz}:{x:hd,z:0};if(inp.shoot){inp.chgV=Math.min(1,(inp.chgV||0)+dt*1.25);}if(s.type==='kickoff'&&this.t-s.readyT>6){b.owner=p;this.takeAI(s);return;}if(this.t-s.readyT>.15&&this.takeHuman(s,inp)){inp.chgV=0;return;}if(this.t-s.readyT>14){this.takeAI(s);}}
    else if(this.t-s.readyT>(s.type==='kickoff'?.7:1+Math.random()*.04*30*.1)){this.takeAI(s);}}
@@ -329,7 +329,7 @@ class Match{
    if(g.hold<=0){const q=this.pickReceiver(g,d,0,'lob');this.gkDistribute(g,q,Math.random()<.55?'ground':'lob');}return;}
   /* shot watch */ const cross=this.crossing(g.team);
   if(cross&&cross.T<1.8){if(g.react<=0)g.react=.06+(1-g.s.gk)*.2;g.react-=dt;if(g.react<=.001){const dz=cross.z-g.z,dx=cross.x-g.x,dist=hyp(dz,dx);const need=dist/Math.max(cross.T,.08);g.tx=g.x+dx*.5;g.tz=cross.z;g.run=true;
-     if(dist>1.1&&cross.T<.82){const v=clamp(need,0,8.6+g.s.gk*1.8);g.dive={t:0,vx:dx/(dist||1)*v,vz:dz/(dist||1)*v};const yawTo=Math.atan2(d,0);g.yaw=yawTo;const side=(dz*d)>0?'L':'R';this.play(g,side==='L'?'diveR':'diveL',1.9);g.pct=g.ct;g.vy=Math.max(1.8,clamp(cross.y*2.6,1.8,5.2));g.y=.02;return;}}
+     if(dist>1.1&&cross.T<.82){const v=clamp(need,0,6.2+g.s.gk*1.6);g.dive={t:0,vx:dx/(dist||1)*v,vz:dz/(dist||1)*v,dx:dx/(dist||1),dz:dz/(dist||1)};const yawTo=Math.atan2(d,0);g.yaw=yawTo;const side=(dz*d)>0?'L':'R';this.play(g,side==='L'?'diveR':'diveL',1.9);g.pct=g.ct;g.vy=clamp(cross.y*2.2,.6,4.6);g.y=.02;return;}}
    this.gkTrySave(g,dt);return;}
   g.react=0;
   /* loose balls in my box */
@@ -340,7 +340,7 @@ class Match{
   if(!b.owner&&b.y>1&&b.vy<3){const T=this.landT();const q=this.pred(T);if(q.x*d<-PITCH.L+PITCH.SIXX+1.5&&Math.abs(q.z)<PITCH.SIXZ){g.tx=q.x;g.tz=q.z;g.run=true;if(hyp(b.x-g.x,b.z-g.z)<1.3&&b.y<2.7&&b.y>.7){if(Math.random()<.35+g.s.gk*.5){this.gkCollect(g);}else{b.vx=d*(8+Math.random()*6);b.vy=5;b.vz=(Math.random()-.5)*14;b.last=g;b.lastTeam=g.team;b.target=null;b.noTouch=g;b.noT=.4;this.emit('save',{});}}return;}}
   this.gkPosition(g);}
  chaseInfoGK(g){const b=this.ball;const sp=hyp(b.vx,b.vz);const opp=this.team(1-g.team).reduce((m,q)=>Math.min(m,hyp(q.x-b.x,q.z-b.z)),99);const q=this.pred(.3);const my=hyp(q.x-g.x,q.z-g.z);if(my<opp*.95+1.5||sp<3&&my<9)return q;return null;}
- crossing(team){const b=this.ball,d=this.dir[team],gx=-PITCH.L*d;if(b.owner)return null;if(b.vx*d>=-3)return null;const T=(gx-b.x)/b.vx;if(T<0||T>2.4)return null;const e=T,z=b.z+b.vz*e,yy=b.y+b.vy*T-4.9*T*T;let y=yy;if(y<.15)y=.3;if(Math.abs(z)>PITCH.GW+1.4||y>3.1)return null;const sp=hyp(b.vx,b.vz);if(sp<6&&T>1)return null;/* plane a little in front of the keeper */return{T,z,y,x:gx+d*.6};}
+ crossing(team){const b=this.ball,d=this.dir[team],gx=-PITCH.L*d;if(b.owner)return null;if(b.vx*d>=-3)return null;const T=(gx-b.x)/b.vx;if(T<0||T>2.4)return null;const e=T,z=b.z+b.vz*e+.5*(b.spin||0)*3*T*T,yy=b.y+b.vy*T-4.9*T*T;let y=yy;if(y<.15)y=.3;if(Math.abs(z)>PITCH.GW+1.4||y>3.1)return null;const sp=hyp(b.vx,b.vz);if(sp<6&&T>1)return null;/* plane a little in front of the keeper */return{T,z,y,x:gx+d*.6};}
  gkTrySave(g,dt){const b=this.ball;if(b.owner||b.noTouch===g)return;const hand=hyp(b.x-g.x,b.z-g.z);const dv=g.dive;const reach=dv?1.55+g.s.gk*.38:.95;const top=dv?2.75:2.5;if(hand<reach&&b.y<top&&Math.abs(b.x-g.x)<1.25){const sp=hyp(b.vx,b.vy,b.vz);let hard=clamp((sp-16)/20,0,1);if(b.y>1.95&&Math.abs(b.z)>2.5)hard+=.25;if(dv&&dv.t<.1)hard+=.2;const lvl=this.humans[g.team]?.92:this.aiLevel(g.team);const skill=g.s.gk*lvl;
    if(Math.random()<.11+hard*.5-skill*.2){b.noTouch=g;b.noT=.5;return;}
    this.st[g.team].saves++;g.saves++;g.pm+=.6;g.diveHit=true;this.emit('save',{big:sp>18});if(b.shot)this.say(g.name+' with the save!',2);
@@ -363,11 +363,12 @@ class Match{
    if(lockSlide){p.vx*=Math.exp(-dt*1.7);p.vz*=Math.exp(-dt*1.7);}
    else if(dead){p.vx*=Math.exp(-dt*5);p.vz*=Math.exp(-dt*5);}
    else if(p.i===0&&p.dive){/* handled in stepGK */}
-   else{const ax=p.stun>0?5:p.act>0&&p.clip!=='pass'&&p.clip!=='kick'?9:18;const tvx=wantX*sp,tvz=wantZ*sp,dvx=tvx-p.vx,dvz=tvz-p.vz,dl=hyp(dvx,dvz),st=ax*dt;if(dl>st){p.vx+=dvx/dl*st;p.vz+=dvz/dl*st;}else{p.vx=tvx;p.vz=tvz;}}
+   else{const ax=p.stun>0?5:p.act>0&&p.clip!=='pass'&&p.clip!=='kick'?8:11.5;const tvx=wantX*sp,tvz=wantZ*sp,dvx=tvx-p.vx,dvz=tvz-p.vz,dl=hyp(dvx,dvz),st=ax*dt*((dvx*p.vx+dvz*p.vz)<0?1.35:1);if(dl>st){p.vx+=dvx/dl*st;p.vz+=dvz/dl*st;}else{p.vx=tvx;p.vz=tvz;}}
    p.x+=p.vx*dt;p.z+=p.vz*dt;
    /* jump */ if(p.y>0||p.vy>0){p.vy-=9.8*dt;p.y+=p.vy*dt;if(p.y<=0){p.y=0;p.vy=0;}}
    const v=hyp(p.vx,p.vz);
-   if(v>.5&&!lockSlide&&!(p.dive)){const a=Math.atan2(p.vx,p.vz);let dy=a-p.yaw;while(dy>Math.PI)dy-=Math.PI*2;while(dy<-Math.PI)dy+=Math.PI*2;p.yaw+=dy*Math.min(1,dt*13);}
+   if(p.faceT>0){p.faceT-=dt;let dy=p.faceYaw-p.yaw;while(dy>Math.PI)dy-=Math.PI*2;while(dy<-Math.PI)dy+=Math.PI*2;p.yaw+=dy*Math.min(1,dt*24);}
+   else if(v>.5&&!lockSlide&&!(p.dive)){const a=Math.atan2(p.vx,p.vz);let dy=a-p.yaw;while(dy>Math.PI)dy-=Math.PI*2;while(dy<-Math.PI)dy+=Math.PI*2;p.yaw+=dy*Math.min(1,dt*9.5);}
    else if(v<=.5&&!p.celeb&&!p.dive&&p.act<=0&&(!this.sp||this.sp.taker!==p)){const a=Math.atan2(b.x-p.x,b.z-p.z);let dy=a-p.yaw;while(dy>Math.PI)dy-=Math.PI*2;while(dy<-Math.PI)dy+=Math.PI*2;p.yaw+=dy*Math.min(1,dt*5);}
    p.sta=clamp(p.sta+(p.isSprint&&v>5?-.06:.05*((p===b.owner)?.2:1))*dt*(300/this.len),0,1);
    /* clips */ if(p.act<=0&&!p.stun&&!p.dive&&!p.pose){let c,rate=1;const gk=p.i===0;if(p.hold>0)c='gkHold';else if(v<.35)c=gk?'gkIdle':'idle';else if(v<2.9)c='walk';else c='run';if(p.clip!==c){this.play(p,c);}}
@@ -385,15 +386,23 @@ class Match{
  /* ---------- Ball ---------- */
  stepBall(dt){const b=this.ball;if(b.noT>0){b.noT-=dt;if(b.noT<=0)b.noTouch=null;}
   if(this.sp&&b.owner==null&&this.phase==='dead'&&this.sp.placed){return;}
-  if(b.owner){const o=b.owner;if(o.hold>0){const fx=Math.sin(o.yaw),fz=Math.cos(o.yaw);b.x=o.x+fx*.28;b.z=o.z+fz*.28;b.y=o.y+1.05;b.vx=o.vx;b.vz=o.vz;b.vy=0;return;}
-   const fx=Math.sin(o.yaw),fz=Math.cos(o.yaw),v=hyp(o.vx,o.vz);o.st=(o.st||0)+dt*(v*.9+1);const touch=.5+.2*Math.abs(Math.sin(o.st))*(v/7)+(o.isSprint?.28:0);const tx=o.x+fx*touch,tz=o.z+fz*touch;b.x+=(tx-b.x)*Math.min(1,dt*18);b.z+=(tz-b.z)*Math.min(1,dt*18);b.y=.11;b.vx=o.vx;b.vz=o.vz;b.vy=0;b.rot+=v*dt/.11;if(this.phase==='play')this.checkBounds();return;}
+  if(b.owner){const o=b.owner;if(o.hold>0){let tx,tz,ty;if(o.dive){const D=o.dive,t=D.t;tx=o.x+(D.dx||0)*.8;tz=o.z+(D.dz||0)*.8;ty=Math.max(.16,o.y+(t<.32?.95:lerp(.95,.2,clamp((t-.32)/.42,0,1))));}else{const fx=Math.sin(o.yaw),fz=Math.cos(o.yaw);tx=o.x+fx*.3;tz=o.z+fz*.3;ty=o.y+1.08;}const k=Math.min(1,dt*16);b.x+=(tx-b.x)*k;b.z+=(tz-b.z)*k;b.y+=(ty-b.y)*k;b.vx=o.vx;b.vz=o.vz;b.vy=0;return;}
+   /* a dropping ball still falls and settles */ if(b.y>.11||b.vy>0){b.vy-=9.8*dt;b.y+=b.vy*dt;if(b.y<.11){b.y=.11;b.vy=b.vy<-1.4?-b.vy*.34:0;}}
+   const v=hyp(o.vx,o.vz),fx=v>.6?o.vx/v:Math.sin(o.yaw),fz=v>.6?o.vz/v:Math.cos(o.yaw);b.tt=(b.tt||0)-dt;b.since=(b.since||0)+dt;const dO=hyp(b.x-o.x,b.z-o.z);const bv=hyp(b.vx,b.vz)||1;const dotT=v>2?(b.vx*fx+b.vz*fz)/bv:1;
+   /* each touch pushes the ball to where the feet will be, then it rolls and slows until the next one */
+   if(b.tt<=0||dO>1.3||(dotT<.45&&b.since>.13)){const T=clamp(.44-v*.022+(o.isSprint?.06:0),.2,.5),lead=.3+v*.036+(o.isSprint?.08:0),K=1.5;const tx=o.x+o.vx*T+fx*lead,tz=o.z+o.vz*T+fz*lead,sc=K/(1-Math.exp(-K*T));let nvx=(tx-b.x)*sc,nvz=(tz-b.z)*sc;const ns=hyp(nvx,nvz),mx=v+8;if(ns>mx){nvx*=mx/ns;nvz*=mx/ns;}b.vx=nvx;b.vz=nvz;b.tt=T;b.since=0;}
+   const f=Math.exp(-1.5*dt);b.vx*=f;b.vz*=f;b.x+=b.vx*dt;b.z+=b.vz*dt;if(this.phase==='play')this.checkBounds();return;}
   /* free flight */
   const pv=hyp(b.vx,b.vz);const px=b.x,pz=b.z,py=b.y;
-  if(b.y>.13||b.vy>0){b.vy-=9.8*dt;const k=Math.exp(-.08*dt);b.vx*=k;b.vz*=k;b.vy*=Math.exp(-.02*dt);if(b.spin){b.vz+=b.spin*dt*3;}}
-  else{const k=Math.exp(-(this.wet?.55:.75)*dt);b.vx*=k;b.vz*=k;b.y=.11;b.vy=0;}
+  if(b.y>.13||b.vy>0){b.vy-=9.8*dt;const k=Math.exp(-.08*dt);b.vx*=k;b.vz*=k;b.vy*=Math.exp(-.02*dt);}
+  else{const k=Math.exp(-(this.wet?.55:.75)*dt);b.vx*=k;b.vz*=k;b.y=.11;b.vy=0;const rs=hyp(b.vx,b.vz),dc=.42*dt;if(rs<=dc){b.vx=0;b.vz=0;}else{b.vx*=1-dc/rs;b.vz*=1-dc/rs;}}
+  if(b.spin)b.vz+=b.spin*dt*3;
   b.x+=b.vx*dt;b.y+=b.vy*dt;b.z+=b.vz*dt;b.rot+=pv*dt/.11;
-  if(b.y<.11){b.y=.11;if(b.vy<-1.2){b.vy=-b.vy*.56;b.vx*=.82;b.vz*=.82;if(b.vy>2)this.emit('bounce',{p:b.vy/8});}else b.vy=0;}
-  if(b.inNet){b.vx*=.82;b.vz*=.82;b.vy*=.9;const lim=PITCH.L+1.8;if(Math.abs(b.x)>lim){b.x=Math.sign(b.x)*lim;b.vx=0;}if(Math.abs(b.z)>PITCH.GW-.1){b.z=Math.sign(b.z)*(PITCH.GW-.1);b.vz=0;}if(b.y>2.3){b.y=2.3;b.vy=-1;}return;}
+  if(b.y<.11){b.y=.11;if(b.vy<-1.2){b.vy=-b.vy*.56;b.vx*=.82;b.vz*=.82;b.spin*=.4;if(b.vy>2)this.emit('bounce',{p:b.vy/8});}else b.vy=0;}
+  if(b.inNet){/* the net gives, slows the ball, and drops it */const sg=Math.sign(b.x)||1,dep=Math.abs(b.x)-PITCH.L,kx=Math.exp(-dt*(1.5+Math.max(0,dep)*5));b.vx*=kx;b.vz*=Math.exp(-dt*3.2);b.spin=0;if(dep>1.92){b.x=sg*(PITCH.L+1.92);if(b.vx*sg>0)b.vx*=-.2;}if(dep<.14){b.x=sg*(PITCH.L+.14);if(b.vx*sg<0)b.vx*=-.25;}if(Math.abs(b.z)>PITCH.GW-.13){b.z=Math.sign(b.z)*(PITCH.GW-.13);b.vz*=-.25;}if(b.y>2.3){b.y=2.3;if(b.vy>0)b.vy*=-.2;}return;}
+  /* the outside of the goal and the boards are solid enough */
+  const ox=Math.abs(b.x)-PITCH.L;if(ox>0&&ox<2&&Math.abs(b.z)<PITCH.GW+.1){if(py>=2.44&&b.y<2.47){b.y=2.47;b.vy=Math.abs(b.vy)*.16;b.vx*=.72;b.vz*=.72;}else if(Math.abs(pz)>=PITCH.GW&&Math.abs(b.z)<PITCH.GW&&b.y<2.44){b.z=Math.sign(pz)*PITCH.GW;b.vz*=-.22;b.vx*=.6;}}
+  if(Math.abs(b.x)>58.2&&b.y<1.1){b.x=Math.sign(b.x)*58.2;b.vx*=-.38;b.vz*=.7;this.emit('bounce',{p:.5});}if(Math.abs(b.z)>37.7&&b.y<1.1){b.z=Math.sign(b.z)*37.7;b.vz*=-.38;b.vx*=.7;this.emit('bounce',{p:.5});}
   this.woodwork(px,py,pz);
   this.touches(dt);
   if(this.phase==='play'||this.phase==='pens')this.checkBounds();
@@ -404,7 +413,7 @@ class Match{
    /* bar */ if(Math.abs(b.z)<PITCH.GW){const d=hyp(b.x-gx,b.y-PITCH.GH);if(d<.2){const nx=(b.x-gx)/(d||1),ny=(b.y-PITCH.GH)/(d||1);const vn=b.vx*nx+b.vy*ny;if(vn<0){b.vx-=1.6*vn*nx;b.vy-=1.6*vn*ny;this.emit('post',{});this.say('Off the bar!',2);}b.x=gx+nx*.2;b.y=PITCH.GH+ny*.2;}}}}
  touches(dt){const b=this.ball;const speed=hyp(b.vx,b.vz);if(this.sp&&this.phase==='dead')return;for(const p of this.players){if(p.off||p===b.noTouch||p.i===0&&false)continue;if(p.clip==='fall'||(p.stun>0&&p.clip!=='poke'))continue;if(p.i===0)continue;
    const dh=hyp(b.x-p.x,b.z-p.z);const reach=p.clip==='slide'?1.1:.72;
-   /* headers */ if(b.y>1.15&&b.y<2.7+p.y&&dh<2.3&&p.headCd<=0&&b.vy<3.5&&this.t-(p.lastHead||-9)>.8){const q=this.ball;const T=dh/(speed||1);if(T<.34){const near=this.nearestToBall(p.team);if(near===p||this.humans[p.team]&&this.cursor[p.team]===p){this.play(p,'header',.68);p.vy=clamp((b.y-1.1)*3.2,2,4.9);p.y=.02;p.lastHead=this.t;}}}
+   /* headers */ if(b.y>1.15&&b.y<2.7+p.y&&dh<2.3&&p.headCd<=0&&b.vy<3.5&&this.t-(p.lastHead||-9)>.8){const q=this.ball;const T=dh/(speed||1);if(T<.34){const near=this.nearestToBall(p.team);if(near===p||this.humans[p.team]&&this.cursor[p.team]===p){this.play(p,'header',.68);p.vy=clamp((b.y-1.1)*3,1.8,3.7);p.y=.02;p.lastHead=this.t;}}}
    if(b.y>1.1&&dh<.68&&Math.abs(b.y-(p.y+1.72))<.5&&p.headCd<=0){this.headBall(p);return;}
    if(dh<reach&&b.y<(p.clip==='slide'?.5:1.25)&&b.y<p.y+1.3){
     /* blocks and fast balls */ if(speed>17&&b.lastTeam!==p.team&&b.shot&&Math.random()>.32){const a=Math.atan2(b.vz,b.vx)+(Math.random()-.5)*1.8;const s=speed*.42;b.vx=Math.cos(a)*s;b.vz=Math.sin(a)*s;b.vy=1+Math.random()*3;b.last=p;b.lastTeam=p.team;b.noTouch=p;b.noT=.3;b.shot=null;this.emit('kick',{p:.3,x:b.x,z:b.z});this.say('Blocked by '+p.name,1.6);return;}
@@ -416,7 +425,7 @@ class Match{
   if(b.offs&&b.offs.ids.includes(p.id)&&b.last&&b.last.team===p.team){const off=b.offs;b.offs=null;this.say('Offside: '+p.name,2);this.emit('offside',{});this.startDead('fk',1-p.team,clamp(p.x,-50,50),clamp(p.z,-32,32),{delay:.9,indirect:1});return;}
   b.offs=null;if(b.last&&b.last.team===p.team&&b.last!==p&&b.target===p)this.st[p.team].passOk++;else if(b.last&&b.last.team===p.team&&b.last!==p)this.st[p.team].passOk++;
   if(b.last&&b.last.team===p.team&&b.last!==p)p.assistFrom=b.last;
-  b.owner=p;b.vx=p.vx;b.vz=p.vz;b.vy=0;b.y=.11;b.target=null;b.tpt=null;b.shot=null;if(b.lastTeam!==p.team){b.last=p;}b.last=p;b.lastTeam=p.team;p.decide=(.14+Math.random()*.2)/this.aiLevel(p.team);this.emit('touch',{});}
+  b.owner=p;b.tt=0;b.since=1;b.vy=Math.min(b.vy,0)*.3;b.spin=0;b.target=null;b.tpt=null;b.shot=null;if(b.lastTeam!==p.team){b.last=p;}b.last=p;b.lastTeam=p.team;p.decide=(.14+Math.random()*.2)/this.aiLevel(p.team);this.emit('touch',{});}
  headBall(p){const b=this.ball;p.headCd=.7;const d=this.dir[p.team],gx=PITCH.L*d;const dist=hyp(gx-p.x,p.z);const ax=this.ax(p);this.emit('kick',{p:.35,x:b.x,z:b.z});
   const inp=this.input[p.team];const hum=this.humans[p.team]&&this.cursor[p.team]===p;let shotOn=dist<15&&Math.abs(p.z)<14;if(hum&&inp._buf&&inp._buf!=='lob'&&this.t-inp._bufT<.5)shotOn=false;
   if(shotOn){const tz=(Math.random()-.5)*(4.2+(1-p.s.sho)*8)+(hum&&inp.mag>.2?inp.mz*2.4:0);const a=Math.atan2(tz-b.z,gx-b.x);const v=13+p.s.sho*7;const T=dist/v;const ty=.2+Math.random()*1.9;this.st[p.team].shots++;if(Math.abs(tz)<PITCH.GW)this.st[p.team].onT++;const vy=(ty-b.y+.5*9.8*T*T)/T;b.vx=Math.cos(a)*v;b.vz=Math.sin(a)*v;b.vy=clamp(vy,-6,6);b.shot={team:p.team,by:p,t:this.t};b.owner=null;b.last=p;b.lastTeam=p.team;b.noTouch=p;b.noT=.5;b.target=null;this.say(p.name+' heads it!',1.5);}
@@ -454,7 +463,7 @@ class Match{
  stepPens(dt){const P=this.pen;if(!P)return;P.t+=dt;const b=this.ball,d=this.dir[P.team],hum=this.humans[P.team],gHum=this.humans[1-P.team];
   if(P.stage==='aim'){if(!hum&&P.t>1.7+Math.random()*.02){const lv=this.aiLevel(P.team);P.aim={x:(Math.floor(Math.random()*3)-1)*.72,y:Math.random()<.35?.75:.2};}
    if(P.aim){if(!gHum&&!P.guess&&P.t>0.3){P.guess=Math.random()<.46+this.aiLevel(1-P.team)*.08?(P.aim.x>.2?1:P.aim.x<-.2?-1:0):[-1,0,1][Math.floor(Math.random()*3)];}P.stage='run';P.t=0;P.taker.tx=b.x;P.taker.tz=b.z-.2;P.taker.run=false;}return;}
-  if(P.stage==='run'){const tk=P.taker;tk.tx=b.x-d*.5;tk.tz=b.z-.12;const hit=hyp(tk.x-(b.x-d*.5),tk.z-(b.z-.12))<.5||P.t>1.15;if(hit){tk.fixed=true;const aim=P.aim;const sk=tk.s.sho*(hum?1:this.aiLevel(P.team));const nz=(Math.random()-.5)*(1-sk)*2.2,ny=(Math.random()-.5)*(1-sk)*1.1;const tz=aim.x*PITCH.GW+nz,ty=clamp(aim.y*PITCH.GH+ny,.15,3);const v=23+sk*4;const dist=hyp(P.gx-b.x,tz-b.z);const T=dist/v;const vy=(ty-b.y+.5*9.8*T*T)/T;const a=Math.atan2(tz-b.z,P.gx-b.x);this.st[P.team].shots++;this.release(tk,'kick',Math.cos(a)*v,vy,Math.sin(a)*v,{shot:1,noT:9});P.stage='ball';P.t=0;const g=P.gk,gd=P.guess==null?[-1,0,1][Math.floor(Math.random()*3)]:P.guess;const gz=gd*2.6;if(gd){const dx=0;g.dive={t:0,vx:d*-.0,vz:(gz-g.z)/.55};this.play(g,(gd*d)>0?'diveL':'diveR',1.9);g.vy=clamp(ty*2,1.6,4.2);g.y=.02;}else{g.fixed=true;}g.penDive=gd;}return;}
+  if(P.stage==='run'){const tk=P.taker;tk.tx=b.x-d*.5;tk.tz=b.z-.12;const hit=hyp(tk.x-(b.x-d*.5),tk.z-(b.z-.12))<.5||P.t>1.15;if(hit){tk.fixed=true;const aim=P.aim;const sk=tk.s.sho*(hum?1:this.aiLevel(P.team));const nz=(Math.random()-.5)*(1-sk)*2.2,ny=(Math.random()-.5)*(1-sk)*1.1;const tz=aim.x*PITCH.GW+nz,ty=clamp(aim.y*PITCH.GH+ny,.15,3);const v=23+sk*4;const dist=hyp(P.gx-b.x,tz-b.z);const T=dist/v;const vy=(ty-b.y+.5*9.8*T*T)/T;const a=Math.atan2(tz-b.z,P.gx-b.x);this.st[P.team].shots++;this.release(tk,'kick',Math.cos(a)*v,vy,Math.sin(a)*v,{shot:1,noT:9});P.stage='ball';P.t=0;const g=P.gk,gd=P.guess==null?[-1,0,1][Math.floor(Math.random()*3)]:P.guess;const gz=gd*2.6;if(gd){const dx=0;g.dive={t:0,vx:0,vz:(gz-g.z)/.55,dx:0,dz:Math.sign(gz-g.z)||1};this.play(g,(gd*d)>0?'diveL':'diveR',1.9);g.vy=clamp(ty*2,.6,4.2);g.y=.02;}else{g.fixed=true;}g.penDive=gd;}return;}
   if(P.stage==='ball'){this.gkSavePen(P,dt);const g=P.gk;if(g.dive){g.dive.t+=dt;if(g.dive.t<.6){g.x+=0;g.vz=g.dive.vz;}else g.vz*=.9;if(g.dive.t>1.65){g.dive=null;}}if(P.t>2.4){this.penOver(false);}return;}
   if(P.stage==='done'){P.gk.vz*=.9;P.gk.vx*=.9;if(P.t>(P.so?2:2.8))this.afterPen();}}
  gkSavePen(P,dt){const b=this.ball,g=P.gk;if(P.saved)return;if(hyp(b.x-g.x,b.z-g.z)<(g.dive?1.5+g.s.gk*.3:.85)&&Math.abs(b.x-g.x)<.8&&b.y<2.6){const corner=Math.abs(b.z)>2.6&&b.y>1.7;if(corner&&Math.random()<.65)return;P.saved=true;const d=this.dir[P.team];b.vx=-d*(4+Math.random()*5);b.vz=(b.z>g.z?1:-1)*(4+Math.random()*7);b.vy=2+Math.random()*3;b.noTouch=g;b.noT=9;this.emit('save',{big:1});this.say(g.name+' saves it!',2.4);this.st[g.team].saves++;g.saves++;}}
@@ -469,6 +478,7 @@ class Match{
  winner(){if(this.penWin!=null)return this.penWin;return this.score[0]>this.score[1]?0:this.score[1]>this.score[0]?1:-1;}
  motm(){let best=this.players[0],bs=-1;for(const p of this.players){const win=this.winner()===p.team?.4:0;const s=p.pm+win+p.tk*.12+(p.i===0?p.saves*.15:0)+Math.random()*.05;if(s>bs){bs=s;best=p;}}return best;}
 }
+const KICK_AT={kick:.15,pass:.11};
 const CLIPN=Object.keys(CLIPD);const CLIPI=Object.fromEntries(CLIPN.map((n,i)=>[n,i]));
 
 /* ===== 3D: players (one instanced draw with a shared animation bake), stadium, ball, cameras ===== */
@@ -631,7 +641,7 @@ class World{
   /* referee and assistants jog with play */
   const lx=clamp(bx,-40,40);const rr=this.refs;const tg=[[bx-7,bz*.6+(bz>0?-7:7)],[clamp(bx*.8+6,-50,50),35],[clamp(bx*.8-6,-50,50),-35]];rr.forEach((r,i)=>{const dx=tg[i][0]-r.x,dz=tg[i][1]-r.z,l=hyp(dx,dz);const sp=l>1.2?clamp(l*.8,0,6):0;const tvx=l>.01?dx/l*sp:0,tvz=l>.01?dz/l*sp:0;r.vx+=(tvx-r.vx)*Math.min(1,dt*4);r.vz+=(tvz-r.vz)*Math.min(1,dt*4);r.x+=r.vx*dt;r.z+=r.vz*dt;const v=hyp(r.vx,r.vz);if(v>.4)r.yaw=Math.atan2(r.vx,r.vz);else r.yaw=Math.atan2(bx-r.x,bz-r.z);const c=v<.4?'idle':v<2.9?'walk':'run';r.ct+=dt*(c==='run'?clamp(v/6.6,.5,1.3):1);const k=22+i;this.iPos[k*4]=r.x;this.iPos[k*4+1]=0;this.iPos[k*4+2]=r.z;this.iPos[k*4+3]=r.yaw;this.poseInto(k,c,r.ct,c,r.ct,1);});
   this.aPos.needsUpdate=true;this.poseTex.needsUpdate=true;
-  this.ballM.position.set(bx,by+.04,bz);this.ballM.rotation.x=br*.6;this.ballM.rotation.z=br*.28;this.ballShadow.position.set(bx-this.uniP.uSun.value.x*by*.7,.035,bz-this.uniP.uSun.value.z*by*.7);const sc=1+by*.1;this.ballShadow.scale.set(sc,sc,1);this.ballShadow.material.opacity=clamp(1-by*.09,.25,.9);
+  this.ballM.position.set(bx,by+.04,bz);{/* the ball turns the way it actually rolls, and keeps spinning in the air */const lx=this._bx==null?bx:this._bx,lz=this._bz==null?bz:this._bz,ddx=bx-lx,ddz=bz-lz,dd=hyp(ddx,ddz);this._bx=bx;this._bz=bz;if(dd>1e-4&&dd<3){const ax=this._ax||(this._ax=new THREE.Vector3(1,0,0)),qq=this._qq||(this._qq=new THREE.Quaternion());ax.set(ddz/dd,0,-ddx/dd);qq.setFromAxisAngle(ax,dd/.14*(by<.3?1:.4));this.ballM.quaternion.premultiply(qq);}}this.ballShadow.position.set(bx-this.uniP.uSun.value.x*by*.7,.035,bz-this.uniP.uSun.value.z*by*.7);const sc=1+by*.1;this.ballShadow.scale.set(sc,sc,1);this.ballShadow.material.opacity=clamp(1-by*.09,.25,.9);
   /* cursors */ for(const t of[0,1]){const rg=this.ring[t];const c=m.humans[t]&&m.cursor[t];if(c&&!R&&(m.phase==='play'||m.phase==='dead')){rg.visible=true;rg.position.set(c.x,.05,c.z);rg.rotation.z=c.yaw+Math.PI;const inp=m.input[t];const pu=1+((inp.chg||0)/.75)*.5;rg.scale.set(pu,pu,1);}else rg.visible=false;}
   const sp=m.sp;const hum=sp&&sp.ready&&m.humans[sp.team]&&sp.aim&&m.phase==='dead';this.aim.visible=!!hum;if(hum){this.aim.position.set(bx,.06,bz);const a=Math.atan2(sp.aim.x,sp.aim.z);this.aim.rotation.set(-Math.PI/2,0,-a+0,'YXZ');this.aim.rotation.set(Math.PI/2,0,-a,'XYZ');}
   const tgt=b.target;this.recv.visible=!!(tgt&&!b.owner&&!R&&m.humans[tgt.team]);if(this.recv.visible){this.recv.position.set(tgt.x,2.5+Math.sin(this.t*7)*.1,tgt.z);}
