@@ -1,0 +1,937 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><title>Thermocline</title><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover"><meta name="apple-mobile-web-app-capable" content="yes"><style>html,body{margin:0}html{touch-action:manipulation}</style><script>(function(){var n=function(e){e.preventDefault();};["gesturestart","gesturechange","gestureend","dblclick"].forEach(function(t){document.addEventListener(t,n,{passive:false});});document.addEventListener("touchmove",function(e){if(e.touches.length>1||(e.scale&&e.scale!==1))e.preventDefault();},{passive:false});})();</script>
+<script>(function(){try{var id='thermocline',k='mg_hub',h=JSON.parse(localStorage.getItem(k)||'{}')||{};h.plays=h.plays||{};h.last=h.last||{};h.time=h.time||{};h.plays[id]=(h.plays[id]||0)+1;h.last[id]=Date.now();localStorage.setItem(k,JSON.stringify(h));setInterval(function(){if(document.hidden)return;try{var h2=JSON.parse(localStorage.getItem(k)||'{}')||{};h2.time=h2.time||{};h2.time[id]=(h2.time[id]||0)+15;h2.last=h2.last||{};h2.last[id]=Date.now();localStorage.setItem(k,JSON.stringify(h2));}catch(e){}},15000);}catch(e){}})();</script>
+<style>
+:root{--steel:#2b312d;--steel2:#1b1f1c;--steel3:#3c443e;--lamp:#f0ab3c;--lamp2:#7a5317;--stencil:#c9cdbd;--paper:#e8dfc6;--paper2:#cdbf9b;--ink:#26231b;--red:#b5301f;--phos:#7dffb0;--sten:"DIN Condensed","Avenir Next Condensed","Arial Narrow","Roboto Condensed",Impact,sans-serif;--type:"American Typewriter","Courier New",Courier,monospace}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+html,body{height:100%;background:#0b0d0c;overflow:hidden;position:fixed;inset:0;color:var(--stencil);font-family:var(--sten)}
+button{font:inherit;color:inherit;border:0;background:none;padding:0;cursor:pointer;touch-action:manipulation}
+svg{display:block}
+#game{position:absolute;inset:0;display:none;grid-template-columns:1fr minmax(310px,33%);background:var(--steel2)}
+#game.on{display:grid}
+#tbl{position:relative;overflow:hidden;background:#000;min-width:0;min-height:0}
+#chart{position:absolute;inset:0;width:100%;height:100%;touch-action:none;display:block}
+#side{position:relative;display:flex;flex-direction:column;gap:6px;padding:8px calc(8px + env(safe-area-inset-right)) calc(8px + env(safe-area-inset-bottom)) 8px;background:linear-gradient(90deg,#141714,#2a302b 6px,#262c28);box-shadow:inset 3px 0 6px #000a;min-height:0;min-width:0}
+.plate{position:relative;background:linear-gradient(170deg,#343b36,#242a26);border-radius:5px;box-shadow:inset 0 1px 0 #5a635b,inset 0 -1px 0 #0d0f0d,0 1px 3px #000;padding:5px 7px 7px}
+.plate>h6{margin:0 0 3px;font:600 12px var(--sten);letter-spacing:.17em;color:#aeb5a3}
+.plate:before,.plate:after{content:"";position:absolute;top:5px;width:5px;height:5px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#8e968a,#2c312d)}
+.plate:before{right:6px}.plate:after{right:15px}
+#wfp{flex:0 0 19%;display:flex;flex-direction:column;min-height:96px}
+#wf{flex:1;width:100%;min-height:0;background:#021006;border-radius:3px;box-shadow:inset 0 0 12px #000;display:block}
+#dialp{flex:0 0 auto;padding:3px 4px 4px}
+#dials{width:100%;height:84px;display:block}
+#lights{display:flex;gap:4px;margin-top:2px}
+.lt{flex:1;text-align:center;font:600 11px var(--sten);letter-spacing:.08em;padding:2px 0;border-radius:2px;background:#151815;color:#59604f;box-shadow:inset 0 0 3px #000}
+.lt.warn{background:#6b4a10;color:#ffd27a;box-shadow:0 0 6px #d49422}
+.lt.bad{background:#7a1c10;color:#ffb6a3;box-shadow:0 0 8px #e23a1d}
+#ctlp{flex:1;display:grid;grid-template-columns:1fr 92px;gap:6px;min-height:0}
+#depp{padding:5px 5px 5px;display:flex;flex-direction:column;min-height:0}
+#dep{flex:1;width:100%;min-height:0;border-radius:3px;touch-action:none;display:block}
+#dprs{display:grid;grid-template-columns:repeat(4,1fr);gap:3px;margin-top:4px}
+#dprs button{min-height:40px;font:600 13px var(--sten);letter-spacing:.05em;border-radius:3px;background:linear-gradient(#3e4640,#232824);box-shadow:inset 0 1px 0 #677067,0 1px 2px #000;color:var(--stencil)}
+#dprs button:active{filter:brightness(1.4)}
+#telp{display:flex;flex-direction:column;padding:5px 5px}
+#tel{flex:1;display:flex;flex-direction:column;gap:3px;min-height:0}
+#tel button{flex:1;min-height:30px;font:600 15px var(--sten);letter-spacing:.06em;border-radius:3px;background:linear-gradient(#181c19,#242a26);color:#6d7566;box-shadow:inset 0 0 4px #000}
+#tel button.on{background:linear-gradient(#ffcd70,#c98519);color:#2a1a02;box-shadow:0 0 10px #d4942277,inset 0 1px 0 #ffe9b8}
+#tel button.cap{color:#433f3a;text-decoration:line-through}
+/* chart overlays */
+.top{position:absolute;top:calc(8px + env(safe-area-inset-top));left:calc(8px + env(safe-area-inset-left));display:flex;gap:6px;align-items:stretch;z-index:3}
+.key{display:flex;align-items:center;justify-content:center;gap:5px;min-width:46px;min-height:46px;padding:0 8px;background:linear-gradient(#3f4741,#212622);border-radius:5px;box-shadow:inset 0 1px 0 #6a736a,inset 0 -2px 0 #0d0f0d,0 2px 5px #000b;font:600 14px var(--sten);letter-spacing:.09em;color:var(--stencil)}
+.key:active{transform:translateY(1px);filter:brightness(1.3)}
+.key svg{width:24px;height:24px;flex:none}
+.key[disabled]{opacity:.42}
+.key.lit{color:#2a1a02;background:linear-gradient(#ffcd70,#c98519);box-shadow:0 0 10px #d4942277,inset 0 1px 0 #ffe9b8}
+.key.rd{color:#fff;background:linear-gradient(#c2402a,#7a1a0d);box-shadow:0 0 10px #e23a1d77,inset 0 1px 0 #f08a78}
+#clock{display:flex;flex-direction:column;justify-content:center;align-items:center;min-width:76px;padding:0 8px;background:#0c0f0c;border-radius:4px;color:var(--lamp);font:600 21px var(--sten);letter-spacing:.08em;box-shadow:inset 0 0 6px #000,0 1px 0 #454c46}
+#tsc{display:flex;border-radius:5px;overflow:hidden;box-shadow:0 2px 5px #000b}
+#tsc button{min-width:42px;min-height:46px;background:linear-gradient(#333a35,#1f2420);font:600 15px var(--sten);color:#99a092;box-shadow:inset -1px 0 0 #111}
+#tsc button.on{background:linear-gradient(#ffcd70,#c98519);color:#2a1a02}
+#zm{position:absolute;right:8px;top:calc(8px + env(safe-area-inset-top));display:flex;flex-direction:column;gap:5px;z-index:3}
+#act{position:absolute;left:0;right:0;bottom:calc(8px + env(safe-area-inset-bottom));display:flex;gap:6px;justify-content:center;flex-wrap:wrap;padding:0 8px;z-index:3;pointer-events:none}
+#act .key{pointer-events:auto;min-height:56px;min-width:80px;flex-direction:column;gap:0;font-size:13px;padding:4px 8px}
+#pips{display:flex;gap:2px;margin-top:1px}
+#pips i{width:8px;height:4px;background:#141714;border-radius:1px}
+#pips i.ok{background:#8cff9f;box-shadow:0 0 3px #8cff9f}
+#pips i.ld{background:#c98519}
+#ordr{position:absolute;right:62px;top:calc(8px + env(safe-area-inset-top));width:236px;background:linear-gradient(#efe6cd,#ddd0ac);color:var(--ink);font:13px/1.3 var(--type);padding:6px 9px 7px;box-shadow:0 3px 8px #0009;transform:rotate(.5deg);z-index:2;pointer-events:none;max-height:44%;overflow:hidden}
+#ordr b{display:block;font:600 12px var(--sten);letter-spacing:.14em;color:#6f2a1c;margin-bottom:1px}
+#ordr .o{padding-left:13px;position:relative;margin-top:1px}
+#ordr .o:before{content:"";position:absolute;left:1px;top:4px;width:7px;height:7px;border:1.3px solid #5a4f35}
+#ordr .o.d{text-decoration:line-through;color:#7b6f53}
+#ordr .o.d:before{background:#5a4f35}
+#ordr .b{height:4px;background:#b9ab85;margin:2px 0}
+#ordr .b i{display:block;height:100%;background:#6f2a1c}
+#say{position:absolute;left:8px;right:8px;top:calc(62px + env(safe-area-inset-top));z-index:2;pointer-events:none;display:flex;flex-direction:column;gap:3px;align-items:flex-start;max-width:58%}
+#say div{background:#0c0f0ce0;color:#d9dfc8;font:14px/1.25 var(--type);padding:4px 8px;border-left:3px solid var(--lamp);border-radius:2px}
+#say div.h{border-left-color:#f0523a;color:#ffc8ba}
+#say div.g{border-left-color:#6fe08b;color:#caf5d5}
+#hint{position:absolute;left:50%;transform:translateX(-50%);bottom:calc(76px + env(safe-area-inset-bottom));width:min(560px,86%);display:none;background:linear-gradient(#efe6cd,#ddd0ac);color:var(--ink);font:15px/1.3 var(--type);padding:8px 50px 8px 12px;box-shadow:0 4px 12px #000a;z-index:4;min-height:48px}
+#hint.on{display:block}
+#hint b{font:600 12px var(--sten);letter-spacing:.14em;color:#6f2a1c;display:block}
+#hint button{position:absolute;right:2px;top:2px;width:44px;height:44px;display:flex;align-items:center;justify-content:center;color:var(--ink)}
+#hint button svg{width:20px;height:20px}
+#card{position:absolute;left:8px;bottom:calc(76px + env(safe-area-inset-bottom));width:208px;display:none;background:#0c0f0cf0;color:#d9dfc8;font:13px/1.3 var(--type);padding:8px 9px;border:1px solid #454c46;border-radius:4px;z-index:4}
+#card.on{display:block}
+#card h4{margin:0 40px 2px 0;font:600 16px var(--sten);letter-spacing:.06em;color:var(--lamp)}
+#card .x{position:absolute;right:0;top:0;width:46px;height:46px;display:flex;align-items:center;justify-content:center}
+#card .x svg{width:18px;height:18px}
+#card .sol{height:7px;background:#232823;margin:4px 0}
+#card .sol i{display:block;height:100%;background:linear-gradient(90deg,#c9462e,#e3b13c,#6fe08b)}
+#card .key{width:100%;margin-top:5px;min-height:44px}
+#arm{position:absolute;left:50%;top:calc(62px + env(safe-area-inset-top));transform:translateX(-50%);display:none;z-index:4;background:#7a1a0dee;color:#fff;font:600 15px var(--sten);letter-spacing:.07em;padding:0 0 0 12px;align-items:center;gap:10px;border-radius:4px}
+#arm.on{display:flex}
+#arm button{min-height:46px;padding:0 12px;background:#0005;font:600 14px var(--sten);border-radius:0 4px 4px 0}
+#flash{position:absolute;inset:0;pointer-events:none;background:#fff;opacity:0;z-index:5}
+/* periscope */
+#peri{position:absolute;inset:0;display:none;background:#000;z-index:20;touch-action:none}
+#peri.on{display:block}
+#pcv{position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:none}
+#pbar{position:absolute;right:calc(12px + env(safe-area-inset-right));top:50%;transform:translateY(-50%);display:flex;flex-direction:column;gap:7px}
+#pbar .key{min-width:96px;min-height:58px}
+#pl{position:absolute;left:calc(12px + env(safe-area-inset-left));top:calc(12px + env(safe-area-inset-top));display:flex;gap:7px}
+#pinfo{position:absolute;left:calc(12px + env(safe-area-inset-left));bottom:calc(12px + env(safe-area-inset-bottom));font:15px/1.3 var(--type);color:#d9dfc8;background:#000a;padding:5px 9px;pointer-events:none;min-width:210px}
+#pmsg{position:absolute;left:50%;top:calc(14px + env(safe-area-inset-top));transform:translateX(-50%);font:15px var(--type);color:#ffe4b3;background:#000a;padding:4px 10px;pointer-events:none;max-width:60%}
+#pmsg:empty{display:none}
+/* screens */
+#scr{position:absolute;inset:0;display:none;z-index:30;overflow:hidden;background:#0b0d0c}
+#scr.on{display:block}
+#ttl{position:absolute;inset:0;width:100%;height:100%;display:block}
+.tmenu{position:absolute;left:calc(5% + env(safe-area-inset-left));bottom:7%;display:flex;flex-direction:column;gap:8px;width:290px}
+.tbtn{min-height:50px;text-align:left;padding:0 16px;font:600 21px var(--sten);letter-spacing:.09em;color:#dfe6d4;background:linear-gradient(90deg,#0c1c1fcc,#0c1c1f33);border-left:3px solid #5f8f86}
+.tbtn:active,.tbtn.pri{border-left-color:var(--lamp);color:#ffdd9a}
+.tname{position:absolute;left:calc(5% + env(safe-area-inset-left));top:7%;font:700 76px/.95 var(--sten);letter-spacing:.14em;color:#e8efe1;text-shadow:0 2px 20px #000}
+.tsub{position:absolute;left:calc(5% + 3px + env(safe-area-inset-left));top:calc(7% + 76px);font:17px var(--type);color:#a8c4bc}
+/* wardroom */
+.desk{position:absolute;inset:0;background:radial-gradient(ellipse at 50% 20%,#37423c,#141a17 75%);display:flex;flex-direction:column;padding:calc(8px + env(safe-area-inset-top)) calc(12px + env(safe-area-inset-right)) calc(10px + env(safe-area-inset-bottom)) calc(12px + env(safe-area-inset-left));min-height:0}
+.deskhead{display:flex;align-items:center;gap:10px;margin-bottom:6px;flex:none}
+.deskhead h2{margin:0;font:700 27px var(--sten);letter-spacing:.14em;color:#dfe6d4;flex:1;min-width:0}
+.chip{font:14px var(--type);color:#efe6cd;background:#0006;padding:4px 9px;border-radius:3px;display:flex;align-items:center;gap:5px;white-space:nowrap}
+.tabs{display:flex;gap:3px;padding-left:10px;flex:none;overflow:hidden}
+.tabs button{min-height:46px;padding:0 16px;font:600 16px var(--sten);letter-spacing:.09em;color:#3c3423;background:linear-gradient(#b9aa84,#a09069);border-radius:7px 7px 0 0;box-shadow:inset 0 1px 0 #d9cca5}
+.tabs button.on{background:linear-gradient(#efe6cd,#e8dfc6);color:#6f2a1c}
+.folder{flex:1;min-height:0;background:linear-gradient(#e8dfc6,#dbcfae);color:var(--ink);border-radius:3px;box-shadow:0 8px 24px #000a;padding:12px 14px;overflow-y:auto;-webkit-overflow-scrolling:touch;font:15px/1.38 var(--type);touch-action:pan-y}
+.folder h3{margin:0 0 5px;font:700 22px var(--sten);letter-spacing:.1em;color:#6f2a1c}
+.folder h5{margin:10px 0 3px;font:700 15px var(--sten);letter-spacing:.14em;color:#5a4f35}
+.folder p{margin:0 0 7px}
+.grid2{display:grid;grid-template-columns:repeat(auto-fill,minmax(310px,1fr));gap:7px}
+.mcard{display:flex;gap:8px;text-align:left;align-items:center;min-height:62px;padding:6px 9px;background:#f6efdc;border:1px solid #b5a67f;font:14px/1.2 var(--type);color:var(--ink);width:100%}
+.mcard:active{background:#fff}
+.mcard b{display:block;font:600 18px var(--sten);letter-spacing:.06em;color:#26231b}
+.mcard small{color:#6d6246;font-size:12.5px;display:block}
+.mcard.next{border:2px solid #6f2a1c;background:#fff8e4}
+.mcard[disabled]{opacity:.45}
+.st{display:inline-flex;gap:2px}.st svg{width:26px;height:26px}
+.mcard .st{margin-left:auto;gap:1px;flex:none}.mcard .st svg{width:17px;height:17px}
+.thead{display:flex;align-items:baseline;gap:8px;margin:10px 0 5px;border-bottom:1.5px solid #8f8360;padding-bottom:1px}
+.thead:first-child{margin-top:0}
+.thead b{font:700 20px var(--sten);letter-spacing:.1em;color:#6f2a1c}
+.thead span{font-size:13px;color:#6d6246}
+.stamp{display:inline-block;border:2.5px solid #a4311e;color:#a4311e;padding:0 8px;font:700 17px var(--sten);letter-spacing:.12em;transform:rotate(-3deg)}
+.btn{min-height:48px;padding:0 18px;font:600 17px var(--sten);letter-spacing:.08em;color:#efe6cd;background:linear-gradient(#49423a,#2d2820);border-radius:3px;box-shadow:0 2px 4px #0007,inset 0 1px 0 #766b5c}
+.btn:active{filter:brightness(1.35)}
+.btn.pri{background:linear-gradient(#a03a26,#6f2a1c);box-shadow:0 2px 4px #0007,inset 0 1px 0 #d27a65}
+.btn[disabled]{opacity:.45}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.up{display:grid;grid-template-columns:1fr auto;gap:2px 10px;padding:7px 9px;background:#f6efdc;border:1px solid #b5a67f;align-items:center}
+.up b{font:600 18px var(--sten);letter-spacing:.06em}
+.up small{font-size:13px;color:#574d35;display:block;line-height:1.25}
+.pips{display:flex;gap:3px;margin:2px 0}
+.pips i{width:16px;height:6px;background:#cfc29d;border:1px solid #8f8360}
+.pips i.on{background:#6f2a1c}
+.boat{display:grid;grid-template-columns:170px 1fr auto;gap:10px;align-items:center;padding:6px 9px;background:#f6efdc;border:1px solid #b5a67f;margin-bottom:6px}
+.boat.on{border:2px solid #6f2a1c}
+.boat canvas{width:170px;height:48px}
+.logi{display:block;width:100%;text-align:left;padding:8px 10px;min-height:48px;background:#f6efdc;border:1px solid #b5a67f;margin-bottom:5px;font:15px var(--type);color:var(--ink)}
+.logi b{font:600 17px var(--sten);letter-spacing:.06em}
+.logi small{display:block;color:#6d6246}
+.memo{background:#f6efdc;border:1px solid #b5a67f;padding:12px 16px;white-space:pre-wrap;font:16px/1.45 var(--type);max-width:760px}
+.stat{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:6px}
+.stat div{background:#f6efdc;border:1px solid #b5a67f;padding:5px 9px;font-size:13px;color:#574d35}
+.stat b{display:block;font:700 23px var(--sten);color:var(--ink);letter-spacing:.04em}
+.medal{display:flex;gap:9px;align-items:center;padding:6px 9px;background:#f6efdc;border:1px solid #b5a67f}
+.medal svg{width:36px;height:36px;flex:none}
+.medal.off{opacity:.42}
+.medal b{font:600 16px var(--sten);letter-spacing:.05em;display:block}
+.medal small{font-size:12.5px;color:#574d35;display:block;line-height:1.2}
+.brief{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:14px;min-height:0}
+.res{display:flex;justify-content:space-between;border-bottom:1px dotted #8f8360;padding:3px 0}
+#pause,#modal{position:absolute;inset:0;background:#000b;display:none;align-items:center;justify-content:center;z-index:40}
+#pause.on,#modal.on{display:flex}
+.pcard{width:min(390px,90%);max-height:92%;overflow:auto;background:linear-gradient(#e8dfc6,#dbcfae);color:var(--ink);padding:16px 18px;box-shadow:0 12px 40px #000;font:15px/1.35 var(--type);display:flex;flex-direction:column;gap:7px}
+.pcard h3{margin:0;font:700 25px var(--sten);letter-spacing:.14em;color:#6f2a1c}
+.opt{display:flex;justify-content:space-between;align-items:center;min-height:48px;gap:8px}
+@media(orientation:portrait){#game{grid-template-columns:1fr;grid-template-rows:56% 44%}#ordr{width:200px}.brief{grid-template-columns:1fr}#wfp{flex:0 0 22%}.tname{font-size:58px}.tsub{top:calc(7% + 60px)}}
+@media(max-height:700px){#dials{height:70px}#act .key{min-height:50px}.tname{font-size:58px}.tsub{top:calc(7% + 58px)}}
+</style></head><body>
+<div id="game">
+ <div id="tbl"><canvas id="chart"></canvas>
+  <div class="top"><button class="key" data-a="pause" id="bPause" aria-label="Pause"></button><div id="clock">00:00</div><div id="tsc"><button data-a="ts1" class="on">1x</button><button data-a="ts2">2x</button><button data-a="ts4">4x</button></div></div>
+  <div id="zm"><button class="key" data-a="zin" id="bZi"></button><button class="key" data-a="zout" id="bZo"></button><button class="key" data-a="zme" id="bZc"></button></div>
+  <div id="ordr"></div><div id="say"></div><div id="arm"><span>TUBE READY. TAP THE CHART TO AIM</span><button data-a="disarm">CANCEL</button></div>
+  <div id="card"></div><div id="hint"></div>
+  <div id="act">
+   <button class="key" data-a="scope" id="bScope"></button><button class="key" data-a="snork" id="bSnork"></button><button class="key" data-a="ping" id="bPing"></button><button class="key" data-a="fire" id="bFire"></button><button class="key" data-a="decoy" id="bDecoy"></button><button class="key rd" data-a="leave" id="bLeave" style="display:none"></button>
+  </div>
+  <div id="flash"></div>
+ </div>
+ <div id="side">
+  <div class="plate" id="wfp"><h6>PASSIVE SONAR / BEARING-TIME</h6><canvas id="wf"></canvas></div>
+  <div class="plate" id="dialp"><canvas id="dials"></canvas><div id="lights"><div class="lt" id="lSon">SONAR</div><div class="lt" id="lTub">TUBES</div><div class="lt" id="lMot">MOTOR</div><div class="lt" id="lFlo">FLOOD</div><div class="lt" id="lHeld">HELD</div></div></div>
+  <div id="ctlp">
+   <div class="plate" id="depp"><h6>DIVING PLANES</h6><canvas id="dep"></canvas><div id="dprs"><button data-a="dPD">SCOPE</button><button data-a="dAB">ABOVE</button><button data-a="dBE">BELOW</button><button data-a="dDP">DEEP</button></div></div>
+   <div class="plate" id="telp"><h6>ORDER</h6><div id="tel"></div></div>
+  </div>
+ </div>
+</div>
+<div id="peri"><canvas id="pcv"></canvas><div id="pl"><button class="key" data-a="scopeDown" id="bDown"></button><button class="key" data-a="pause" id="bPause2"></button><button class="key" data-a="pmag" id="bMag">6X</button></div><div id="pmsg"></div><div id="pinfo"></div><div id="pbar"><button class="key" data-a="mark" id="bMark"></button><button class="key" data-a="photo" id="bPhoto"></button><button class="key" data-a="pfire" id="bPFire"></button></div></div>
+<div id="scr"></div>
+<div id="pause"></div>
+<div id="modal"></div>
+<script>
+"use strict";
+/* ---------- helpers ---------- */
+const $=i=>document.getElementById(i),PI=Math.PI,TAU=PI*2,KT=.5144;
+const clamp=(v,a,b)=>v<a?a:v>b?b:v,lerp=(a,b,t)=>a+(b-a)*t,rad=d=>d*PI/180,deg=r=>r*180/PI;
+const wrap=a=>{a%=TAU;return a<0?a+TAU:a},adiff=(a,b)=>{let d=wrap(b-a);return d>PI?d-TAU:d};
+const dist=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y),brg=(a,b)=>wrap(Math.atan2(b.x-a.x,-(b.y-a.y)));
+const pad=(n,l=2)=>String(Math.floor(n)).padStart(l,'0'),b3=r=>pad(Math.round(deg(wrap(r)))%360,3);
+const fmt=n=>Math.round(n).toLocaleString('en-US');
+function rng(s){return function(){s|=0;s=s+0x6D2B79F5|0;let t=Math.imul(s^s>>>15,1|s);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};}
+function hash(str){let h=2166136261;for(let i=0;i<str.length;i++){h^=str.charCodeAt(i);h=Math.imul(h,16777619);}return h>>>0;}
+/* ---------- data ---------- */
+const SHIP={
+ hulk:{n:'Derelict hulk',tons:1800,hp:1,sl:0,vm:0,len:96,ht:15,still:1},
+ trawler:{n:'Spy trawler',tons:640,hp:1,sl:74,vm:5,len:48,ht:18},
+ freighter:{n:'Freighter',tons:6400,hp:2,sl:82,vm:6,len:135,ht:30},
+ tanker:{n:'Tanker',tons:11200,hp:3,sl:84,vm:6.5,len:175,ht:26},
+ liner:{n:'Liner',tons:14500,hp:3,sl:84,vm:9,len:170,ht:40},
+ research:{n:'Research ship',tons:3200,hp:2,sl:76,vm:5,len:88,ht:30},
+ icebreaker:{n:'Icebreaker',tons:9400,hp:3,sl:90,vm:6,len:122,ht:38},
+ corvette:{n:'Corvette',tons:950,hp:1,sl:78,vm:9,len:72,ht:22,asw:1},
+ frigate:{n:'Frigate',tons:1900,hp:1,sl:80,vm:12,len:105,ht:28,asw:2},
+ destroyer:{n:'Destroyer',tons:3500,hp:2,sl:82,vm:15,len:135,ht:34,asw:3},
+ cruiser:{n:'Cruiser',tons:12500,hp:4,sl:88,vm:13,len:190,ht:44,asw:1},
+ sub:{n:'Attack submarine',tons:2400,hp:1,sl:68,vm:9,len:90,ht:8,sub:1},
+ ostrog:{n:'Ostrog',tons:3800,hp:2,sl:60,vm:13,len:110,ht:9,sub:1},
+ aircraft:{n:'Patrol aircraft',tons:0,hp:1,sl:0,vm:70,len:30,ht:0,air:1},
+};
+const BOATS=[
+ {id:'petrel',n:'ACS Petrel',cls:'Heron class, diesel-electric',vmax:17,sl:66,test:210,crush:290,tubes:4,stow:12,batt:1,turn:1,d:'Your first command. Small, slow and quiet. Has to snorkel to charge her batteries.'},
+ {id:'marlin',n:'ACS Marlin',cls:'Marlin class, diesel-electric',vmax:20,sl:62,test:260,crush:340,tubes:6,stow:16,batt:1,turn:1.1,d:'Streamlined hull, larger battery, six tubes. The best boat a diesel can be.'},
+ {id:'narwhal',n:'ACS Narwhal',cls:'First-generation nuclear',vmax:27,sl:70,test:320,crush:430,tubes:6,stow:22,batt:0,turn:1.2,d:'Never needs to snorkel. Fast and deep, but her reactor pumps can be heard.'},
+ {id:'leviathan',n:'ACS Leviathan',cls:'Quiet nuclear, towed array',vmax:33,sl:60,test:450,crush:610,tubes:8,stow:28,batt:0,turn:1.25,towed:1,d:'Hears behind herself with a towed array. The most silent hull ever floated.'},
+];
+const UPS={
+ sonar:{n:'Sonar',lv:['Stacked hydrophones: hear 15% farther','Plotting room: solutions build faster','Spherical array: smaller blind arc astern','Low-frequency filters: hear 40% farther','Mine-hunting head: reveals nearby mines'],c:[320,750,1500,2800,4800]},
+ quiet:{n:'Quieting',lv:['Skewed screw: 2 dB quieter','Rubber mounts: 4 dB quieter','Hull tiles: 6 dB quieter','Natural-circulation pumps: 8 dB quieter','Anechoic coating: 10 dB quieter'],c:[300,700,1400,2600,4600]},
+ torp:{n:'Torpedoes',lv:['Wire guidance: steer torpedoes after launch','Fixed exploder: duds down to 6%','Passive seeker: acquires at longer range','Long-range fuel cell: 50% more range','Heavy warhead: hits count double'],c:[280,720,1500,2800,5000]},
+ hull:{n:'Pressure hull',lv:['Reinforced frames: test depth +25 m','Shock mounts: blast damage -15%','HY steel: test depth +50 m','Better pumps: flooding cleared faster','Double hull: blast damage -30%'],c:[300,700,1500,2700,4800]},
+ decoy:{n:'Countermeasures',lv:['Noisemakers: carry 6','Bubble decoys: more convincing','Noisemakers: carry 8','Mobile decoys: fool active pings too','Noisemakers: carry 12'],c:[220,560,1100,2100,3600]},
+ crew:{n:'Crew drill',lv:['Torpedo drill: reload 15% faster','Damage parties: repairs 40% faster','Silent routine: 1 dB quieter at low speed','Torpedo drill: reload 30% faster','Plotting team: periscope marks are exact'],c:[260,620,1300,2500,4200]},
+};
+const RANKS=[[0,'Lt. Commander'],[3000,'Commander'],[12000,'Captain'],[30000,'Commodore'],[70000,'Rear Admiral']];
+const TH=[
+ {n:'Sound of Merrow',d:'Home waters. Cold, grey and well-charted.',base:150,amp:120,isl:.12,layer:55,w:24,h:16},
+ {n:'The Narrows',d:'A shallow strait the Directorate must use. No room to hide.',base:95,amp:80,isl:.17,layer:45,w:24,h:16},
+ {n:'Karsk Bank',d:'Mined shoals off the enemy coast, patrolled from the air.',base:85,amp:55,isl:.13,layer:35,w:26,h:18},
+ {n:'The Shelf',d:'Under the permanent ice. You surface where the ice lets you.',base:420,amp:280,isl:.02,layer:90,w:28,h:18,ice:1},
+ {n:'Hadal Trench',d:'Four thousand metres of black water and a very old signal.',base:900,amp:700,isl:0,layer:140,w:30,h:20},
+ {n:'The Long Silence',d:'Everything you have been told is about to be tested.',base:300,amp:260,isl:.08,layer:80,w:30,h:20},
+];
+const conv=(from,to,n,esc,tag,o)=>Object.assign({g:'conv',from,to,n,esc,tag},o||{});
+const pat=(k,pts,o)=>Object.assign({g:'pat',k,pts},o||{});
+const still=(k,at,o)=>Object.assign({g:'still',k,at},o||{});
+const hunt=(k,at)=>({g:'hunt',k,at});
+const sub=(pts,o)=>Object.assign({g:'sub',k:'sub',pts},o||{});
+const air=pts=>({g:'air',pts});
+const reach=(x,y,r,label,o)=>Object.assign({t:'hold',x,y,r,label,T:1},o||{});
+const M=[
+{id:'m01',th:0,n:'Shakedown',wx:0,tod:'day',lvl:1,rw:250,tut:1,
+ brief:'Welcome aboard the Petrel, Commander. The Fleet has parked a condemned collier in the Sound for you to practise on. Run the boat out to the range, find the hulk, get a periscope mark and put a torpedo in her.\n\nLieutenant Tolliver will talk you through it.',
+ log:['Exec\'s note: shakedown','The boat handles better than the yard said she would. Chief Bask says she hums at 4 knots and nobody but him would ever notice. You will learn to trust that. Commander Reyne, who taught you all this, used to say a submarine is a very expensive way of keeping your mouth shut.'],
+ objs:[{t:'kill',tag:'hulk',n:1,label:'Sink the hulk'}],f:[still('hulk',[.4,.5],{tag:'hulk'})]},
+{id:'m02',th:0,n:'First Contact',wx:1,tod:'day',lvl:1,rw:320,
+ brief:'A Directorate "fishing trawler" has been sitting on our sonar net at Merrow Head with no nets in the water. We are not at war. Do not sink her. Close to within 4,000 m and bring back a photograph of her aerials.',
+ log:['Trawler photographs','Intelligence counted eleven aerials on a boat that catches no fish. Stamped: PASSED TO ADMIRALTY. Nobody thanked us, which Tolliver says means it mattered.'],
+ objs:[{t:'photo',tag:'tr',maxR:4000,label:'Photograph the trawler (under 4,000 m)'}],f:[pat('trawler',[[.55,.3],[.8,.4],[.7,.72],[.5,.6]],{tag:'tr',noshoot:1})]},
+{id:'m03',th:0,n:'Blockade Runner',wx:1,tod:'dusk',lvl:1,rw:400,
+ brief:'It is war. Karsk tanks crossed the Aldermere frontier at dawn. A lone freighter loaded with chrome ore is making for the Directorate coast without an escort.\n\nSink her. Your first real shot, Commander.',
+ log:['War diary, day one','Wireless says it began at the frontier. Bask says the sonar net had been quiet all week, the way a street goes quiet. The freighter broke in two and took six minutes. The crew were picked up. You asked Tolliver to log that.'],
+ objs:[{t:'tons',n:6000,label:'Sink the freighter'}],f:[conv([.95,.2],[.25,.85],['freighter'],[],'c')]},
+{id:'m04',th:0,n:'Dark Water',wx:2,tod:'day',lvl:2,rw:480,
+ brief:'Two corvettes are sweeping the Sound\'s mouth. You need to get past them unseen.\n\nThis is what the thermocline is for: cold water below a warm layer bends sound away. Above the layer they hear everything. Below it, they are half deaf. Do not fire. Just vanish.',
+ log:['Chief Bask on the layer','"Sound is lazy, sir. It won\'t cross cold water if it can help it. Get under the layer and they can ping all day. Mind you, so can they, and we can\'t hear them so well either. Nothing\'s free down here."'],
+ objs:[],gate:[.94,.5],f:[pat('corvette',[[.45,.25],[.55,.75]]),pat('corvette',[[.68,.75],[.62,.2]])]},
+{id:'m05',th:0,n:'The Collier Run',wx:1,tod:'dusk',lvl:2,rw:560,
+ brief:'Three colliers and one corvette, heading to the fleet base at Ostrava Light. Sink two. Fire and the corvette will come straight for you, so plan your way out before you shoot.',
+ log:['First depth charges','Forty seconds of it. A cork gauge shattered in the control room and Ensign Pike laughed and could not stop. Bask gave him a mug of cocoa. Nobody mentioned it again. That is how it is done.'],
+ objs:[{t:'tons',n:12000,label:'Sink 12,000 tons'}],f:[conv([.98,.75],[.2,.15],['freighter','freighter','freighter'],['corvette'],'c')]},
+{id:'m06',th:0,n:'Reyne\'s Last Bearing',wx:2,tod:'night',lvl:2,rw:680,
+ brief:'Personal from Admiralty: ACS Sable, Commander Hallam Reyne, is eight months overdue. Before she went missing she reported "a tone" at this position. Go there, get below the layer, stop your boat, and listen for sixty seconds.\n\nI am sorry to send you, of all people. - Adm. Corvane',
+ log:['Seventeen hertz','Bask took off his headphones and asked you to listen. Far under everything, too low to be a sound exactly: one tone, seventeen cycles, on for nine seconds and off for four. "Machinery?" "No sir. Machinery wanders." He played it twice more. It never wandered.'],
+ objs:[{t:'hold',x:.6,y:.45,r:800,T:60,z:'below',stop:1,label:'Listen below the layer, stopped'}],f:[pat('corvette',[[.45,.25],[.75,.3],[.75,.7],[.45,.7]]),pat('frigate',[[.8,.8],[.5,.2]])]},
+{id:'m07',th:1,n:'Narrows Gate',wx:1,tod:'day',lvl:2,rw:720,
+ brief:'Four ships and two escorts are about to run the Narrows. The water is under 150 m. There is barely a layer to hide beneath. Sink 14,000 tons and try not to get cornered on the bottom.',
+ log:['Bottoming','Tolliver sat the Petrel on the sand for an hour with the charges walking overhead. A ping bounces off the seabed as well as off you. There is a whole trade in being mistaken for a rock.'],
+ objs:[{t:'tons',n:14000,label:'Sink 14,000 tons'}],f:[conv([.5,.02],[.55,.98],['freighter','tanker','freighter','freighter'],['corvette','corvette'],'c')]},
+{id:'m08',th:1,n:'The Cable',wx:2,tod:'night',lvl:2,rw:780,
+ brief:'There is a Directorate telephone cable on the floor of the strait. Sit on the marked spot, close to the bottom, stopped, for ninety seconds while the divers clip on a recorder.',
+ log:['Cable tap transcript','Mostly grain tonnage, and a long argument about a lost dog. Then one line, from Fleet Karsk to a boat called Ostrog: "CONTINUE SEARCH FOR THE SOURCE. REPORT NOTHING TO THE MINISTRY." Search for what?'],
+ objs:[{t:'hold',x:.55,y:.5,r:600,T:90,z:'bottom',stop:1,label:'Hold near the seabed, stopped'}],f:[pat('corvette',[[.3,.3],[.8,.35]]),pat('frigate',[[.75,.75],[.35,.7]])]},
+{id:'m09',th:1,n:'The Hauser',wx:0,tod:'dusk',lvl:3,rw:900,
+ brief:'The tanker Hauser carries enough fuel to run the Karsk northern fleet for a month. She has two frigates and she is not stopping for anything. Sink her. Her alone is the mission.',
+ log:['The Hauser','She burned for two days. They could see it at Merrow Head. A newspaper at home printed a drawing of the Petrel with a shark\'s mouth on it. The crew pinned it up in the heads.'],
+ objs:[{t:'kill',tag:'hauser',n:1,label:'Sink the tanker Hauser'}],f:[conv([.05,.1],[.95,.9],['tanker'],['frigate','frigate'],'hauser',{name:'Hauser'})]},
+{id:'m10',th:1,n:'Wolf Line',wx:3,tod:'night',lvl:3,rw:980,
+ brief:'Two small convoys, an hour apart, both slipping through under a storm. The noise of the sea hides you and hides them. Sink 20,000 tons.',
+ log:['Storm notes','Sea state seven. At periscope depth the boat rolled 30 degrees. Below the layer it was as still as a church. Everyone slept in shifts and no one dreamed, Pike says, or if they did they did not say.'],
+ objs:[{t:'tons',n:20000,label:'Sink 20,000 tons'}],f:[conv([.25,.02],[.3,.98],['freighter','tanker'],['corvette'],'a'),conv([.8,.98],[.72,.02],['freighter','freighter','tanker'],['frigate'],'b')]},
+{id:'m11',th:1,n:'The Pickup',wx:1,tod:'night',lvl:3,rw:1000,
+ brief:'A man named Oskar Wren is waiting in a rowing boat in a cove on the enemy side. Come to periscope depth at the marked spot, stop, and hold there for forty seconds so he can climb aboard.\n\nDo not ask him anything. He has been told not to answer.',
+ log:['Mr. Wren','He sat in the wardroom all the way home with his coat on. At the end he said one thing: "Your friend Reyne asked the wrong question, and to the wrong people." He got out at Merrow and we were told we had never met him.'],
+ objs:[{t:'hold',x:.76,y:.42,r:500,T:40,z:'pd',stop:1,label:'Periscope depth, stopped, at the cove'}],f:[pat('corvette',[[.6,.2],[.9,.3],[.85,.65]]),pat('corvette',[[.55,.7],[.9,.75],[.7,.5]]),pat('trawler',[[.7,.25],[.8,.55]])]},
+{id:'m12',th:1,n:'Ostrog',wx:1,tod:'day',lvl:3,rw:1300,boat:1,
+ brief:'Something very quiet has been sinking our colliers in the Narrows. We believe it is the Ostrog, Captain Vera Malenko. You probably cannot kill her. She has sent a junior boat ahead of her to the marked ground: kill that one, and listen hard while you do it.\n\nOn your return the Marlin is yours.',
+ log:['Her signature','We heard Ostrog for eleven seconds at the end. She had let us see her, Bask thinks. Then she pinged us, once, very softly, the way you tap a glass. No torpedo came. The Fleet has given you the Marlin. You did not tell them about the tap.'],
+ objs:[{t:'kill',tag:'junior',n:1,label:'Sink the enemy submarine'}],f:[sub([[.7,.3],[.8,.7],[.5,.75],[.45,.3]],{tag:'junior'}),pat('corvette',[[.3,.2],[.3,.8]])]},
+{id:'m13',th:2,n:'Mine Alley',wx:1,tod:'day',lvl:3,rw:1100,
+ brief:'Karsk Bank is sown with moored mines. We have charted the ones in the Admiralty file, but there are others. Thread the field to the far side. Slow is safe. You will not be asked to shoot anything.',
+ log:['Scrape','It is not a loud noise, a mine cable along the hull. It is a very gentle, patient noise. Forty men in the boat breathed through their mouths for as long as it lasted. It lasted nineteen seconds.'],
+ objs:[],gate:[.95,.5],mines:{x0:.3,x1:.75,n:46,hidden:.35},f:[air([[.1,.1],[.9,.9]]),pat('corvette',[[.85,.2],[.85,.8]])]},
+{id:'m14',th:2,n:'Bank Survey',wx:0,tod:'day',lvl:3,rw:1150,
+ brief:'Photograph the research ship Lomonos and the destroyer guarding her, both at under 5,000 m. An aircraft covers this sector, and a raised periscope is visible on a calm day. Keep it up only as long as you must.',
+ log:['Lomonos','Lomonos carries a deep-water winch far larger than any survey needs, and a hydrophone boom. Analysts: "hunting for something on the bottom, purpose unknown." You wrote underneath, in pencil: seventeen hertz?'],
+ objs:[{t:'photo',tag:'lom',maxR:5000,label:'Photograph the research ship'},{t:'photo',tag:'ds',maxR:5000,label:'Photograph the destroyer'}],f:[pat('research',[[.6,.45],[.72,.55]],{tag:'lom',noshoot:1}),pat('destroyer',[[.45,.25],[.85,.3],[.85,.75],[.45,.75]],{tag:'ds'}),air([[.2,.9],[.9,.15]])]},
+{id:'m15',th:2,n:'Night Raiders',wx:2,tod:'night',lvl:4,rw:1250,
+ brief:'A big convoy with three escorts, on the surface in the dark. Visibility is under 4 km, so your periscope is nearly useless at range. Trust your ears. Sink 25,000 tons.',
+ log:['Letter never sent','Pike wrote it and asked you to censor it. "We do not see them, Mum. It is only numbers and then a noise and then the Captain says well done." You passed it as written.'],
+ objs:[{t:'tons',n:25000,label:'Sink 25,000 tons'}],f:[conv([.98,.15],[.05,.8],['tanker','freighter','freighter','tanker','freighter'],['frigate','corvette','frigate'],'c')]},
+{id:'m16',th:2,n:'Harbour Mouth',wx:1,tod:'dusk',lvl:4,rw:1400,
+ brief:'The cruiser Volkhov is lying at anchor outside Karsk Roads, in shallow water, with a ring of patrols. Go in and sink her. The way out will be much harder than the way in.',
+ log:['Volkhov','The Admiralty sent a case of something for the wardroom. The Volkhov settled upright in 30 metres, and you could see her masts at low tide. Malenko\'s tap on the hull has not been explained. Tolliver has asked you to stop drawing it on the plot.'],
+ objs:[{t:'kill',tag:'vol',n:1,label:'Sink the cruiser Volkhov'}],f:[still('cruiser',[.78,.5],{tag:'vol',name:'Volkhov'}),pat('frigate',[[.62,.3],[.92,.3]]),pat('frigate',[[.92,.72],[.62,.72]]),pat('corvette',[[.62,.5],[.7,.25],[.7,.75]]),air([[.95,.05],[.4,.95]])]},
+{id:'m17',th:2,n:'Hunter Group',wx:1,tod:'day',lvl:4,rw:1500,
+ brief:'They know where you are. Three frigates have a fix on you and will be overhead in minutes. There is nothing to sink here that is worth your life. Get to the gate on the far side of the bank.',
+ log:['Nineteen hours','Battery down to four percent. Oxygen candles lit. Three frigates taking turns. You will forgive the Chief for saying so, but they were very good at it. On the second day they simply went home. Nobody on board can say why.'],
+ objs:[],gate:[.95,.7],f:[hunt('frigate',[.28,.25]),hunt('frigate',[.28,.8]),hunt('frigate',[.4,.5]),air([[.2,.2],[.8,.8]])]},
+{id:'m18',th:2,n:'Lamplight Papers',wx:2,tod:'night',lvl:4,rw:1700,boat:2,
+ brief:'Mr. Wren again. A dead-letter canister is moored at the marked point. Come to periscope depth, stop, hold for forty seconds while the divers take it, and bring it to Fleet.\n\nOn your return you will take command of the Narwhal, a nuclear boat, for work under the ice.',
+ log:['What the canister said','You were not supposed to read it. Tolliver unsealed it with a kettle. One sheet, Commonwealth letterhead, undated. "LAMPLIGHT: incident at the frontier to be arranged, in accordance with the agreed timetable." It is signed with initials. They are not the enemy\'s.'],
+ objs:[{t:'hold',x:.62,y:.3,r:500,T:40,z:'pd',stop:1,label:'Recover the canister at periscope depth'}],mines:{x0:.4,x1:.55,n:20,hidden:.2},f:[pat('destroyer',[[.75,.15],[.5,.5],[.8,.6]]),pat('corvette',[[.35,.25],[.7,.1]]),air([[.1,.7],[.9,.1]])]},
+{id:'m19',th:3,n:'Under the Shelf',wx:1,tod:'day',lvl:4,rw:1500,polys:[[.45,.3,.05],[.75,.68,.05]],
+ brief:'Take the Narwhal under the ice shelf and across. The ice has keels deep enough to wreck a boat, so keep below 40 m unless you are inside open water (a polynya, marked on the chart).\n\nThere is no gate for quitting. There is only the other side.',
+ log:['Under ice','The whole boat listens to the ice. It groans and pops above you for days, and it never stops. Bask says there is more noise here than in Merrow Harbour. He has also stopped sleeping without his headphones. Seventeen hertz, nine on, four off. Louder here.'],
+ objs:[{t:'hold',x:.45,y:.3,r:900,T:6,label:'Pass through the first polynya'}],gate:[.95,.5],f:[sub([[.6,.2],[.7,.8]],{})]},
+{id:'m20',th:3,n:'The Polynya',wx:0,tod:'dusk',lvl:4,rw:1550,polys:[[.65,.5,.08]],
+ brief:'The Lomonos has come north, and has anchored in a polynya with her winch down. Reach the opening, come up, and get a photograph of what she is winching. An attack sub is covering her.',
+ log:['What was on the winch','It was only a frame, with a hydrophone the size of a house. It was aimed down. Malenko is here too, somewhere. She has been looking for the source of the tone for longer than we knew it existed. Why would the Directorate be looking, unless it was not theirs?'],
+ objs:[{t:'photo',tag:'lom',maxR:5000,label:'Photograph the Lomonos'}],f:[still('research',[.65,.5],{tag:'lom',name:'Lomonos',noshoot:1}),sub([[.45,.3],[.8,.25],[.8,.75],[.45,.75]],{})]},
+{id:'m21',th:3,n:'Ice Station Kestrel',wx:2,tod:'night',lvl:5,rw:1700,polys:[[.7,.35,.06]],
+ brief:'Thirty-one of our scientists are on an ice camp that is breaking up. Come to periscope depth in the polynya and hold for sixty seconds while they cross. Two enemy subs are listening for you.',
+ log:['Kestrel','The chief scientist looked at your plot and went white. "That tone? We turned ours off in March. We thought it was the Directorate\'s, and they thought it was ours." So whose is it? She gave you a tape. The tone is not a tone. If you speed it up, it is someone talking.'],
+ objs:[{t:'hold',x:.7,y:.35,r:600,T:60,z:'pd',stop:1,label:'Hold at periscope depth in the polynya'}],f:[sub([[.5,.2],[.9,.2],[.9,.6]],{}),sub([[.45,.75],[.8,.8],[.55,.5]],{})]},
+{id:'m22',th:3,n:'Icebreaker',wx:1,tod:'day',lvl:5,rw:1800,polys:[[.3,.6,.06],[.6,.3,.08],[.85,.7,.06]],
+ brief:'The icebreaker Sevmor opens the way for every Karsk ship in the north. Sink her in the open channel. Escorts are close by, and everything she does is loud, so you will hear her from a long way off.',
+ log:['Sevmor','You put two fish into her and she kept coming, cracking ice at five knots, until the third. Nothing in the boat said a word. It is odd what stays with you. It was the noise of the ice closing behind her.'],
+ objs:[{t:'kill',tag:'sev',n:1,label:'Sink the icebreaker Sevmor'}],f:[conv([.1,.6],[.9,.55],['icebreaker'],['destroyer','frigate'],'sev',{name:'Sevmor'}),sub([[.55,.8],[.7,.2]],{})]},
+{id:'m23',th:3,n:'Cold Duel',wx:1,tod:'night',lvl:5,rw:1900,polys:[[.5,.5,.05]],
+ brief:'Two Karsk boats are hunting along the shelf. Nobody up there can help you, and nobody can see. Kill them both. It is your ears against theirs.',
+ log:['Bask on the duel','"There\'s no shooting in it, sir, not really. It\'s two blokes in a dark room, each holding his breath, and whoever coughs first gets it." He has started keeping his mug wedged so it cannot rattle. So has everyone.'],
+ objs:[{t:'kill',tag:'duel',n:2,label:'Sink both submarines'}],f:[sub([[.7,.25],[.85,.7],[.55,.8]],{tag:'duel'}),sub([[.45,.2],[.55,.6],[.8,.5]],{tag:'duel'})]},
+{id:'m24',th:3,n:'Sable',wx:1,tod:'night',lvl:5,rw:2300,polys:[[.25,.3,.05]],choice:'sable',
+ brief:'You have followed the tone to its source: a point on the shelf slope at about 400 m. Go below 250 m and hold over the position for sixty seconds. Fleet has not ordered this.',
+ log:['ACS Sable','She is lying on her side, on the slope, in one piece, her hull opened from the outside. Commonwealth mine, Mark 9: there is no mistaking the pattern. Her emergency transmitter has been running on its deep-cell for fourteen months, playing a loop the crew recorded. It is Reyne\'s voice. It is telling the whole sea about Lamplight.'],
+ objs:[{t:'hold',x:.72,y:.55,r:700,T:60,z:'deep',label:'Hold over the wreck, below 250 m'}],f:[sub([[.5,.3],[.8,.3],[.85,.8]],{}),{g:'sub',k:'ostrog',pts:[[.6,.8],[.9,.5]],tag:'ost',passive:1}]},
+{id:'m25',th:4,n:'Deep Listening',wx:1,tod:'day',lvl:5,rw:2000,
+ brief:'Fleet has moved you to the Trench and they want you to listen to the Directorate\'s northern convoy lanes. Hold below 300 m at the mark for ninety seconds. The layer here is deep and thick. It will shelter you.',
+ log:['Being watched','Admiral Corvane\'s signals have grown very polite. You have been commended twice this month, and a new junior officer has joined the boat who asks a lot of questions. Tolliver has put him on the night plot where he can\'t hear anything.'],
+ objs:[{t:'hold',x:.55,y:.5,r:800,T:90,z:'deep300',label:'Hold below 300 m'}],f:[pat('destroyer',[[.3,.3],[.8,.25]]),pat('destroyer',[[.75,.75],[.35,.8]]),sub([[.45,.35],[.7,.7]],{})]},
+{id:'m26',th:4,n:'Array Breaker',wx:1,tod:'dusk',lvl:6,rw:2200,
+ brief:'The Directorate has laid a listening array along the Trench wall. Go to each of the three nodes, slow to all stop, and hold twenty seconds while the charges are placed.',
+ log:['Array nodes','They were hand-built, and beautifully so. Whoever built them had put them where they would best hear the shelf, not where they would best hear us. Malenko\'s people have been listening to Reyne for a long time. They just cannot prove he is real.'],
+ objs:[{t:'hold',x:.3,y:.3,r:500,T:20,stop:1,label:'Node one'},{t:'hold',x:.6,y:.7,r:500,T:20,stop:1,label:'Node two'},{t:'hold',x:.82,y:.32,r:500,T:20,stop:1,label:'Node three'}],f:[pat('frigate',[[.2,.2],[.5,.2],[.45,.6]]),pat('destroyer',[[.5,.85],[.85,.75],[.9,.2]]),sub([[.55,.3],[.75,.55]],{})]},
+{id:'m27',th:4,n:'Cruiser Screen',wx:2,tod:'day',lvl:6,rw:2400,
+ brief:'Battle cruiser Admiral Rurik, with four escorts, crossing the Trench. There is no way to do this quietly. Get ahead of her, go deep, let her come to you, and sink her.',
+ log:['Rurik','The Rurik took four hits. You turned the Narwhal under the wreck as it went down, using the noise of it to get away, and Pike called that the worst thing he had ever heard. Fleet called it brilliant. Same event, different mess decks.'],
+ objs:[{t:'kill',tag:'rur',n:1,label:'Sink the Admiral Rurik'}],f:[conv([.95,.15],[.05,.85],['cruiser'],['destroyer','destroyer','frigate','frigate'],'rur',{name:'Adm. Rurik'})]},
+{id:'m28',th:4,n:'Three Boats',wx:1,tod:'night',lvl:6,rw:2500,
+ brief:'Three Directorate attack boats have been sent to this ground with your name on their orders. Admiral Corvane does not explain how the Directorate knows your patrol line. Kill them, or get away.',
+ log:['A leak','Someone gave Karsk your patrol line. Tolliver laid the signal logs out on the wardroom table and traced it to one desk, and it was not on their side of the war. Somebody wanted you dead, and did not want to do it themselves. They did it to Reyne with a mine.'],
+ objs:[{t:'kill',tag:'t',n:2,label:'Sink two of the three'}],f:[sub([[.5,.2],[.85,.3]],{tag:'t'}),sub([[.75,.7],[.45,.8]],{tag:'t'}),sub([[.85,.5],[.6,.5]],{tag:'t'})]},
+{id:'m29',th:4,n:'Malenko',wx:1,tod:'night',lvl:6,rw:2700,
+ brief:'This did not come from Fleet. It came through the hull, in morse, during the forenoon watch:\n\nCOME TO THE POSITION BELOW. HOLD 60 SECONDS. DO NOT SHOOT. - V.M.\n\nThere are destroyers about, not all of them hers. Go, if you are going to.',
+ log:['Through the hull','Two boats, a hundred metres apart, in the dark, tapping morse. She had the other half of it: the Karsk initials on the same timetable. Both admiralties agreed the frontier incident. Each needed a war to keep its own generals. Sable found out. "I have orders to kill you," she sent. "I find I have mislaid them."'],
+ objs:[{t:'hold',x:.65,y:.45,r:700,T:60,label:'Hold at the rendezvous'}],f:[{g:'sub',k:'ostrog',pts:[[.65,.5],[.68,.42]],tag:'ost',passive:1,noshoot:1},pat('destroyer',[[.35,.25],[.85,.2]]),pat('destroyer',[[.85,.8],[.35,.75]])]},
+{id:'m30',th:4,n:'Station Nine',wx:2,tod:'dusk',lvl:7,rw:3000,boat:3,
+ brief:'Station Nine is the Trench listening post that links every array in the Vesper Sea. Survey the approaches so you can come back if you ever need to. Fleet thinks you are escorting a tanker. Hold at the mark for thirty seconds and leave.\n\nA Commonwealth courier at the gate will have your new orders and the Leviathan.',
+ log:['Leviathan','They gave you the finest boat ever built. Corvane came down to the dock himself and shook your hand for a long time. "One more big job," he said. There were two men in civilian coats behind him, watching your crew instead of you.'],
+ objs:[{t:'hold',x:.7,y:.5,r:600,T:30,label:'Survey Station Nine'}],f:[hunt('frigate',[.5,.25]),hunt('destroyer',[.5,.8]),sub([[.6,.3],[.85,.7]],{})]},
+{id:'m31',th:5,n:'Sealed Orders',wx:1,tod:'day',lvl:6,rw:2600,
+ brief:'Your orders are to sink everything on this lane. 40,000 tons. Fleet wants the Leviathan\'s name in the papers and is making sure of it.',
+ log:['The papers','You are on the front of all of them. "THE MAN WHO HEARS EVERYTHING." Pike\'s mother has written. A reporter has asked Tolliver what you are like, and Tolliver said you were quiet.'],
+ objs:[{t:'tons',n:40000,label:'Sink 40,000 tons'}],f:[conv([.05,.1],[.95,.3],['tanker','freighter','tanker','freighter'],['destroyer','frigate'],'a'),conv([.95,.9],[.05,.7],['freighter','tanker','freighter'],['destroyer','frigate'],'b')]},
+{id:'m32',th:5,n:'Friend or Foe',wx:2,tod:'dusk',lvl:7,rw:2800,
+ brief:'The hospital ship Aldis is crossing the lane with wounded. Karsk submarines are waiting for her and Fleet has, for some reason, sent no surface escort. Get her across. Any hit on a friendly ship counts against you, so watch where your torpedoes run.',
+ log:['Aldis','She got through. The Captain sent a signal, with a lamp, in clear: GOD BLESS YOU WHOEVER YOU ARE. It occurred to you, an hour later, that Fleet had sent no escort because it had not wanted her to arrive. A hospital ship sunk by Karsk makes a very good headline.'],
+ objs:[{t:'protect',tag:'ald',label:'Get the Aldis across'}],f:[{g:'friend',k:'liner',from:[.02,.72],to:[.98,.28],tag:'ald',name:'Aldis'},sub([[.45,.3],[.6,.75]],{}),sub([[.75,.6],[.65,.15]],{}),sub([[.3,.8],[.5,.5]],{})]},
+{id:'m33',th:5,n:'The Concord',wx:0,tod:'day',lvl:6,rw:2800,
+ brief:'Fleet orders a photograph of a white liner, the Concord, under 4,000 m. Purpose withheld. Concord is flagged neutral and there are destroyers from both sides pacing her, which you will notice is not a thing that happens in a war.',
+ log:['Concord','She is carrying the armistice delegation, both sides, in secret. The men who started the war by agreement are about to be ended by agreement too, unless something happens to that ship. You developed the photograph. Then you found the sealed order that came with it. It says: "SINK HER. LOG IT AS OSTROG."'],
+ objs:[{t:'photo',tag:'con',maxR:4000,label:'Photograph the Concord'}],f:[{g:'friend',k:'liner',from:[.15,.25],to:[.9,.7],tag:'con',name:'Concord',loop:1},pat('destroyer',[[.5,.2],[.8,.5]],{}),pat('destroyer',[[.35,.65],[.7,.85]],{})]},
+{id:'m34',th:5,n:'Last Patrol',wx:3,tod:'night',lvl:7,rw:3000,
+ brief:'One more lane to clear before the end, and it is as heavy as anything you have seen: five escorts, two submarines, a storm. Fleet insists. Whatever you decide comes after, your crew has to get through tonight. Sink 30,000 tons.',
+ log:['Before','You told them, all of them, in the fore ends with the hatch shut. Reyne\'s tape. Lamplight. The order for the Concord. It was a long quiet after. Then Pike said, "What do we do, sir?" and it was the first time you had ever heard him not laughing.'],
+ objs:[{t:'tons',n:30000,label:'Sink 30,000 tons'}],f:[conv([.98,.5],[.02,.5],['tanker','tanker','freighter','freighter'],['destroyer','destroyer','frigate','frigate','corvette'],'c'),sub([[.45,.2],[.5,.8]],{}),sub([[.7,.8],[.3,.25]],{})]},
+{id:'m35',th:5,n:'The Decision',wx:1,tod:'day',lvl:5,rw:0,decide:1,
+ brief:'Your orders are in your hand. The Concord sails in six hours.\n\nOn the shelf a dead man is still telling the truth to anyone who can hear him, and Station Nine could put him on every speaker in the Vesper Sea.\n\nAnd in the north, under the ice, there are places no one has ever charted.',
+ objs:[],f:[]},
+{id:'e1',th:5,n:'Obey: Sink the Concord',wx:0,tod:'day',lvl:7,rw:4000,ending:'a',hide:1,
+ brief:'Orders are orders. Concord is on the marked lane with destroyers from both navies. Sink her, then leave. It will be logged as Ostrog. You will be a hero by morning.',
+ objs:[{t:'kill',tag:'con',n:1,label:'Sink the Concord'}],f:[{g:'conv',from:[.1,.2],to:[.92,.8],n:['liner'],esc:['destroyer','destroyer','destroyer'],tag:'con',name:'Concord'},{g:'sub',k:'ostrog',pts:[[.5,.7],[.8,.3]],tag:'ost'}]},
+{id:'e2',th:5,n:'Testimony: Station Nine',wx:2,tod:'night',lvl:8,rw:4000,ending:'b',hide:1,
+ brief:'Take Reyne\'s tape to Station Nine. Hold over the relay for ninety seconds while it broadcasts on every array. Both fleets will hunt you for it. Malenko says she will do what she can.',
+ objs:[{t:'hold',x:.7,y:.5,r:700,T:90,label:'Hold at Station Nine: broadcast the tape'}],f:[hunt('destroyer',[.4,.2]),hunt('destroyer',[.4,.85]),hunt('frigate',[.6,.15]),hunt('frigate',[.85,.8]),sub([[.55,.3],[.85,.7]],{}),sub([[.85,.3],[.55,.75]],{}),air([[.1,.1],[.9,.9]])]},
+{id:'e3',th:3,n:'Silence: Under the Ice',wx:1,tod:'night',lvl:8,rw:4000,ending:'c',hide:1,polys:[[.92,.5,.06]],
+ brief:'Slip away. Cross the shelf with everything hunting you, reach the last polynya on the chart, and go on past the edge of it. Your crew have all agreed. Nobody will ever know what happened to the Leviathan.',
+ objs:[{t:'hold',x:.92,y:.5,r:800,T:8,label:'Reach the last polynya, unseen'}],f:[hunt('destroyer',[.4,.2]),sub([[.5,.3],[.7,.7]],{}),sub([[.7,.25],[.5,.75]],{}),{g:'sub',k:'ostrog',pts:[[.8,.2],[.85,.8]],tag:'ost',passive:1,noshoot:1}]},
+];
+const MIDX={};M.forEach((m,i)=>MIDX[m.id]=i);
+const ENDINGS={
+ a:{t:'The Hero of the Vesper Sea',x:'The Concord went down in nineteen minutes.\n\nThe headlines called it the Ostrog Atrocity. The war went on for another six years. You were given a medal at the Admiralty and a house in Merrow with a view of the Sound. Tolliver resigned her commission without saying why. Bask stopped writing.\n\nOn calm evenings you can hear it, if you know how to listen. Seventeen cycles. Nine on, four off.\n\nThe deep-cell lasted for another eleven years.'},
+ b:{t:'The Long Silence Ends',x:'At 03:14 on a Thursday every hydrophone in the Vesper Sea carried a dead man\'s voice.\n\nHallam Reyne read out the timetable, the initials and the date. Then he read the names of his crew. Then he said, "That is all. Sable, out," and the loop began again.\n\nThe fleets stopped firing at noon. There were trials. Corvane did not live to see his. Malenko brought Ostrog into Merrow under a white flag, and was the first to shake your hand.\n\nThe Fleet salvaged Sable. Everyone came, and nobody spoke.'},
+ c:{t:'Lost With All Hands',x:'The last signal from the Leviathan was a single ping, very soft, the way you tap a glass.\n\nThe Admiralty listed her as lost. The Concord sailed. The armistice was signed in the spring, and neither side ever worked out what had gone wrong with Lamplight, only that the man who was meant to finish it had declined.\n\nYears later a sealing crew off the far ice reported a lamp in a window, and a small settlement of very quiet people who kept a mug wedged so it would not rattle.\n\nOf course, there are no charts of that coast.'},
+};
+const MEDALS=[
+ ['first','First Blood','Sink your first ship',S=>S.st.kills>=1],
+ ['ton50','50,000 Tons','Sink 50,000 tons in your career',S=>S.st.tons>=5e4],
+ ['ton250','Quarter Million','Sink 250,000 tons in your career',S=>S.st.tons>=25e4],
+ ['ton1m','The Million','Sink 1,000,000 tons in your career',S=>S.st.tons>=1e6],
+ ['subs10','Subhunter','Sink 10 enemy submarines',S=>S.st.subs>=10],
+ ['esc25','Escort Killer','Sink 25 warships',S=>S.st.war>=25],
+ ['ghost','Ghost','Earn 3 stars on 20 patrols',S=>Object.values(S.stars).filter(v=>v>=3).length>=20],
+ ['allstars','Fleet Citation','Earn 3 stars on every campaign patrol',S=>M.filter(m=>!m.hide&&!m.decide).every(m=>(S.stars[m.id]||0)>=3)],
+ ['deep','Crush Depth','Survive going past test depth',S=>S.st.deep>0],
+ ['close','Close Shave','Finish a patrol with under 10% hull',S=>S.st.shave>0],
+ ['hg10','Hunting Grounds X','Clear Hunting Grounds level 10',S=>S.hg>=11],
+ ['hg25','Hunting Grounds XXV','Clear Hunting Grounds level 25',S=>S.hg>=26],
+ ['a','The Hero','Reach the first ending',S=>S.endings.a],
+ ['b','The Witness','Reach the second ending',S=>S.endings.b],
+ ['c','The Lost','Reach the third ending',S=>S.endings.c],
+ ['maxup','Refit Complete','Buy every upgrade',S=>Object.keys(UPS).every(k=>S.up[k]>=5)],
+];
+const WX=['Calm, clear','Light chop','Heavy swell, poor visibility','Storm, sea state 7'];
+/* ---------- save ---------- */
+const SK='thermocline_v1',MK='thermocline_patrol';
+let S=null,G=null,T=null;
+function fresh(){return{merit:0,up:{sonar:0,quiet:0,torp:0,hull:0,decoy:0,crew:0},boat:0,boats:1,stars:{},done:{},logs:[],st:{kills:0,tons:0,subs:0,war:0,patrols:0,lost:0,deep:0,shave:0,fired:0,hits:0,time:0},endings:{},hg:1,flags:{},opt:{music:1,sfx:1,hints:1},med:{}};}
+function loadS(){try{const s=JSON.parse(localStorage.getItem(SK));if(s&&s.up){S=Object.assign(fresh(),s);return;}}catch(e){}S=fresh();}
+function saveS(){try{localStorage.setItem(SK,JSON.stringify(S));}catch(e){}}
+function saveM(){if(!G||G.over)return;try{localStorage.setItem(MK,JSON.stringify(G));}catch(e){}}
+function clearM(){try{localStorage.removeItem(MK);}catch(e){}}
+function peekM(){try{return JSON.parse(localStorage.getItem(MK));}catch(e){return null;}}
+const B=()=>BOATS[G&&G.boatI!=null?G.boatI:S.boat],U=k=>S.up[k]||0;
+const testD=()=>B().test+(U('hull')>=1?25:0)+(U('hull')>=3?50:0),crushD=()=>B().crush+(U('hull')>=1?25:0)+(U('hull')>=3?50:0);
+const blastK=()=>1-(U('hull')>=2?.15:0)-(U('hull')>=5?.3:0);
+const decoyMax=()=>[4,6,6,8,8,12][U('decoy')];
+const reloadT=()=>150*(U('crew')>=4?.7:U('crew')>=1?.85:1);
+const PD=18;
+const rankOf=()=>{let r=RANKS[0][1];for(const x of RANKS)if(S.st.tons/4+S.merit*0+totalEarned()>=x[0])r=x[1];return r;};
+function totalEarned(){return S.st.earned||0;}
+/* ---------- terrain ---------- */
+function noiseF(seed){const R=rng(seed),N=64,t=new Float32Array(N*N);for(let i=0;i<N*N;i++)t[i]=R();const sm=u=>u*u*(3-2*u);
+ return(x,y)=>{const xi=Math.floor(x),yi=Math.floor(y),fx=sm(x-xi),fy=sm(y-yi),g=(a,b)=>t[((a&63)+(b&63)*N)];return lerp(lerp(g(xi,yi),g(xi+1,yi),fx),lerp(g(xi,yi+1),g(xi+1,yi+1),fx),fy);};}
+function buildTerrain(){const th=TH[G.th],nx=140,ny=Math.round(140*G.H/G.W),d=new Float32Array(nx*ny),n=noiseF(G.seed),sc=7/nx;
+ for(let j=0;j<ny;j++)for(let i=0;i<nx;i++){const u=i*sc*1,v=j*sc,f=n(u,v)*.55+n(u*2.1+9,v*2.1+3)*.28+n(u*4.3+1,v*4.3+7)*.17;let dd=th.base+(f-.5)*th.amp*2.2;
+  if(th.isl){const m=n(u*.8+31,v*.8+17);if(m>1-th.isl*1.5)dd-= (m-(1-th.isl*1.5))*th.base*9;}d[i+j*nx]=dd;}
+ for(const k of G.keep){const[kx,ky,kr,kd]=k,r2=kr/G.W*nx;const ci=kx/G.W*nx,cj=ky/G.H*ny;for(let j=Math.max(0,Math.floor(cj-r2));j<=Math.min(ny-1,cj+r2);j++)for(let i=Math.max(0,Math.floor(ci-r2));i<=Math.min(nx-1,ci+r2);i++){const q=Math.hypot(i-ci,j-cj)/r2;if(q<1){const ii=i+j*nx,t=1-q*q;if(d[ii]<kd)d[ii]=lerp(d[ii],kd,clamp(t*1.6,0,1));}}}
+ for(let pass=0;pass<2;pass++){const e=d.slice();for(let j=1;j<ny-1;j++)for(let i=1;i<nx-1;i++){const q=i+j*nx;d[q]=(e[q]*4+e[q-1]+e[q+1]+e[q-nx]+e[q+nx])/8;}}
+ T={nx,ny,d};}
+function depthAt(x,y){const fx=clamp(x/G.W*(T.nx-1),0,T.nx-1.001),fy=clamp(y/G.H*(T.ny-1),0,T.ny-1.001),i=Math.floor(fx),j=Math.floor(fy),a=fx-i,b=fy-j,d=T.d,n=T.nx;return lerp(lerp(d[i+j*n],d[i+1+j*n],a),lerp(d[i+(j+1)*n],d[i+1+(j+1)*n],a),b);}
+/* ---------- mission setup ---------- */
+function spawn(k,x,y,h,o){const c=SHIP[k],e=Object.assign({id:G.nid++,k,x,y,h:h||0,v:c.air?c.vm:c.vm*.55,z:c.sub?(G.rnd()<.5?G.layer*.6:G.layer+60):0,hp:c.hp*(o&&o.hpK||1),st:'patrol',ri:0,sus:0,pt:G.rnd()*40,dropT:0,fireT:80+G.rnd()*100,c:{sol:0,held:false,seen:false,ex:x,ey:y,ang:G.rnd()*TAU,hE:(G.rnd()-.5)*2,last:-999}},o||{});delete e.hpK;G.es.push(e);return e;}
+function buildMission(def){const th=TH[def.th],W=(def.w||th.w)*1000,H=(def.h||th.h)*1000,seed=hash(def.id+(def.seedK||''));const rnd0=rng(seed+5);
+ G={id:def.id,th:def.th,seed,W,H,t:0,layer:th.layer*(.85+rnd0()*.3),wx:def.wx,tod:def.tod,lvl:def.lvl,es:[],torps:[],chg:[],dec:[],mines:[],fx:[],keep:[],objs:[],nid:1,boatI:S.boat,ts:1,st:{tons:0,kills:0,subs:0,war:0,fired:0,hits:0,located:false,charges:0,deep:false},tag:{},gateOpen:false,done:false,msgs:[],polys:(def.polys||[]).map(p=>[p[0]*W,p[1]*H,p[2]*W]),ice:!!th.ice&&def.th===3,rseed:seed+77,tutI:def.tut?0:-1,hg:!!def.hg,seen:{},wfT:0};
+ G.rnd=rnd0;const P=a=>[a[0]*W,a[1]*H],bk=B(),st=def.start||[.05,.5],sp=P(st),keep=(p,r,d)=>G.keep.push([p[0],p[1],r,d||Math.max(90,th.layer+55)]);
+ const gate=P(def.gate||st);G.gate={x:gate[0],y:gate[1],r:1100};keep(sp,2600,Math.max(200,th.layer+130));keep(gate,1800);
+ G.o={x:sp[0],y:sp[1],h:rad(def.hd==null?90:def.hd),wp:null,v:KT*bk.vmax*.3,tel:2,z:Math.max(30,th.layer*.6),ordZ:Math.max(30,th.layer*.6),batt:100,hull:100,flood:0,sys:{sonar:0,tubes:0,motor:0},tubes:Array(bk.tubes).fill(0),stow:bk.stow-bk.tubes,decoys:decoyMax(),dT:0,pingT:0,snork:false,scope:false,trail:[],trT:0,creak:0};
+ const route=(pts,r)=>{for(let i=0;i<pts.length-1;i++){const a=pts[i],b=pts[i+1],n=Math.ceil(Math.hypot(b[0]-a[0],b[1]-a[1])/700);for(let k=0;k<=n;k++)keep([lerp(a[0],b[0],k/n),lerp(a[1],b[1],k/n)],r||1100,55);}};
+ for(const f of def.f){
+  if(f.g==='conv'||f.g==='friend'){const a=P(f.from),b=P(f.to),hd=brg({x:a[0],y:a[1]},{x:b[0],y:b[1]});route([a,b],1900);const list=f.g==='friend'?[f.k]:f.n;let lead=null;
+   list.forEach((k,i)=>{const row=Math.floor(i/2),col=i%2?1:-1,e=spawn(k,a[0],a[1],hd,{tag:f.tag,name:f.name&&i===0?f.name:null,route:[a,b],friend:f.g==='friend',loop:f.loop});e.v=SHIP[k].vm*.6;if(!lead){lead=e;e.spd=.72;}else{e.lead=lead.id;e.off=[col*420*(i%2?1:1),-(row+1)*540];e.x=lead.x+Math.cos(hd)*e.off[0]+Math.sin(hd)*e.off[1];e.y=lead.y+Math.sin(hd)*e.off[0]-Math.cos(hd)*e.off[1];}});
+   (f.esc||[]).forEach((k,i)=>{const ang=[0,1.4,-1.4,2.6,-2.6][i%5],R=1600+i*100,ox=Math.sin(ang)*R,oy=Math.cos(ang)*R,e=spawn(k,lead.x,lead.y,hd,{lead:lead.id,off:[ox,oy],esc:true,tag:f.tag2});e.x+=Math.cos(hd)*ox+Math.sin(hd)*oy;e.y+=Math.sin(hd)*ox-Math.cos(hd)*oy;});}
+  else if(f.g==='pat'){const pts=f.pts.map(P);route(pts.concat([pts[0]]));spawn(f.k,pts[0][0],pts[0][1],G.rnd()*TAU,{route:pts,tag:f.tag,noshoot:f.noshoot,name:f.name,loop:1,patrol:1});}
+  else if(f.g==='still'){const p=P(f.at);keep(p,1500,60);route([sp,p],900);spawn(f.k,p[0],p[1],G.rnd()*TAU,{tag:f.tag,name:f.name,noshoot:f.noshoot,v:0,still:1});}
+  else if(f.g==='hunt'){const p=P(f.at);keep(p,1200,50);const e=spawn(f.k,p[0],p[1],0,{st:'hunt',lkx:G.o.x+G.rnd()*1500-750,lky:G.o.y+G.rnd()*1500-750,lkz:G.o.z,fix:-999,lkT:0,route:[p,P([.5,.5])],patrol:1,loop:1});e.h=brg(e,G.o);}
+  else if(f.g==='sub'){const pts=f.pts.map(P);route(pts.concat([pts[0]]),900);spawn(f.k,pts[0][0],pts[0][1],G.rnd()*TAU,{route:pts,tag:f.tag,passive:f.passive,noshoot:f.noshoot,loop:1,patrol:1,name:f.k==='ostrog'?'Ostrog':null});}
+  else if(f.g==='air'){const pts=f.pts.map(P);spawn('aircraft',pts[0][0],pts[0][1],0,{route:pts,loop:1,air:1});}
+ }
+ for(const q of def.objs){const O=Object.assign({},q,{p:0,d:false});if(O.t==='hold'){O.x*=W;O.y*=H;O.r=O.r||600;route([sp,[O.x,O.y]],1000);keep([O.x,O.y],O.r+900,O.z==='deep'||O.z==='deep300'?Math.max(450,th.layer+340):O.z==='bottom'?Math.max(90,0):Math.max(70,th.layer+40));}G.objs.push(O);}
+ route([sp,gate],1000);
+ if(def.mines){const m=def.mines;for(let i=0;i<m.n;i++){const mx=lerp(m.x0,m.x1,G.rnd())*W,my=G.rnd()*H;if(Math.hypot(mx-sp[0],my-sp[1])<1800)continue;G.mines.push({x:mx,y:my,known:G.rnd()>m.hidden});}}
+ G.gateOpen=G.objs.length===0;delete G.rnd;return G;}
+/* ---------- simulation ---------- */
+const R=()=>{G.rseed=(G.rseed+0x6D2B79F5)|0;let t=Math.imul(G.rseed^G.rseed>>>15,1|G.rseed);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};
+const TL=r=>20*Math.log10(Math.max(r,100)/100);
+const across=(a,b)=>(a>G.layer)!==(b>G.layer);
+const telF=[0,.2,.4,.6,.85,1];
+function ownSL(){const o=G.o,b=B(),f=o.v/(KT*b.vmax);let s=b.sl-U('quiet')*2+26*Math.pow(f,1.5);if(o.z<70&&f>.6)s+=10;if(o.snork)s+=14;if(o.flood>6)s+=4;if(U('crew')>=3&&f<.45)s-=1;if(o.z>depthAt(o.x,o.y)-30)s-=3;return s;}
+const seaN=()=>G.wx*2;
+function ownT(){const o=G.o,f=o.v/(KT*B().vmax),u=U('sonar');return 36-(u>=1?1.5:0)-(u>=4?3:0)+24*f*f+seaN()+(o.sys.sonar>.3?9:0)+(o.scope?0:0);}
+function fxAdd(k,x,y,o){G.fx.push(Object.assign({k,x,y,t:0},o||{}));if(G.fx.length>30)G.fx.shift();}
+function hurt(dmg,why){const o=G.o,k=blastK(),d=dmg*k;o.hull=Math.max(0,o.hull-d);o.flood=Math.min(100,o.flood+d*.55);if(d>5){const s=['sonar','tubes','motor'][Math.floor(R()*3)];o.sys[s]=Math.min(1,o.sys[s]+d/30);say(['Hull breach forward!','Flooding in the motor room!','Lost a hydrophone bank!','Valves are lifting!'][Math.floor(R()*4)],'h');}A.boom(.9);shake(clamp(d/18,.25,1));if(o.hull<=0)lost(why||'Pressure hull failed');}
+function stepOwn(dt){const o=G.o,b=B();
+ if(o.wp){const dd=Math.hypot(o.wp[0]-o.x,o.wp[1]-o.y);if(dd<160){o.wp=null;}else{const want=Math.atan2(o.wp[0]-o.x,-(o.wp[1]-o.y)),da=adiff(o.h,want),mx=rad(1.5)*b.turn*dt*clamp(.45+o.v/5,.3,1.1);o.h=wrap(o.h+clamp(da,-mx,mx));}}
+ let mx=telF[o.tel];if(b.batt&&o.batt<=0)mx=Math.min(mx,.2);mx*=1-o.sys.motor*.5-o.flood*.002;const vt=KT*b.vmax*mx;o.v+=(vt-o.v)*clamp(dt*.045,0,1);
+ const nx=o.x+Math.sin(o.h)*o.v*dt,ny=o.y-Math.cos(o.h)*o.v*dt,bedN=depthAt(nx,ny);
+ if(bedN<6){if(G.t-(o.grT||-99)>25){o.grT=G.t;say('Aground! All back! Set a new course.','h');A.creak(1);if(o.hull>20)hurt(clamp(o.v*1.2,1,6),'Wrecked on the seabed');}o.v*=.3;o.wp=null;}
+ else{o.x=clamp(nx,0,G.W);o.y=clamp(ny,0,G.H);}
+ let zt=o.ordZ;const bed=depthAt(o.x,o.y),la=Math.min(depthAt(o.x+Math.sin(o.h)*400,o.y-Math.cos(o.h)*400),depthAt(o.x+Math.sin(o.h)*900,o.y-Math.cos(o.h)*900));zt=Math.min(zt,Math.max(8,Math.min(bed-9,o.v>1?la-11:1e9)));if(la-11<o.z&&o.v>1&&G.t-(o.shT||-99)>60){o.shT=G.t;say('Shoaling ahead, sir. Coming up.');}const inPoly=G.polys.some(p=>Math.hypot(p[0]-o.x,p[1]-o.y)<p[2]);if(G.ice&&!inPoly&&zt<40){zt=40;if(o.z<42&&(G.t-(o.icT||-99))>20){o.icT=G.t;say('Ice overhead. Holding below 40 m.');}}
+ const rate=(1.1+o.v*.18)*(1-o.flood*.004);o.z+=clamp(zt-o.z,-rate*1.6*dt,rate*dt);if(o.z>bed-5)o.z=Math.max(4,bed-5);if(o.flood>30)o.z+=(o.flood-30)*.012*dt;if(G.ice&&!inPoly&&o.z<30){o.z=30;}
+ if(o.scope&&o.z>21)closeScope('Scope under.');
+ if(o.snork&&o.z>21){o.snork=false;say('Snorkel secured.');}
+ if(b.batt){const f=o.v/(KT*b.vmax);if(o.snork)o.batt=Math.min(100,o.batt+.13*dt);else o.batt=Math.max(0,o.batt-(.0028+.075*f*f*f)*dt);if(o.batt<=0&&!G.seen.batt){G.seen.batt=1;say('Battery flat, sir. One-third is all we have. Snorkel or wait.','h');}else if(o.batt<20&&!G.seen.b20){G.seen.b20=1;say('Battery under 20%. Recommend snorkelling.');}}
+ const tD=testD(),cD=crushD();if(o.z>tD){G.st.deep=true;o.creak+=dt;if(o.creak>7){o.creak=0;A.creak(.8);}o.flood=Math.min(100,o.flood+.012*dt*(o.z-tD)/20);if(!G.seen.deep){G.seen.deep=1;say('Passing test depth! She is groaning, sir.','h');}}
+ if(o.z>cD){o.hull-=.55*dt;A.creak(.5);if(o.hull<=0)lost('Crushed below '+Math.round(cD)+' m');}
+ const pump=(.09+(U('hull')>=4?.09:0))*dt*(o.z<80?1.3:o.z>200?.7:1);if(o.flood>0)o.flood=Math.max(0,o.flood-pump);if(o.flood>=100)lost('Flooded and sank');
+ const rep=.0028*dt*(U('crew')>=2?1.4:1);for(const k in o.sys)if(o.sys[k]>0)o.sys[k]=Math.max(0,o.sys[k]-rep);
+ for(let i=0;i<o.tubes.length;i++){if(o.tubes[i]>0){o.tubes[i]=Math.max(0,o.tubes[i]-dt*(1-o.sys.tubes*.7));if(o.tubes[i]===0)A.clk(.5);}}
+ o.pingT=Math.max(0,o.pingT-dt);o.dT=Math.max(0,o.dT-dt);o.trT-=dt;if(o.trT<=0){o.trT=40;o.trail.push([Math.round(o.x),Math.round(o.y)]);if(o.trail.length>90)o.trail.shift();}
+ for(const m of G.mines){if(m.gone)continue;const r=Math.hypot(m.x-o.x,m.y-o.y);if(r<(U('sonar')>=5?1500:230)&&!m.known){m.known=true;say('Mine close aboard!','h');A.blip(1.4);}if(r<65){m.gone=true;fxAdd('boom',m.x,m.y);say('Mine!','h');hurt(46,'Struck a mine');}}
+}
+function moveTo(e,tx,ty,v,dt,turn){const want=Math.atan2(tx-e.x,-(ty-e.y)),da=adiff(e.h,want),mx=rad(turn||1)*dt;e.h=wrap(e.h+clamp(da,-mx,mx));e.v+=(v-e.v)*clamp(dt*.05,0,1);const nx=e.x+Math.sin(e.h)*e.v*dt,ny=e.y-Math.cos(e.h)*e.v*dt;if(!SHIP[e.k].air&&depthAt(nx,ny)<(e.z>0?e.z+8:5)){e.h=wrap(e.h+.09*dt);e.v*=.9;return;}e.x=nx;e.y=ny;}
+function followRoute(e,v,dt){const r=e.route;if(!r||!r.length)return;if(e.ri==null)e.ri=0;const p=r[e.ri%r.length];if(Math.hypot(p[0]-e.x,p[1]-e.y)<260){if(e.friend&&!e.loop&&e.ri>=r.length-1){e.arrived=true;return;}e.ri=(e.ri+1)%r.length;}moveTo(e,p[0],p[1],v,dt);}
+function alertAll(x,y,rad0,err){for(const e of G.es){if(e.dead||!SHIP[e.k].asw)continue;if(Math.hypot(e.x-x,e.y-y)<rad0){e.st='hunt';e.lkx=x+(R()-.5)*err;e.lky=y+(R()-.5)*err;e.lkz=G.o.z+(R()-.5)*50;e.lkT=G.t;}}}
+function stepShip(e,dt){const c=SHIP[e.k],o=G.o;if(e.sink!=null){e.sink-=dt;e.v*=.98;e.x+=Math.sin(e.h)*e.v*dt;e.y-=Math.cos(e.h)*e.v*dt;if(e.sink<=0)e.dead=true;return;}
+ if(c.air){stepAir(e,dt);return;}
+ if(e.still){e.alarm=0;if(c.asw){stepASW(e,dt,true);}return;}
+ if(c.sub){stepSub(e,dt);return;}
+ if(c.asw&&!e.friend){stepASW(e,dt);return;}
+ const lead=e.lead?G.es.find(x=>x.id===e.lead&&!x.dead&&x.sink==null):null;let spd=c.vm*(e.spd||.7)*(e.flee?1.3:1);if(e.scare>0){e.scare-=dt;spd=c.vm*1.2;}
+ if(lead&&e.off){const ca=Math.cos(lead.h),sa=Math.sin(lead.h),tx=lead.x+ca*e.off[0]+sa*e.off[1],ty=lead.y+sa*e.off[0]-ca*e.off[1],d=Math.hypot(tx-e.x,ty-e.y);moveTo(e,tx,ty,clamp(lead.v+d*.012,0,c.vm*1.15),dt);}else{e.lead=null;followRoute(e,spd,dt);}
+}
+function stepAir(e,dt){const o=G.o;followRoute(e,e.v,dt);const r=dist(e,o);e.dropT-=dt;if(o.z<=22&&(o.scope||o.snork)&&r<5500&&!G.seen.rad){G.seen.rad=1;say('Radar pulses on the scope! Aircraft about.','h');}
+ const vis=o.scope||o.snork?3400:o.z<30?1200:0;if(r<vis&&e.dropT<=0&&R()<.02*dt*(1+(2-Math.min(2,G.wx)))){e.dropT=300;G.st.located=true;say('Aircraft has us! Dive!','h');A.alarm();fxAdd('air',e.x,e.y);alertAll(o.x,o.y,14000,700);for(let i=0;i<2;i++)G.chg.push({x:o.x+(R()-.5)*260,y:o.y+(R()-.5)*260,z:0,zt:Math.max(20,o.z+(R()-.5)*30),air:1});}}
+function stepASW(e,dt,anchored){const c=SHIP[e.k],o=G.o,a=c.asw,r=dist(e,o),acr=across(o.z,0),bed=depthAt(o.x,o.y);e.pt-=dt;e.dropT-=dt;e.pinging=Math.max(0,(e.pinging||0)-dt);
+ e.hT=(e.hT||0)-dt;if(e.hT<=0){e.hT=3;const se=ownSL()-TL(r)-(acr?13:0)-(46-a*2)-seaN();if(se>0){e.sus+=(.12+se*.015)*3;if(e.sus>=1||e.st==='hunt'){const er=r*.22+120;e.lkx=o.x+(R()-.5)*er;e.lky=o.y+(R()-.5)*er;e.lkz=o.z+(R()-.5)*40;e.lkT=G.t;if(e.st!=='hunt'){e.st='hunt';if(!G.seen.heard){G.seen.heard=1;say('Escort is turning towards us. We have been heard.','h');}}}}else e.sus=Math.max(0,e.sus-.03*3);
+  if(o.scope&&r<(G.tod==='night'?1500:2800)*(G.wx>=2?.7:1)&&R()<(G.wx===0?.09:.05)){e.lkx=o.x;e.lky=o.y;e.lkz=PD;e.lkT=G.t;e.st='hunt';if(!G.seen.seenS){G.seen.seenS=1;say('Periscope sighted! Lookouts have us. Take her down!','h');}}}
+ if(e.st==='hunt'){if(e.pt<=0){e.pt=38+R()*12;e.pinging=14;A.ping(clamp(1-r/9000,.05,.8),true);fxAdd('epi',e.x,e.y);
+    const fast=e.v>c.vm*.8,b=(2200+700*a)*(acr?.52:1)*(bed-o.z<30?.55:1)*(o.v<1?.8:1)*(o.dT>200?.7:1)*(fast?.6:1),dec=G.dec.some(d=>Math.hypot(d.x-o.x,d.y-o.y)<600),hc=.88*(acr?.5:1)*(o.v<2?.7:1)*(bed-o.z<30?.6:1)*(dec?(U('decoy')>=4?.4:.65):1);
+    if(r<b&&R()<hc){e.lkx=o.x+(R()-.5)*90;e.lky=o.y+(R()-.5)*90;e.lkz=o.z+(R()-.5)*30;e.lkT=G.t;e.fix=G.t;if(!G.st.located){G.st.located=true;say('Sonar pulse on the hull. They have us held.','h');}if(!G.seen.heldHint){G.seen.heldHint=1;hintOnce('held','They have a fix. Change depth across the layer, turn and slow right down. A noisemaker helps too.');}A.ping(.9,true);
+     for(const q of G.es){if(q!==e&&!q.dead&&SHIP[q.k].asw&&Math.hypot(q.x-e.x,q.y-e.y)<9000&&q.st!=='hunt'){q.st='hunt';q.lkx=e.lkx;q.lky=e.lky;q.lkz=e.lkz;q.lkT=G.t;}}}}
+  if(!anchored){const fixed=G.t-(e.fix||-999)<80,dlk=Math.hypot(e.lkx-e.x,e.lky-e.y);
+   if(fixed&&dlk<210&&e.dropT<=0){e.dropT=85-a*7;e.pt=Math.max(e.pt,42);const n=5+a;for(let i=0;i<n;i++){const s=(i-n/2)*42;G.chg.push({x:e.x+Math.sin(e.h)*s+(R()-.5)*90,y:e.y-Math.cos(e.h)*s+(R()-.5)*90,z:0,zt:Math.max(15,e.lkz+(R()-.5)*(acr?70:40)),d:i*2});}G.st.charges+=n;say('Depth charges in the water!','h');A.splash();}
+   if(dlk<170&&!fixed){e.lkx+=(R()-.5)*2400;e.lky+=(R()-.5)*2400;e.lkx=clamp(e.lkx,300,G.W-300);e.lky=clamp(e.lky,300,G.H-300);}
+   moveTo(e,e.lkx,e.lky,fixed?c.vm:c.vm*.7,dt,1.6);
+   if(G.t-(e.lkT||0)>420){e.st='patrol';e.sus=0;}}
+  return;}
+ if(anchored)return;if(e.lead){const lead=G.es.find(x=>x.id===e.lead&&!x.dead&&x.sink==null);if(lead){const ca=Math.cos(lead.h),sa=Math.sin(lead.h),tx=lead.x+ca*e.off[0]+sa*e.off[1],ty=lead.y+sa*e.off[0]-ca*e.off[1],d=Math.hypot(tx-e.x,ty-e.y);moveTo(e,tx,ty,clamp(lead.v+d*.015,0,c.vm),dt,1.4);return;}e.lead=null;e.route=[[e.x,e.y],[e.x+(R()-.5)*7000,e.y+(R()-.5)*7000]];e.loop=1;}
+ followRoute(e,c.vm*.55,dt);if(e.pt<=0){e.pt=70+R()*30;e.pinging=10;if(r<7000){A.ping(clamp(1-r/9000,.03,.4),true);}fxAdd('epi',e.x,e.y);if(r<(1700+500*a)*(acr?.45:1)&&R()<.7){e.st='hunt';e.lkx=o.x;e.lky=o.y;e.lkz=o.z;e.lkT=G.t;}}}
+function stepSub(e,dt){const c=SHIP[e.k],o=G.o,r=dist(e,o);const acr=across(o.z,e.z);e.hT=(e.hT||0)-dt;e.fireT-=dt;
+ if(e.hT<=0){e.hT=3;const se=ownSL()-TL(r)-(acr?11:0)-(44-G.lvl*.6)-seaN()*.5;if(se>0){e.sus=Math.min(3,(e.sus||0)+.18*3);e.lkx=o.x+(R()-.5)*r*.15;e.lky=o.y+(R()-.5)*r*.15;e.lkz=o.z;e.lkT=G.t;}else e.sus=Math.max(0,(e.sus||0)-.02*3);}
+ if(e.passive&&!G.flagAttack){followRoute(e,c.vm*.3,dt);return;}
+ const fr=G.es.find(x=>x.friend&&!x.dead&&x.sink==null);if(fr&&!e.noshoot){const rf=dist(e,fr);if(rf<4200&&e.fireT<=0){e.fireT=300+R()*200;launch(e,fr.x,fr.y,fr);}moveTo(e,fr.x,fr.y,c.vm*.55,dt);return;}
+ if(e.sus>=1){moveTo(e,e.lkx,e.lky,c.vm*.5,dt,1.2);if(r<5200&&e.fireT<=0&&G.t-(e.lkT||0)<40&&!e.noshoot){e.fireT=320+R()*200-G.lvl*12;launch(e,e.lkx,e.lky,null);}}else followRoute(e,c.vm*.42,dt);}
+function launch(e,x,y,tgt){e.pinging=8;G.torps.push({id:G.nid++,x:e.x,y:e.y,z:Math.max(e.z,10),h:Math.atan2(x-e.x,-(y-e.y)),v:20,run:0,max:7500,en:true,tgt:tgt?tgt.id:0,tz:tgt?6:G.o.z,lock:false});A.launch(.5);}
+function fire(tgtE,px,py){const o=G.o,i=o.tubes.findIndex(t=>t===0&&!o.dryr);if(i<0){say(o.tubes.some(t=>t>0)?'Tubes reloading, sir.':'Tubes are dry, sir.','h');return false;}if(o.sys.tubes>.75){say('Tube flood valves are damaged.','h');return false;}
+ let t;if(tgtE){const c=tgtE.c,ex=c.ex,ey=c.ey,sp=(tgtE.v||0),hh=tgtE.h+(c.hE||0)*(1-c.sol/100)*.9,tt=Math.hypot(ex-o.x,ey-o.y)/23,lx=ex+Math.sin(hh)*sp*tt,ly=ey-Math.cos(hh)*sp*tt;t={id:G.nid++,x:o.x,y:o.y,z:o.z,h:o.h,hc:Math.atan2(lx-o.x,-(ly-o.y)),v:23,run:0,max:9000*(U('torp')>=4?1.5:1),tgt:tgtE.id,wired:U('torp')>=1,tz:SHIP[tgtE.k].sub?tgtE.z:6,lock:false,ox:o.x,oy:o.y};}
+ else{t={id:G.nid++,x:o.x,y:o.y,z:o.z,h:o.h,hc:Math.atan2(px-o.x,-(py-o.y)),v:23,run:0,max:9000*(U('torp')>=4?1.5:1),tz:6,lock:false,ox:o.x,oy:o.y};}
+ G.torps.push(t);o.tubes[i]=o.stow>0?reloadT():-1;if(o.stow>0)o.stow--;G.st.fired++;S.st.fired++;A.launch(1);say('Fish away, tube '+(i+1)+'.');for(const e of G.es){if(!e.dead&&SHIP[e.k].asw&&dist(e,o)<4500&&R()<.5){e.st='hunt';e.lkx=o.x+(R()-.5)*500;e.lky=o.y+(R()-.5)*500;e.lkz=o.z;e.lkT=G.t;}}return true;}
+function stepTorps(dt){const o=G.o;for(const t of G.torps){if(t.dead)continue;t.run+=t.v*dt;if(t.run>t.max){t.dead=true;continue;}
+ if(t.en){if(!t.lock){const cand=[];if(t.tgt){const f=G.es.find(e=>e.id===t.tgt&&!e.dead);if(f)cand.push(f);}else{cand.push(o);}for(const d of G.dec)cand.push(d);
+    let best=null,br=1e9;for(const c of cand){const rr=dist(t,c);if(rr>1150)continue;const ang=Math.abs(adiff(t.h,brg(t,c)));if(ang>rad(36))continue;const isDec=c.dec;if(isDec&&R()>.45+U('decoy')*.08)continue;if(isDec||rr<br){br=isDec?0:rr;best=c;}}
+    if(best){if(best===o&&across(o.z,t.z)&&R()<.5){}else{t.lock=best===o?1:best.dec?2:best.id;if(best===o&&!G.seen.tl){G.seen.tl=1;say('Torpedo has gone active! It is on us!','h');A.alarm();}}}}
+   const r0=dist(t,o);if(r0<6500&&!t.heard){t.heard=true;A.alarm();say('Torpedo in the water! Bearing '+b3(brg(o,t)),'h');G.ts=1;syncTs();hintOnce('torp','Torpedo inbound. Turn away, go to full speed, drop a noisemaker and cross the layer.');}
+   if(t.lock===1){t.hc=Math.atan2(o.x-t.x,-(o.y-t.y));t.tz=o.z;if(across(o.z,t.z)&&R()<.02*dt){t.lock=false;}if(r0<36&&Math.abs(o.z-t.z)<40){t.dead=true;fxAdd('boom',t.x,t.y);G.st.located=true;hurt(30,'Hit by a torpedo');}}
+   else if(t.lock===2){const d=G.dec.find(q=>Math.hypot(q.x-t.x,q.y-t.y)<1200);if(d){t.hc=brg(t,d);if(dist(t,d)<30){t.dead=true;fxAdd('boom',t.x,t.y);A.boom(.5);d.life=0;}}else t.lock=false;}
+   else if(t.lock){const f=G.es.find(e=>e.id===t.lock&&!e.dead&&e.sink==null);if(f){t.hc=brg(t,f);if(dist(t,f)<40){t.dead=true;fxAdd('boom',t.x,t.y);A.boom(.6);hitShip(f,t,1,true);}}else t.lock=false;}
+ }else{const u=U('torp'),seek=1000+(u>=3?500:0);const f=t.tgt?G.es.find(e=>e.id===t.tgt&&!e.dead&&e.sink==null):null;
+   if(!t.lock){if(t.wired&&f&&dist(t,o)<8000){const c=f.c,sp=f.v||0,hh=f.h+(c.hE||0)*(1-c.sol/100)*.9,tt=Math.hypot(c.ex-t.x,c.ey-t.y)/23,lx=c.ex+Math.sin(hh)*sp*tt,ly=c.ey-Math.cos(hh)*sp*tt;t.hc=Math.atan2(lx-t.x,-(ly-t.y));}
+    if(t.run>320){let best=null,br=seek;for(const e of G.es){if(e.dead||e.sink!=null||SHIP[e.k].air)continue;const rr=dist(t,e),zz=Math.abs((SHIP[e.k].sub?e.z:6)-t.z);if(rr>br||zz>140)continue;if(Math.abs(adiff(t.h,brg(t,e)))>rad(38))continue;best=e;br=rr;}if(best){t.lock=best.id;t.tz=SHIP[best.k].sub?best.z:6;if(!best.friend&&!best.still&&R()<.8){best.scare=120;}}}}
+   else{const e=G.es.find(x=>x.id===t.lock&&!x.dead&&x.sink==null);if(!e){t.lock=false;}else{t.hc=brg(t,e);t.tz=SHIP[e.k].sub?e.z:6;if(dist(t,e)<42&&Math.abs(t.z-(SHIP[e.k].sub?e.z:6))<45){t.dead=true;hitShip(e,t);}}}
+   for(const m of G.mines){}
+ }
+ const da=adiff(t.h,t.hc==null?t.h:t.hc),mx=rad(3.2)*dt;t.h=wrap(t.h+clamp(da,-mx,mx));t.x+=Math.sin(t.h)*t.v*dt;t.y-=Math.cos(t.h)*t.v*dt;t.z+=clamp(t.tz-t.z,-1.8*dt,1.8*dt);if(depthAt(t.x,t.y)<Math.min(t.z,4)){t.dead=true;fxAdd('boom',t.x,t.y);A.boom(.25);}
+ }
+ G.torps=G.torps.filter(t=>!t.dead);
+ for(const d of G.dec){d.life-=dt;}G.dec=G.dec.filter(d=>d.life>0);
+ for(const c of G.chg){if(c.d>0){c.d-=dt;continue;}c.z+=(c.air?4.5:3.4)*dt;if(c.z>=c.zt){c.dead=true;const dd=Math.hypot(c.x-o.x,c.y-o.y),zz=Math.abs(c.z-o.z),r3=Math.hypot(dd,zz);fxAdd('boom',c.x,c.y);if(r3<120){const dmg=Math.pow(1-r3/120,1.5)*24;hurt(dmg,'Depth-charged');}else{A.boom(clamp(.75-r3/1800,.05,.6));shake(clamp(.34-r3/1800,0,.3));}}}
+ G.chg=G.chg.filter(c=>!c.dead);}
+function hitShip(e,t,_,enemy){const c=SHIP[e.k];if(!enemy){const dudP=G.tutI>=0?0:(U('torp')>=2?.06:.16);if(R()<dudP){say('Hit, but no explosion! A dud.','h');A.clk(1);S.st.hits++;e.scare=200;return;}G.st.hits++;S.st.hits++;}
+ const dm=(!enemy&&U('torp')>=5)?2:1;e.hp-=dm;fxAdd('boom',e.x,e.y,{big:1});A.boom(clamp(.95-dist(e,G.o)/18000,.25,.95));if(!enemy)say(['Impact!','Hit!','Good hit! Time on target.'][Math.floor(R()*3)],'g');
+ if(e.hp<=0){e.sink=c.tons>5000?46:26;e.c.sol=100;A.breakup(clamp(1-dist(e,G.o)/14000,.2,.8));score(e,enemy);}
+ else{e.flee=true;e.scare=300;}
+ if(!enemy&&t.ox!=null){for(const q of G.es){if(q.dead||q.sink!=null||!SHIP[q.k].asw)continue;if(dist(q,e)<11000){q.st='hunt';q.lkx=t.ox+(R()-.5)*900;q.lky=t.oy+(R()-.5)*900;q.lkz=G.o.z+(R()-.5)*60;q.lkT=G.t;q.lead=null;}}G.es.forEach(q=>{if(q.lead===e.id)q.flee=true;});}}
+function score(e,enemy){const c=SHIP[e.k];if(e.friend){if(!enemy){say('You have hit a friendly ship!','h');}fail(e.name?e.name+' has been sunk':'A friendly ship was sunk');return;}if(enemy)return;
+ G.st.tons+=c.tons;G.st.kills++;if(c.sub)G.st.subs++;if(c.asw||c.sub)G.st.war++;S.st.tons+=c.tons;S.st.kills++;if(c.sub)S.st.subs++;if(c.asw||c.sub)S.st.war++;
+ G.tag[e.tag||'_']=(G.tag[e.tag||'_']||0)+1;say((e.name||c.n)+' sinking. '+fmt(c.tons)+' tons.','g');if(e.noshoot)fail('You sank a ship you were ordered not to attack');}
+function stepContacts(dt){const o=G.o,T0=ownT(),b=B(),u=U('sonar'),baff=rad(b.towed?0:u>=3?20:32);
+ for(const e of G.es){if(e.dead||SHIP[e.k].air)continue;const c=e.c,r=dist(e,o),bb=brg(o,e),cl=SHIP[e.k];let sl=cl.sl+(cl.vm?(cl.sub?16*(e.v/cl.vm-.4):10*(e.v/cl.vm-.6)):0);if(e.pinging>0)sl+=26;if(e.sink!=null)sl+=8;if(e.k==='hulk')sl=0;
+  const baf=Math.abs(adiff(o.h+PI,bb))<baff&&r>700;let se=sl-TL(r)-(across(o.z,e.z)?10:0)-T0;if(baf)se-=30;if(o.scope&&cl.ht>10){const vr=visR();if(r<vr&&!cl.sub){se=Math.max(se,1);c.vis=true;}else c.vis=false;}else c.vis=false;
+  c.se=se;const was=c.held;c.held=se>0||(e.k==='hulk'&&r<G.W);if(e.k==='hulk'&&!c.seen)c.sol=Math.max(c.sol,16);
+  if(c.held){c.last=G.t;if(!c.seen){c.seen=true;if(e.k!=='hulk'){say('New contact, bearing '+b3(bb)+'.');A.blip(1);if(G.ts>1&&(cl.asw||cl.sub)){G.ts=1;syncTs();}}}
+   const lat=Math.abs(o.v*Math.sin(o.h-bb));c.sol=Math.min(100,c.sol+dt*(.06+clamp(se/20,0,1)*.12+clamp(lat/4,0,1)*.24)*(u>=2?1.4:1));
+   const q=Math.pow(1-c.sol/100,1.4),er=r*.5*q;c.ex=e.x+Math.cos(c.ang)*er;c.ey=e.y+Math.sin(c.ang)*er;c.er=er;c.eh=e.h+(c.hE||0)*(1-c.sol/100)*.9;c.ev=e.v;}
+  else if(c.seen){c.sol=Math.max(0,c.sol-.02*dt);c.ex+=Math.sin(c.eh||0)*(c.ev||0)*dt;c.ey-=Math.cos(c.eh||0)*(c.ev||0)*dt;c.er=(c.er||0)+dt*2;}
+  if(c.held&&!was&&c.seen&&e.k!=='hulk'&&G.t-(c.lost||0)>60&&(cl.asw||cl.sub)){c.lost=G.t;}
+ }}
+function visR(){const k=G.tod==='night'?4200:G.tod==='dusk'?9000:14000;return k*(G.wx>=3?.45:G.wx===2?.7:1);}
+function checkObjs(dt){const o=G.o;let all=true;for(const q of G.objs){if(q.d)continue;
+  if(q.t==='tons'){q.p=G.st.tons/q.n;if(G.st.tons>=q.n)q.d=true;}
+  else if(q.t==='kill'){const k=G.tag[q.tag]||0;q.p=k/q.n;if(k>=q.n)q.d=true;}
+  else if(q.t==='hold'){const r=Math.hypot(q.x-o.x,q.y-o.y);let ok=r<q.r;if(ok&&q.stop&&o.v>1.2)ok=false;if(ok&&q.z){if(q.z==='below'&&o.z<G.layer+4)ok=false;if(q.z==='pd'&&o.z>21)ok=false;if(q.z==='bottom'&&depthAt(o.x,o.y)-o.z>45)ok=false;if(q.z==='deep'&&o.z<250)ok=false;if(q.z==='deep300'&&o.z<300)ok=false;}q.ok=ok;if(ok){q.pv=(q.pv||0)+dt/10;q.p=q.pv/q.T;if(q.pv>=q.T){q.d=true;}}}
+  else if(q.t==='protect'){const f=G.es.find(e=>e.tag===q.tag);if(f&&f.arrived)q.d=true;if(f&&f.route){const dd=Math.hypot(f.route[1][0]-f.x,f.route[1][1]-f.y),tot=Math.hypot(f.route[1][0]-f.route[0][0],f.route[1][1]-f.route[0][1]);q.p=1-dd/tot;}}
+  if(q.d){A.ok();say('Objective complete: '+q.label+'.','g');}
+  if(!q.d&&q.t!=='photo')all=false;if(q.t==='photo'&&!q.d)all=false;}
+ if(all&&!G.gateOpen&&G.objs.length){G.gateOpen=true;const de=M[MIDX[G.id]];if(de&&de.ending){win();return;}say('All orders complete. Head for the gate.','g');hintOnce('gate','Orders complete. Take the boat to the green gate on the chart, then press LEAVE.');}
+ const inG=G.gateOpen&&Math.hypot(G.gate.x-o.x,G.gate.y-o.y)<G.gate.r;G.inGate=inG;}
+function step(dt){if(G.over)return;G.t+=dt;stepOwn(dt);for(const e of G.es){if(!e.dead)stepShip(e,dt);}stepTorps(dt);G.ct=(G.ct||0)-dt;if(G.ct<=0){G.ct=2;stepContacts(2);}checkObjs(dt);if(G.over)return;for(const f of G.fx)f.t+=dt;G.fx=G.fx.filter(f=>f.t<120);tutTick();}
+/* ---------- ship sprites: every ship is one continuous drawn silhouette ---------- */
+let HP=null;const SPU=6,SPW=660,SPH=370,SPY=330; /* 1 unit = 6px, waterline at y=250 */
+const SPR={};
+function hullPath(p,hs,hb,rake,cut){HP=new Path2D();for(const q of[p,HP]){q.moveTo(-1,0);q.bezierCurveTo(-2.5,hs*.3,-1.5,hs*.8,0,hs);q.bezierCurveTo(30,hs-1.4,60,hs-.4,100+rake*.2,hb);q.lineTo(100+rake,hb);q.bezierCurveTo(100+rake*.8,hb*.55,100+rake*.3,hb*.18,cut||98,0);q.closePath();}}
+function blk(p,x0,x1,y0,y1,sl){sl=sl||0;p.moveTo(x0,y0);p.lineTo(x0+sl,y1);p.quadraticCurveTo(x0+sl,y1+.25,x0+sl+.3,y1+.25);p.lineTo(x1-sl-.3,y1+.25);p.quadraticCurveTo(x1-sl,y1+.25,x1-sl,y1);p.lineTo(x1,y0);p.closePath();}
+function fun(p,x0,x1,y0,y1,rk){rk=rk==null?-1.2:rk;p.moveTo(x0,y0);p.lineTo(x0+rk,y1);p.quadraticCurveTo(x0+rk+(x1-x0)/2,y1+.6,x1+rk,y1);p.lineTo(x1,y0);p.closePath();}
+const SHAPE={
+ freighter:{paint:['#3a2420','#231514'],top:'#d9d3bf',cut:9,f(p,l){hullPath(p,9,12.5,3);blk(p,3,13,8,13,.6);blk(p,44,60,8,16,.5);blk(p,46,57,16,21,.6);blk(p,48,55,21,23.5,.3);fun(p,50,54.5,21,29);blk(p,88,96,11,13.5,.4);l.push([20,9,20,30],[76,10,76,31],[20,28,12,13],[20,28,29,13],[76,29,67,13],[76,29,86,14],[52,23,52,33]);},det(c){wn(c,47,57,18.5,6,'#ffe9a8');hatch(c,[22,33,66,78],9.6);band(c,50.1,54.1,25.5,27,'#a52c1a');}},
+ tanker:{paint:['#3b1712','#1d0d0a'],top:'#c7c7bb',cut:7,f(p,l){hullPath(p,7,9.5,3);blk(p,3,22,7,14,.5);blk(p,5,19,14,19,.5);blk(p,7,16,19,21.5,.3);fun(p,7,11.5,18,26);blk(p,56,63,7,13,.4);blk(p,57,62,13,17,.3);blk(p,94,99,9,11.5,.3);l.push([60,17,60,26],[92,9,92,20],[14,21,14,31],[22,9.5,56,9.5],[63,9.5,92,9.5]);},det(c){wn(c,7,17,16,6,'#ffe9a8');for(let x=26;x<54;x+=7)c.fillRect(x,7.2,1.5,1.2);for(let x=66;x<90;x+=7)c.fillRect(x,7.3,1.5,1.2);band(c,7.2,11.2,22,24,'#2d6a7a');}},
+ liner:{paint:['#f1eee2','#c5c1ae'],top:'#fbf8ec',cut:0,f(p,l){hullPath(p,15,18,4);blk(p,14,90,14,20,.5);blk(p,20,82,20,25,.6);blk(p,30,72,25,29,.7);blk(p,62,70,29,33,.5);fun(p,38,44,28,38,-1.6);fun(p,50,56,28,38,-1.6);l.push([71,33,71,43],[18,25,18,36]);},det(c){wn(c,16,88,16.5,44,'#7a8c9a');wn(c,22,80,22,34,'#7a8c9a');wn(c,32,70,26.5,22,'#7a8c9a');band(c,36.6,42.6,34,36,'#2e6f86');band(c,48.6,54.6,34,36,'#2e6f86');c.fillStyle='#1c4c63';c.fillRect(-1,0,104,2);}},
+ research:{paint:['#e8e6d8','#a9a998'],top:'#f1efe0',cut:0,f(p,l){hullPath(p,8,15,4);blk(p,40,92,10,17,.6);blk(p,54,84,17,23,.7);blk(p,60,78,23,27,.4);fun(p,46,51,17,26);l.push([69,27,69,40],[64,40,74,40],[4,8,8,26],[20,8,16,26],[8,26,16,26],[12,26,22,11],[80,27,88,36]);},det(c){wn(c,42,90,13,20,'#6d7f8d');wn(c,56,82,20,12,'#6d7f8d');c.fillStyle='#2c6a85';c.fillRect(-1,0,104,3.4);c.fillStyle='#d24f1f';c.fillRect(45,20,6.5,2.5);c.beginPath();c.arc(69,41.5,1.8,0,TAU);c.fillStyle='#f4f2e4';c.fill();}},
+ icebreaker:{paint:['#932a1b','#54140c'],top:'#efe9d8',cut:0,f(p,l){hullPath(p,13,18,5,90);blk(p,12,84,12,24,.7);blk(p,18,76,24,32,.7);blk(p,46,70,32,37,.5);fun(p,28,38,28,40,-1);l.push([58,37,58,48],[54,48,62,48],[8,13,8,24]);},det(c){wn(c,14,82,19,26,'#55606a');wn(c,20,74,28,18,'#55606a');band(c,27.3,37.3,35,38,'#f1b325');}},
+ trawler:{paint:['#3a4b47','#1f2a28'],top:'#c6c2ab',cut:4,f(p,l){hullPath(p,11,17,4);blk(p,8,32,11,20,.5);blk(p,12,28,20,26,.5);fun(p,14,18,24,32,-.8);l.push([40,14,40,44],[68,17,68,44],[20,26,20,50],[20,50,14,46],[20,50,26,46],[40,40,34,36],[40,40,46,36],[68,40,62,36],[68,40,74,36],[34,42,46,42],[62,42,74,42],[60,14,50,34]);},det(c){wn(c,14,26,23,4,'#ffe9a8');}},
+ hulk:{paint:['#4a2d1e','#20130d'],top:'#6a4d38',cut:9,f(p,l){hullPath(p,9,12,3);blk(p,3,13,8,12,.6);blk(p,44,60,8,15,.5);blk(p,46,54,15,18,.6);p.moveTo(50,18);p.lineTo(48,22);p.lineTo(52,21);p.lineTo(53,18);p.closePath();l.push([20,9,17,24],[76,10,78,20]);},det(c){c.fillStyle='#8a4a22';for(let i=0;i<22;i++)c.fillRect(i*4.7,2+((i*7)%5),1,2+((i*13)%5));c.fillStyle='#111';c.fillRect(46,9.6,4,2.2);c.fillRect(66,7.5,6,1.4);}},
+ corvette:{gw:1,cut:6,f(p,l){hullPath(p,9,15,5);blk(p,44,76,11,17,.6);blk(p,60,74,17,23,.6);blk(p,63,72,23,26,.4);fun(p,48,55,16,25);blk(p,83,88,14,17,.4);blk(p,14,24,9,11.5,.3);p.moveTo(84,16);p.lineTo(94,17.5);p.lineTo(94,16.5);p.lineTo(86,15);p.closePath();l.push([66,26,66,40],[62,36,70,36],[32,13,32,27]);},det(c){wn(c,62,72,24.3,5,'#1a1f22');band(c,48.2,54.2,22,23.5,'#222');}},
+ frigate:{gw:2,cut:5,f(p,l){hullPath(p,8,13.5,6);blk(p,26,76,10,15,.5);blk(p,58,75,15,21,.6);blk(p,62,73,21,24,.4);fun(p,42,48,14,22,-.9);fun(p,30,35,14,20,-.9);blk(p,84,89,12.5,15,.4);p.moveTo(85,14.5);p.lineTo(96,15.5);p.lineTo(96,14.7);p.lineTo(87,13.5);p.closePath();blk(p,10,16,8,11,.4);p.moveTo(11,10.5);p.lineTo(1,11.2);p.lineTo(1,10.5);p.lineTo(13,9.5);p.closePath();l.push([66,24,66,41],[60,37,72,37],[63,30,66,24],[69,30,66,24],[38,15,38,30],[34,28,42,28]);},det(c){wn(c,62,73,22.2,5,'#1a1f22');band(c,42.2,47.2,19.5,21,'#222');}},
+ destroyer:{gw:3,cut:5,f(p,l){hullPath(p,8,13,7);blk(p,22,74,9.5,15,.5);blk(p,56,73,15,21,.6);blk(p,60,71,21,25,.4);fun(p,44,50,14,24,-1.1);fun(p,31,37,14,23,-1.1);blk(p,80,86,12,15.5,.4);blk(p,69,75,14,17,.4);p.moveTo(82,15);p.lineTo(95,16);p.lineTo(95,15.1);p.lineTo(84,14);p.closePath();p.moveTo(71,16.5);p.lineTo(80,17.5);p.lineTo(80,16.7);p.lineTo(72,15.8);p.closePath();blk(p,9,16,8,11,.4);p.moveTo(10,10.5);p.lineTo(0,11);p.lineTo(0,10.3);p.lineTo(12,9.5);p.closePath();l.push([64,25,64,44],[58,40,70,40],[60,32,64,25],[68,32,64,25],[40,15,40,32],[36,29,44,29]);},det(c){wn(c,60,71,23,5,'#1a1f22');band(c,44.2,49.2,21,22.5,'#222');}},
+ cruiser:{gw:3,cut:4,f(p,l){hullPath(p,9,14,6);blk(p,20,76,9.5,16,.5);blk(p,50,70,16,24,.7);blk(p,54,66,24,31,.7);blk(p,57,63,31,35,.3);fun(p,36,44,15,26,-1.2);fun(p,25,32,15,24,-1.2);blk(p,80,88,12,15.5,.4);blk(p,70,78,14,18,.4);p.moveTo(82,15);p.lineTo(96,16.2);p.lineTo(96,15.2);p.lineTo(84,14);p.closePath();p.moveTo(72,17.3);p.lineTo(84,18.5);p.lineTo(84,17.6);p.lineTo(73,16.4);p.closePath();blk(p,8,16,8.5,12,.4);p.moveTo(9,11.5);p.lineTo(-2,12);p.lineTo(-2,11.1);p.lineTo(11,10.3);p.closePath();l.push([60,35,60,49],[54,45,66,45],[42,15,42,34]);},det(c){wn(c,55,65,28,9,'#1a1f22');wn(c,52,68,20,14,'#1a1f22');}},
+ sub:{gw:2,cut:97,f(p,l){p.moveTo(3,0);p.bezierCurveTo(5,2.6,20,3.6,50,3.6);p.bezierCurveTo(80,3.6,94,3,99,0);p.closePath();p.moveTo(50,3);p.lineTo(52,9.4);p.quadraticCurveTo(52.5,10,53,10);p.lineTo(65,10);p.quadraticCurveTo(66.5,10,66,9);p.lineTo(68,3);p.closePath();l.push([58,10,58,15],[62,10,62,13]);},det(c){}},
+};
+SHAPE.ostrog=SHAPE.sub;
+function wn(c,x0,x1,y,n,col){c.fillStyle=col;const st=(x1-x0)/n;for(let i=0;i<n;i++)c.fillRect(x0+i*st+st*.25,y,st*.42,.7);}
+function hatch(c,xs,y){c.fillStyle='#55433a';for(let i=0;i<xs.length;i+=2)c.fillRect(xs[i],y,xs[i+1]-xs[i],1.1);}
+function band(c,x0,x1,y0,y1,col){c.fillStyle=col;c.fillRect(x0,y0,x1-x0,y1-y0);}
+function sprite(k){if(SPR[k])return SPR[k];const cv=document.createElement('canvas');cv.width=SPW;cv.height=SPH;const c=cv.getContext('2d'),sh=SHAPE[k],p=new Path2D(),l=[];sh.f(p,l);
+ c.translate(16,SPY);c.scale(SPU,-SPU);
+ c.lineCap='round';c.strokeStyle=sh.gw?'#3c4247':'#2e2a26';c.lineWidth=.42;for(const q of l){c.beginPath();c.moveTo(q[0],q[1]);c.lineTo(q[2],q[3]);c.stroke();}
+ const gr=c.createLinearGradient(0,50,0,0);
+ if(sh.gw){gr.addColorStop(0,'#8f979b');gr.addColorStop(.55,'#737b80');gr.addColorStop(1,'#4c5358');}else{gr.addColorStop(0,sh.top);gr.addColorStop(1,sh.top);}
+ c.fillStyle=gr;c.fill(p,'nonzero');
+ c.save();c.clip(p,'nonzero');
+ const hp=HP;
+ if(!sh.gw&&hp){c.save();c.clip(hp);const g2=c.createLinearGradient(0,20,0,0);g2.addColorStop(0,sh.paint[0]);g2.addColorStop(1,sh.paint[1]);c.fillStyle=g2;c.fillRect(-4,0,114,30);c.restore();}
+ if(sh.gw){const g3=c.createLinearGradient(0,0,0,9);g3.addColorStop(0,'#22272b');g3.addColorStop(.35,'#3d4449');g3.addColorStop(1,'#3d444900');c.fillStyle=g3;c.fillRect(-4,0,114,9);}
+ const gl=c.createLinearGradient(0,0,104,0);gl.addColorStop(0,'#0005');gl.addColorStop(.4,'#0000');gl.addColorStop(1,'#fff2');c.fillStyle=gl;c.fillRect(-4,-1,114,60);
+ c.fillStyle='#b33c1d';c.fillRect(-4,0,114,1.1);
+ c.strokeStyle='#0002';c.lineWidth=.14;for(let x=6;x<100;x+=9){c.beginPath();c.moveTo(x,1);c.lineTo(x,8);c.stroke();}
+ /* deck shadow where the upperworks meet the hull */ if(hp){c.save();c.strokeStyle='#0004';c.lineWidth=.35;c.stroke(hp);c.restore();}
+ sh.det(c);c.restore();
+ SPR[k]=cv;return cv;}
+/* ---------- own submarine, side view, one continuous body ---------- */
+function subPath(c,L,H0){const h=H0;c.beginPath();c.moveTo(-L*.5,0);c.bezierCurveTo(-L*.42,-h*.2,-L*.3,-h*.5,-L*.1,-h*.5);c.lineTo(-L*.02,-h*.5);c.lineTo(L*.0,-h*1.28);c.quadraticCurveTo(L*.005,-h*1.36,L*.02,-h*1.36);c.lineTo(L*.135,-h*1.36);c.quadraticCurveTo(L*.16,-h*1.36,L*.16,-h*1.25);c.lineTo(L*.18,-h*.5);c.bezierCurveTo(L*.32,-h*.5,L*.46,-h*.34,L*.5,0);c.bezierCurveTo(L*.47,h*.32,L*.32,h*.5,L*.1,h*.5);c.lineTo(-L*.1,h*.5);c.bezierCurveTo(-L*.3,h*.5,-L*.42,h*.2,-L*.5,0);c.lineTo(-L*.54,-h*.55);c.lineTo(-L*.57,-h*.55);c.lineTo(-L*.555,h*.55);c.lineTo(-L*.53,h*.55);c.lineTo(-L*.5,0);c.closePath();}
+function drawOwnSide(c,x,y,L,tint){c.save();c.translate(x,y);const h=L*.13,g=c.createLinearGradient(0,-h*1.4,0,h*.5);g.addColorStop(0,tint?tint[0]:'#5a6d6d');g.addColorStop(.55,tint?tint[1]:'#1e2c2e');g.addColorStop(1,'#050b0c');subPath(c,L,h);c.fillStyle=g;c.fill();c.strokeStyle='#ffffff14';c.lineWidth=1;c.stroke();c.strokeStyle='#b6d2ca66';c.lineWidth=Math.max(1,L*.006);c.beginPath();c.moveTo(L*.06,-h*1.36);c.lineTo(L*.06,-h*2);c.moveTo(L*.1,-h*1.36);c.lineTo(L*.1,-h*1.7);c.stroke();c.fillStyle='#0a1213';c.beginPath();c.moveTo(L*.26,-h*.22);c.lineTo(L*.34,-h*.42);c.lineTo(L*.36,-h*.38);c.lineTo(L*.31,-h*.18);c.closePath();c.fill();c.restore();}
+/* ---------- chart ---------- */
+let CB=null,V={z:1,cx:0,cy:0},cw=0,ch=0,cctx=null,DPR=1,sel=0,armed=false;
+function buildChart(){const W=1400,H=Math.round(W*G.H/G.W);CB=document.createElement('canvas');CB.width=W;CB.height=H;const c=CB.getContext('2d'),k=W/G.W,nx=T.nx,ny=T.ny;
+ const ti=document.createElement('canvas');ti.width=nx;ti.height=ny;const tc=ti.getContext('2d'),im=tc.createImageData(nx,ny);
+ for(let j=0;j<ny;j++)for(let i=0;i<nx;i++){const d=T.d[i+j*nx],q=(i+j*nx)*4;let r,g,b;if(d<=2){r=214;g=194;b=146;}else{const t=clamp(Math.log(d/8)/Math.log(600),0,1);r=lerp(198,240,t);g=lerp(224,233,t);b=lerp(232,214,t);}im.data[q]=r;im.data[q+1]=g;im.data[q+2]=b;im.data[q+3]=255;}
+ tc.putImageData(im,0,0);c.imageSmoothingEnabled=true;c.imageSmoothingQuality='high';c.drawImage(ti,0,0,W,H);
+ const sx=W/(nx-1),sy=H/(ny-1),lv=[2,20,50,100,200,500,1000,2000];
+ for(const L of lv){const P=new Path2D();for(let j=0;j<ny-1;j++)for(let i=0;i<nx-1;i++){const a=T.d[i+j*nx],b=T.d[i+1+j*nx],d=T.d[i+(j+1)*nx],e=T.d[i+1+(j+1)*nx],ix=(p,q)=>(L-p)/(q-p),pts=[];if((a<L)!==(b<L))pts.push([(i+ix(a,b))*sx,j*sy]);if((b<L)!==(e<L))pts.push([(i+1)*sx,(j+ix(b,e))*sy]);if((d<L)!==(e<L))pts.push([(i+ix(d,e))*sx,(j+1)*sy]);if((a<L)!==(d<L))pts.push([i*sx,(j+ix(a,d))*sy]);if(pts.length>=2){P.moveTo(pts[0][0],pts[0][1]);P.lineTo(pts[1][0],pts[1][1]);if(pts.length===4){P.moveTo(pts[2][0],pts[2][1]);P.lineTo(pts[3][0],pts[3][1]);}}}
+  c.strokeStyle=L===2?'#5a4a2a':'#3f6f8a';c.lineWidth=L===2?1.8:.8;c.globalAlpha=L===2?1:.55;c.stroke(P);c.globalAlpha=1;}
+ const R0=rng(G.seed+3);c.fillStyle='#3e5968';c.font='italic 10px Georgia,serif';c.textAlign='center';for(let n=0;n<130;n++){const x=R0()*G.W,y=R0()*G.H,d=depthAt(x,y);if(d>4)c.fillText(Math.round(d),x*k,y*k);}
+ c.strokeStyle='#6b5c3a55';c.lineWidth=.7;c.fillStyle='#6b5c3a';c.font='11px "Courier New",monospace';c.textAlign='left';for(let x=0;x<=G.W;x+=2000){c.beginPath();c.moveTo(x*k,0);c.lineTo(x*k,H);c.stroke();if(x)c.fillText(x/1000+' km',x*k+3,12);}for(let y=2000;y<G.H;y+=2000){c.beginPath();c.moveTo(0,y*k);c.lineTo(W,y*k);c.stroke();c.fillText(y/1000+' km',3,y*k-3);}
+ if(G.ice){c.fillStyle='rgba(236,244,247,.72)';c.beginPath();c.rect(0,0,W,H);for(const p of G.polys){c.moveTo(p[0]*k+p[2]*k,p[1]*k);c.arc(p[0]*k,p[1]*k,p[2]*k,0,TAU,true);}c.fill('evenodd');c.strokeStyle='#7fa4b4';c.lineWidth=.7;for(let n=0;n<70;n++){let x=R0()*W,y=R0()*H;if(G.polys.some(p=>Math.hypot(p[0]*k-x,p[1]*k-y)<p[2]*k))continue;c.beginPath();c.moveTo(x,y);for(let m=0;m<4;m++){x+=(R0()-.5)*46;y+=(R0()-.5)*46;c.lineTo(x,y);}c.stroke();}c.strokeStyle='#3f6f8a';c.lineWidth=1.5;for(const p of G.polys){c.beginPath();c.arc(p[0]*k,p[1]*k,p[2]*k,0,TAU);c.stroke();c.fillStyle='#2f5a70';c.font='italic 11px Georgia,serif';c.textAlign='center';c.fillText('open water',p[0]*k,p[1]*k+4);}}
+ const rx=W-92,ry=H-92;c.save();c.translate(rx,ry);c.strokeStyle='#6f2a1c';c.fillStyle='#6f2a1c';c.lineWidth=1;c.beginPath();c.arc(0,0,52,0,TAU);c.stroke();c.beginPath();c.arc(0,0,44,0,TAU);c.stroke();for(let i=0;i<8;i++){c.rotate(PI/4);c.beginPath();c.moveTo(0,-(i%2?30:50));c.lineTo(5,0);c.lineTo(0,0);c.closePath();i%2?c.stroke():c.fill();c.beginPath();c.moveTo(0,-(i%2?30:50));c.lineTo(-5,0);c.lineTo(0,0);c.closePath();c.stroke();}c.restore();c.fillStyle='#6f2a1c';c.font='bold 13px Georgia,serif';c.textAlign='center';c.fillText('N',rx,ry-54);
+ c.fillStyle='rgba(238,229,205,.85)';c.fillRect(14,H-72,290,58);c.strokeStyle='#4b412a';c.lineWidth=1.2;c.strokeRect(14,H-72,290,58);c.strokeRect(17,H-69,284,52);c.fillStyle='#3c3423';c.font='bold 16px Georgia,serif';c.textAlign='left';c.fillText(TH[G.th].n.toUpperCase(),26,H-50);c.font='italic 11px Georgia,serif';c.fillText('Soundings in metres. Admiralty chart, restricted.',26,H-34);c.strokeStyle='#3c3423';c.beginPath();c.moveTo(26,H-24);c.lineTo(26+5000*k,H-24);c.moveTo(26,H-27);c.lineTo(26,H-21);c.moveTo(26+5000*k,H-27);c.lineTo(26+5000*k,H-21);c.stroke();c.fillText('5 km',30+5000*k,H-20);
+ c.globalCompositeOperation='multiply';const vg=c.createRadialGradient(W/2,H/2,H*.45,W/2,H/2,W*.72);vg.addColorStop(0,'#fff');vg.addColorStop(1,'#d9c7a0');c.fillStyle=vg;c.fillRect(0,0,W,H);
+ if(G.tod==='night'){c.fillStyle='#eea090';c.fillRect(0,0,W,H);}else if(G.tod==='dusk'){c.fillStyle='#efd9b3';c.fillRect(0,0,W,H);}c.globalCompositeOperation='source-over';
+ for(let n=0;n<900;n++){c.fillStyle=R0()<.5?'#0000000d':'#ffffff12';c.fillRect(R0()*W,R0()*H,1.5,1.5);}
+}
+function fitS(){return Math.max(cw/G.W,ch/G.H)*1;}
+const WS=(x,y)=>{const s=fitS()*V.z;return[cw/2+(x-V.cx)*s,ch/2+(y-V.cy)*s];};
+const SW=(x,y)=>{const s=fitS()*V.z;return[(x-cw/2)/s+V.cx,(y-ch/2)/s+V.cy];};
+function clampV(){const s=fitS()*V.z,hw=cw/2/s,hh=ch/2/s;V.cx=clamp(V.cx,Math.min(hw,G.W/2),Math.max(G.W-hw,G.W/2));V.cy=clamp(V.cy,Math.min(hh,G.H/2),Math.max(G.H-hh,G.H/2));}
+function resizeCanvases(){DPR=Math.min(window.devicePixelRatio||1,1.6);const c=$('chart'),r=c.getBoundingClientRect();cw=r.width;ch=r.height;c.width=cw*DPR;c.height=ch*DPR;cctx=c.getContext('2d');for(const id of['dials','dep']){const q=$(id),rr=q.getBoundingClientRect();q.width=rr.width*DPR;q.height=rr.height*DPR;}DF=null;const w=$('wf'),wr=w.getBoundingClientRect();w.width=wr.width*DPR;w.height=wr.height*DPR;if(G)clampV();}
+function gpen(c,col,w){c.strokeStyle=col;c.fillStyle=col;c.lineWidth=w||2;c.lineCap='round';c.lineJoin='round';}
+function drawChart(){const c=cctx,o=G.o;if(!c||!CB)return;c.setTransform(DPR,0,0,DPR,0,0);const s=fitS()*V.z,tl=WS(0,0);c.imageSmoothingEnabled=true;c.drawImage(CB,tl[0],tl[1],G.W*s,G.H*s);
+ const night=G.tod==='night',penR=night?'#3a0b05':'#a4221a',penB=night?'#14220e':'#143d7a',penG=night?'#123a12':'#1b6b34';
+ /* trail */c.fillStyle=penB;for(const t of o.trail){const p=WS(t[0],t[1]);c.fillRect(p[0]-1,p[1]-1,2,2);}
+ /* gate */{const g=WS(G.gate.x,G.gate.y),gr=G.gate.r*s;c.setLineDash([9,6]);gpen(c,G.gateOpen?penG:'#8d8263',G.gateOpen?2.6:1.3);c.beginPath();c.arc(g[0],g[1],gr,0,TAU);c.stroke();c.setLineDash([]);c.font='bold 13px "Courier New",monospace';c.textAlign='center';c.fillText(G.gateOpen?'GATE':'gate closed',g[0],g[1]+gr-9);}
+ for(const q of G.objs){if(q.t!=='hold'||q.d)continue;const p=WS(q.x,q.y);gpen(c,penR,2.2);c.beginPath();c.arc(p[0],p[1],Math.max(q.r*s,9),0,TAU);c.stroke();c.beginPath();c.moveTo(p[0]-5,p[1]-5);c.lineTo(p[0]+5,p[1]+5);c.moveTo(p[0]+5,p[1]-5);c.lineTo(p[0]-5,p[1]+5);c.stroke();c.font='bold 12px "Courier New",monospace';c.textAlign='center';c.fillText(q.label.length>30?'ORDERS':q.label,p[0],p[1]-Math.max(q.r*s,9)-5);if(q.pv){c.lineWidth=4;c.beginPath();c.arc(p[0],p[1],Math.max(q.r*s,9)+5,-PI/2,-PI/2+TAU*clamp(q.pv/q.T,0,1));c.stroke();}}
+ gpen(c,penR,1.6);for(const m of G.mines){if(!m.known||m.gone)continue;const p=WS(m.x,m.y);c.beginPath();c.arc(p[0],p[1],3.5,0,TAU);for(let a=0;a<4;a++){const t=a*PI/4;c.moveTo(p[0]+Math.cos(t)*6,p[1]+Math.sin(t)*6);c.lineTo(p[0]-Math.cos(t)*6,p[1]-Math.sin(t)*6);}c.stroke();}
+ /* baffles */const op=WS(o.x,o.y),bfa=rad(B().towed?0:U('sonar')>=3?20:32);if(bfa){c.fillStyle=night?'#0000000f':'#14141412';c.beginPath();c.moveTo(op[0],op[1]);c.arc(op[0],op[1],90,o.h+PI/2-bfa,o.h+PI/2+bfa);c.closePath();c.fill();}
+ /* contacts */for(const e of G.es){const q=e.c;if(e.dead||!q.seen||SHIP[e.k].air)continue;const fade=q.held?1:.5,cl=SHIP[e.k],bb=brg(o,e);c.globalAlpha=fade;const pen=e.friend?penB:penR;
+   if(q.sol<18&&!q.vis){if(q.held){gpen(c,pen,1.3);c.setLineDash([3,6]);const L=2400*s,tx=op[0]+Math.sin(bb)*L,ty=op[1]-Math.cos(bb)*L;c.beginPath();c.moveTo(op[0],op[1]);c.lineTo(tx,ty);c.stroke();c.setLineDash([]);c.font='bold 12px "Courier New",monospace';c.textAlign='center';c.fillText(b3(bb),tx+Math.sin(bb)*14,ty-Math.cos(bb)*14);if(sel===e.id){c.beginPath();c.arc(tx,ty,12,0,TAU);c.stroke();}}c.globalAlpha=1;continue;}
+   const ex=q.vis?e.x:q.ex,ey=q.vis?e.y:q.ey,p=WS(ex,ey),er=q.vis?0:(q.er||0)*s;gpen(c,pen,2.2);if(er>7){c.save();c.globalAlpha=fade*.5;c.lineWidth=1;c.setLineDash([2,5]);c.beginPath();c.arc(p[0],p[1],er,0,TAU);c.stroke();c.restore();}
+   c.save();c.translate(p[0],p[1]);const known=q.sol>=45||q.vis;c.beginPath();if(cl.sub&&known){c.arc(0,0,8,0,PI);c.moveTo(-8,0);c.lineTo(8,0);}else if(cl.asw&&known){c.moveTo(0,-9);c.lineTo(9,0);c.lineTo(0,9);c.lineTo(-9,0);c.closePath();}else if(known){c.rect(-7,-5,14,10);}else{c.moveTo(-8,3);c.quadraticCurveTo(0,-13,8,3);}c.stroke();if(e.sink!=null){c.beginPath();c.moveTo(-10,-10);c.lineTo(10,10);c.moveTo(10,-10);c.lineTo(-10,10);c.stroke();}c.restore();
+   if(known&&q.eh!=null&&e.sink==null&&e.v>.5){const vh=q.vis?e.h:q.eh;c.lineWidth=1.5;c.beginPath();c.moveTo(p[0]+Math.sin(vh)*10,p[1]-Math.cos(vh)*10);c.lineTo(p[0]+Math.sin(vh)*26,p[1]-Math.cos(vh)*26);c.stroke();}
+   c.font='bold 11px "Courier New",monospace';c.textAlign='left';c.fillText(known?(e.name||cl.n):'S'+e.id,p[0]+11,p[1]-7);if(sel===e.id){c.lineWidth=1.4;c.beginPath();c.arc(p[0],p[1],17,0,TAU);c.stroke();}c.globalAlpha=1;}
+ /* aircraft */for(const e of G.es){if(SHIP[e.k].air&&!e.dead&&o.z<22&&(o.scope||o.snork)&&dist(e,o)<6000){const p=WS(e.x,e.y);gpen(c,penR,2);c.save();c.translate(p[0],p[1]);c.rotate(e.h);c.beginPath();c.moveTo(0,-9);c.lineTo(0,9);c.moveTo(-10,-1);c.lineTo(10,-1);c.moveTo(-4,8);c.lineTo(4,8);c.stroke();c.restore();}}
+ /* torpedoes */for(const t of G.torps){const p=WS(t.x,t.y);gpen(c,t.en?penR:penB,2.4);c.beginPath();c.moveTo(p[0],p[1]);c.lineTo(p[0]-Math.sin(t.h)*16,p[1]+Math.cos(t.h)*16);c.stroke();c.beginPath();c.arc(p[0],p[1],3,0,TAU);c.fill();if(!t.en&&t.wired&&!t.lock){c.save();c.globalAlpha=.3;c.lineWidth=1;c.beginPath();c.moveTo(p[0],p[1]);c.lineTo(op[0],op[1]);c.stroke();c.restore();}if(t.en&&t.heard){c.save();c.globalAlpha=.4;c.lineWidth=1;c.setLineDash([6,6]);c.beginPath();c.moveTo(op[0],op[1]);c.lineTo(p[0],p[1]);c.stroke();c.restore();}}
+ for(const d of G.dec){const p=WS(d.x,d.y);gpen(c,penB,1.5);c.beginPath();for(let i=1;i<3;i++)c.arc(p[0],p[1],i*5,0,TAU);c.stroke();}
+ for(const q of G.chg){const r=Math.hypot(q.x-o.x,q.y-o.y);if(r<3200){const p=WS(q.x,q.y);gpen(c,penR,1.6);c.beginPath();c.moveTo(p[0]-3,p[1]-3);c.lineTo(p[0]+3,p[1]+3);c.moveTo(p[0]+3,p[1]-3);c.lineTo(p[0]-3,p[1]+3);c.stroke();}}
+ for(const f of G.fx){const p=WS(f.x,f.y);if(f.k==='ping'||f.k==='epi'){const r=f.t*(f.k==='ping'?60:40)*s,a=1-f.t/(f.k==='ping'?60:24);if(a>0){c.save();c.globalAlpha=a*.6;gpen(c,f.k==='ping'?penB:penR,1.1);c.beginPath();c.arc(p[0],p[1],r,0,TAU);c.stroke();c.restore();}}else if(f.k==='boom'){const a=1-f.t/30;if(a>0){c.save();c.globalAlpha=a;gpen(c,penR,2.5);c.beginPath();const rr=8+f.t*(f.big?1.6:.8);for(let i=0;i<10;i++){const t=i/10*TAU,m=i%2?rr:rr*.55;c[i?'lineTo':'moveTo'](p[0]+Math.cos(t)*m,p[1]+Math.sin(t)*m);}c.closePath();c.stroke();c.restore();}}else if(f.k==='air'){}}
+ /* course line */if(o.wp){const w=WS(o.wp[0],o.wp[1]);gpen(c,penB,1.6);c.setLineDash([8,6]);c.beginPath();c.moveTo(op[0],op[1]);c.lineTo(w[0],w[1]);c.stroke();c.setLineDash([]);c.beginPath();c.arc(w[0],w[1],6,0,TAU);c.stroke();}
+ /* own boat */c.save();c.translate(op[0],op[1]);c.rotate(o.h);c.fillStyle=night?'#17110c':'#0f2740';c.strokeStyle='#f5ecd0';c.lineWidth=1.6;c.beginPath();c.moveTo(0,-15);c.bezierCurveTo(5.5,-9,5.5,8,3,14);c.lineTo(0,17);c.lineTo(-3,14);c.bezierCurveTo(-5.5,8,-5.5,-9,0,-15);c.closePath();c.stroke();c.fill();c.beginPath();c.fillStyle='#d9c8a0';c.arc(0,-4,1.8,0,TAU);c.fill();c.restore();
+}
+/* ---------- waterfall ---------- */
+let WF=null,WFC=null,wfLine=null;
+function wfInit(){WF=document.createElement('canvas');WF.width=256;WF.height=110;WFC=WF.getContext('2d');WFC.fillStyle='#021006';WFC.fillRect(0,0,256,110);wfLine=WFC.createImageData(256,1);}
+function wfTick(){if(!WF)wfInit();const o=G.o,d=wfLine.data,buf=new Float32Array(256);const noise=.09+(o.v/(KT*B().vmax))*.3+G.wx*.03;for(let i=0;i<256;i++)buf[i]=noise*Math.random();
+ const baf=rad(B().towed?0:U('sonar')>=3?20:32),bs=wrap(o.h+PI);
+ for(const e of G.es){const q=e.c;if(e.dead||SHIP[e.k].air||e.k==='hulk'||(q.se||0)<-3)continue;const b=brg(o,e)+((Math.sin(G.t*.13+e.id)*.012)),x=Math.round(wrap(b)/TAU*256);const I=clamp(.22+(q.se+3)/26,.1,1);for(let k=-2;k<=2;k++){buf[(x+k+256)%256]+=I*(k===0?1:k*k===1?.5:.15)*(.75+Math.random()*.4);}}
+ for(const t of G.torps){if(t.en){const x=Math.round(brg(o,t)/TAU*256);for(let k=-1;k<=1;k++)buf[(x+k+256)%256]+=1.2;}}
+ for(let i=0;i<256;i++){const a=i/256*TAU,dB=Math.abs(adiff(bs,a))<baf;let v=clamp(buf[i],0,1.4);if(dB)v*=.2;const p=i*4;d[p]=Math.min(255,20+v*(v>.85?230:100));d[p+1]=Math.min(255,14+v*245);d[p+2]=Math.min(255,14+v*(v>.85?200:130));d[p+3]=255;}
+ WFC.drawImage(WF,0,0,256,109,0,1,256,109);WFC.putImageData(wfLine,0,0);}
+function drawWF(){const c=$('wf').getContext('2d'),W=$('wf').width,H=$('wf').height,o=G.o;if(!WF)wfInit();c.imageSmoothingEnabled=false;const top=18*DPR;c.fillStyle='#021006';c.fillRect(0,0,W,H);c.drawImage(WF,0,top,W,H-top);c.setTransform(DPR,0,0,DPR,0,0);const w=W/DPR,h=H/DPR;c.fillStyle='#04200d';c.fillRect(0,0,w,18);c.font='12px "Courier New",monospace';c.textAlign='center';c.fillStyle='#6ee89a';const lb=[[0,'N'],[90,'E'],[180,'S'],[270,'W'],[360,'N']];for(const q of lb){const x=q[0]/360*w;c.fillText(q[1],clamp(x,7,w-7),13);}
+ c.strokeStyle='#ffffff55';c.lineWidth=1;const hx=o.h/TAU*w;c.beginPath();c.moveTo(hx,0);c.lineTo(hx,18);c.stroke();c.fillStyle='#ffd27a';c.beginPath();c.moveTo(hx,17);c.lineTo(hx-4,10);c.lineTo(hx+4,10);c.closePath();c.fill();
+ const bfa=rad(B().towed?0:U('sonar')>=3?20:32);if(bfa){c.fillStyle='#0009';const b0=wrap(o.h+PI-bfa)/TAU*w,b1=wrap(o.h+PI+bfa)/TAU*w;if(b0<b1)c.fillRect(b0,18,b1-b0,h-18);else{c.fillRect(0,18,b1,h-18);c.fillRect(b0,18,w-b0,h-18);}}
+ if(sel){const e=G.es.find(x=>x.id===sel);if(e&&!e.dead){const x=brg(o,e)/TAU*w;c.strokeStyle='#ffd27a88';c.setLineDash([3,3]);c.beginPath();c.moveTo(x,18);c.lineTo(x,h);c.stroke();c.setLineDash([]);}}c.setTransform(1,0,0,1,0,0);}
+/* ---------- dials ---------- */
+let DF=null;
+function dialPos(i,w,h){const n=4,cw2=w/n;return{x:cw2*(i+.5),y:h*.58,r:Math.min(cw2*.46,h*.5)};}
+function buildDials(){const q=$('dials'),W=q.width,H=q.height;DF=document.createElement('canvas');DF.width=W;DF.height=H;const c=DF.getContext('2d');c.setTransform(DPR,0,0,DPR,0,0);const w=W/DPR,h=H/DPR,bk=B();
+ const defs=[['KNOTS',0,bk.vmax,4,'#e6e0c8'],['NOISE',0,10,2,'#e6e0c8',[7,10]],[bk.batt?'BATTERY':'REACTOR',0,100,25,'#e6e0c8',null,[0,20]],['HULL',0,100,25,'#e6e0c8',null,[0,30]]];
+ defs.forEach((d,i)=>{const p=dialPos(i,w,h),r=p.r;const g=c.createRadialGradient(p.x-r*.3,p.y-r*.4,r*.1,p.x,p.y,r*1.05);g.addColorStop(0,'#6c746b');g.addColorStop(1,'#1b1f1b');c.fillStyle=g;c.beginPath();c.arc(p.x,p.y,r,0,TAU);c.fill();c.fillStyle='#10130f';c.beginPath();c.arc(p.x,p.y,r*.87,0,TAU);c.fill();const A0=PI*.75,A1=PI*2.25,ang=v=>lerp(A0,A1,(v-d[1])/(d[2]-d[1]));
+  const zone=(a,b,col)=>{c.strokeStyle=col;c.lineWidth=r*.09;c.beginPath();c.arc(p.x,p.y,r*.74,ang(a),ang(b));c.stroke();};if(d[5])zone(d[5][0],d[5][1],'#c8391f');if(d[6])zone(d[6][0],d[6][1],'#c8391f');
+  c.strokeStyle='#ddd8c0';c.lineWidth=1;for(let v=d[1];v<=d[2]+1e-6;v+=d[3]){const a=ang(v);c.beginPath();c.moveTo(p.x+Math.cos(a)*r*.82,p.y+Math.sin(a)*r*.82);c.lineTo(p.x+Math.cos(a)*r*.68,p.y+Math.sin(a)*r*.68);c.stroke();}
+  c.fillStyle='#b9bea9';c.font='600 '+Math.max(8,r*.3)+'px "DIN Condensed","Arial Narrow",sans-serif';c.textAlign='center';c.fillText(d[0],p.x,p.y+r*.62);});}
+function drawDials(){const q=$('dials'),c=q.getContext('2d');if(!DF)buildDials();c.setTransform(1,0,0,1,0,0);c.clearRect(0,0,q.width,q.height);c.drawImage(DF,0,0);c.setTransform(DPR,0,0,DPR,0,0);const w=q.width/DPR,h=q.height/DPR,o=G.o,bk=B(),n=clamp((ownSL()-(bk.sl-14))/4.2,0,10);const vals=[o.v/KT/bk.vmax,n/10,bk.batt?o.batt/100:1,o.hull/100],A0=PI*.75,A1=PI*2.25;
+ vals.forEach((v,i)=>{const p=dialPos(i,w,h),a=lerp(A0,A1,clamp(v,0,1));c.strokeStyle='#ffb347';c.lineWidth=Math.max(1.6,p.r*.06);c.lineCap='round';c.beginPath();c.moveTo(p.x-Math.cos(a)*p.r*.12,p.y-Math.sin(a)*p.r*.12);c.lineTo(p.x+Math.cos(a)*p.r*.76,p.y+Math.sin(a)*p.r*.76);c.stroke();c.fillStyle='#3a3f39';c.beginPath();c.arc(p.x,p.y,p.r*.11,0,TAU);c.fill();});c.setTransform(1,0,0,1,0,0);}
+/* ---------- depth column ---------- */
+function depMax(){return Math.max(testD()*1.25,G.layer*2.2,260);}
+function drawDep(){const q=$('dep'),c=q.getContext('2d'),o=G.o,W=q.width/DPR,H=q.height/DPR;c.setTransform(DPR,0,0,DPR,0,0);const mx=depMax(),Y=z=>6+(z/mx)*(H-8);const g=c.createLinearGradient(0,0,0,H);g.addColorStop(0,'#2d6d7b');g.addColorStop(.25,'#17404c');g.addColorStop(1,'#04121a');c.fillStyle=g;c.fillRect(0,0,W,H);
+ /* layer */const ly=Y(G.layer);const lg=c.createLinearGradient(0,ly-9,0,ly+9);lg.addColorStop(0,'#8fe0d800');lg.addColorStop(.5,'#8fe0d855');lg.addColorStop(1,'#8fe0d800');c.fillStyle=lg;c.fillRect(0,ly-9,W,18);c.strokeStyle='#b8efe8';c.setLineDash([5,5]);c.lineWidth=1;c.beginPath();c.moveTo(0,ly);c.lineTo(W,ly);c.stroke();c.setLineDash([]);c.fillStyle='#c9f4ee';c.font='600 11px "DIN Condensed","Arial Narrow",sans-serif';c.textAlign='left';c.fillText('THERMOCLINE '+Math.round(G.layer)+'M',W*.32,ly-3);
+ c.fillStyle='#cfe7e4cc';c.fillRect(0,0,W,6);
+ /* seabed profile along heading */c.beginPath();c.moveTo(0,H);const n=18;for(let i=0;i<=n;i++){const m=lerp(-1500,3500,i/n),d=depthAt(o.x+Math.sin(o.h)*m,o.y-Math.cos(o.h)*m);c.lineTo(i/n*W,Math.max(Y(d),2));}c.lineTo(W,H);c.closePath();const bg=c.createLinearGradient(0,H*.3,0,H);bg.addColorStop(0,'#6d5a3a');bg.addColorStop(1,'#2c2415');c.fillStyle=bg;c.fill();c.strokeStyle='#c7ad7b';c.lineWidth=1.4;c.stroke();
+ /* limits */const ty=Y(testD()),cy=Y(crushD());c.strokeStyle='#ff6b4a';c.lineWidth=1;c.setLineDash([3,4]);c.beginPath();c.moveTo(0,ty);c.lineTo(W,ty);c.stroke();c.setLineDash([]);c.fillStyle='#ffae9a';c.font='11px "Courier New",monospace';c.textAlign='right';if(ty<H-4)c.fillText('TEST '+Math.round(testD()),W-3,ty-2);if(cy<H-2){c.fillStyle='#ff3b1d33';c.fillRect(0,cy,W,H-cy);}
+ for(const k of G.chg){const r=Math.hypot(k.x-o.x,k.y-o.y);if(r<1800){const m=(k.x-o.x)*Math.sin(o.h)-(k.y-o.y)*Math.cos(o.h),px=clamp((m+1500)/5000,0,1)*W;c.fillStyle='#ff5a3a';c.beginPath();c.arc(px,Y(k.z),2.8,0,TAU);c.fill();}}
+ /* order pointer */const oy=Y(o.ordZ),bx=W*.3;c.strokeStyle='#ffd27a';c.lineWidth=1.4;c.beginPath();c.moveTo(0,oy);c.lineTo(W,oy);c.stroke();c.fillStyle='#ffd27a';c.beginPath();c.moveTo(0,oy-7);c.lineTo(11,oy);c.lineTo(0,oy+7);c.closePath();c.fill();c.beginPath();c.moveTo(W,oy-7);c.lineTo(W-11,oy);c.lineTo(W,oy+7);c.closePath();c.fill();
+ drawOwnSide(c,bx,Y(o.z),Math.min(W*.36,112),['#d7e6de','#6f8f8c']);
+ c.fillStyle='#000a';c.fillRect(W-64,4,60,23);c.fillStyle='#ffd27a';c.font='600 20px "DIN Condensed","Arial Narrow",sans-serif';c.textAlign='right';c.fillText(Math.round(o.z)+' m',W-8,22);c.setTransform(1,0,0,1,0,0);}
+/* ---------- audio ---------- */
+const A=(function(){let ac=null,master=null,sfx=null,mus=null,amb=null,nb=null,echo=null,musT=0,tens=0,tn=null;
+ function ens(){if(ac){if(ac.state==='suspended')ac.resume();return true;}try{const AC=window.AudioContext||window.webkitAudioContext;ac=new AC();master=ac.createGain();master.connect(ac.destination);sfx=ac.createGain();sfx.connect(master);mus=ac.createGain();mus.connect(master);
+   nb=ac.createBuffer(1,ac.sampleRate*2,ac.sampleRate);const d=nb.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=Math.random()*2-1;
+   echo=ac.createDelay(1.5);echo.delayTime.value=.42;const fb=ac.createGain();fb.gain.value=.42;echo.connect(fb);fb.connect(echo);const eg=ac.createGain();eg.gain.value=.5;echo.connect(eg);eg.connect(sfx);
+   const am=ac.createBufferSource();am.buffer=nb;am.loop=true;const lp=ac.createBiquadFilter();lp.type='lowpass';lp.frequency.value=150;amb=ac.createGain();amb.gain.value=.0;am.connect(lp);lp.connect(amb);amb.connect(sfx);am.start();
+   const o1=ac.createOscillator(),og=ac.createGain();o1.type='sine';o1.frequency.value=48;og.gain.value=.02;o1.connect(og);og.connect(amb);o1.start();
+   tn=ac.createOscillator();const tg=ac.createGain();tn.type='sine';tn.frequency.value=38;tn.connect(tg);tg.gain.value=0;tg.connect(mus);tn.start();tn._g=tg;
+   apply();}catch(e){ac=null;return false;}return true;}
+ function apply(){if(!ac)return;sfx.gain.value=S.opt.sfx?1:0;mus.gain.value=S.opt.music?.8:0;}
+ function tone(f,t,v,type,dest,sl){if(!ac)return;const n=ac.currentTime,o=ac.createOscillator(),g=ac.createGain();o.type=type||'sine';o.frequency.setValueAtTime(f,n);if(sl)o.frequency.exponentialRampToValueAtTime(sl,n+t);g.gain.setValueAtTime(0,n);g.gain.linearRampToValueAtTime(v,n+.012);g.gain.exponentialRampToValueAtTime(.0005,n+t);o.connect(g);g.connect(dest||sfx);o.start(n);o.stop(n+t+.03);return g;}
+ function nz(t,v,f,q,sl){if(!ac)return;const n=ac.currentTime,s=ac.createBufferSource();s.buffer=nb;s.loop=true;const fl=ac.createBiquadFilter();fl.type='lowpass';fl.frequency.setValueAtTime(f,n);if(sl)fl.frequency.exponentialRampToValueAtTime(sl,n+t);fl.Q.value=q||.7;const g=ac.createGain();g.gain.setValueAtTime(v,n);g.gain.exponentialRampToValueAtTime(.0005,n+t);s.connect(fl);fl.connect(g);g.connect(sfx);s.start(n,Math.random());s.stop(n+t+.05);}
+ const notes=[110,130.81,146.83,164.81,196,220,261.63];
+ function musTick(){if(!ac||!S.opt.music)return;const f=notes[Math.floor(Math.random()*notes.length)];const n=ac.currentTime,o=ac.createOscillator(),o2=ac.createOscillator(),g=ac.createGain();o.frequency.value=f;o2.frequency.value=f*1.004;g.gain.setValueAtTime(0,n);g.gain.linearRampToValueAtTime(.035,n+1.6);g.gain.exponentialRampToValueAtTime(.0005,n+7);o.connect(g);o2.connect(g);g.connect(mus);if(echo)g.connect(echo);o.start(n);o2.start(n);o.stop(n+7.2);o2.stop(n+7.2);}
+ setInterval(()=>{if(ac&&ac.state==='running'&&!document.hidden)musTick();},5200);
+ return{ens,apply,
+  amb(on){if(amb&&ac)amb.gain.setTargetAtTime(on?.05:0,ac.currentTime,.5);},
+  tens(v){if(tn&&ac&&S.opt.music)tn._g.gain.setTargetAtTime(v*.05,ac.currentTime,1);},
+  ping(v,en){if(!ac)return;const g=tone(en?1250:1650,1.2,.18*v,'sine');if(g&&echo)g.connect(echo);},
+  blip(v){tone(880,.1,.08*v,'triangle');setTimeout(()=>tone(1320,.14,.07*v,'triangle'),90);},
+  clk(v){tone(300,.05,.08*(v||1),'square');nz(.04,.08*(v||1),2400);},
+  key(){tone(210,.04,.06,'square');},
+  ok(){tone(523,.12,.09,'triangle');setTimeout(()=>tone(784,.2,.08,'triangle'),110);},
+  launch(v){nz(1.1,.3*v,1400,1,180);tone(90,.5,.2*v,'sine',null,44);},
+  splash(){nz(.5,.12,1800,1,400);},
+  boom(v){nz(1.7,.75*v,clamp(240+v*800,120,1000),.9,50);tone(62,1.1,.7*v,'sine',null,26);},
+  breakup(v){for(let i=0;i<5;i++)setTimeout(()=>{nz(.7,.22*v,500,3,90);tone(70+Math.random()*90,.8,.08*v,'sawtooth',null,36);},i*800+Math.random()*400);},
+  creak(v){if(!ac)return;tone(95+Math.random()*50,.9,.1*v,'sawtooth',null,55);nz(.5,.05*v,600,6,180);},
+  alarm(){for(let i=0;i<3;i++)setTimeout(()=>tone(740,.18,.09,'square'),i*260);},
+ };})();
+/* ---------- icons ---------- */
+const IC={pause:'<path d="M8 5v14M16 5v14" stroke-width="3.4"/>',scope:'<path d="M9 22V6h9v3h-5v13M18 6l3 0"/><circle cx="20" cy="7.5" r="1.3"/>',snork:'<path d="M5 22V10c0-4 3-6 7-6h7M15 8l4-4-4-4" transform="translate(0 2)"/><path d="M4 22h9"/>',ping:'<circle cx="12" cy="12" r="2"/><path d="M7 7a7 7 0 000 10M17 7a7 7 0 010 10M4 4a11 11 0 000 16M20 4a11 11 0 010 16"/>',torp:'<path d="M3 12c3-3 12-3 15-1l3 1-3 1c-3 2-12 2-15-1zM3 12l-1-3v6z"/>',decoy:'<circle cx="9" cy="16" r="2.4"/><circle cx="15" cy="10" r="1.7"/><circle cx="10" cy="7" r="1.2"/><circle cx="16.5" cy="17" r="1.2"/>',gate:'<path d="M5 12h12M12 6l6 6-6 6M21 4v16"/>',x:'<path d="M5 5l14 14M19 5L5 19" stroke-width="2.6"/>',plus:'<path d="M12 4v16M4 12h16" stroke-width="2.6"/>',minus:'<path d="M4 12h16" stroke-width="2.6"/>',me:'<circle cx="12" cy="12" r="4"/><path d="M12 2v5M12 17v5M2 12h5M17 12h5"/>',back:'<path d="M15 4l-8 8 8 8" stroke-width="2.6"/>',down:'<path d="M12 4v14M6 12l6 6 6-6" stroke-width="2.4"/>',mark:'<circle cx="12" cy="12" r="7"/><path d="M12 2v6M12 16v6M2 12h6M16 12h6"/>',photo:'<path d="M3 8h4l2-3h6l2 3h4v11H3z"/><circle cx="12" cy="13" r="3.6"/>',lock:'<rect x="5" y="11" width="14" height="10" rx="1.5"/><path d="M8 11V8a4 4 0 018 0v3"/>'};
+const ic=(n,sz)=>`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"${sz?` width="${sz}" height="${sz}"`:''}>${IC[n]}</svg>`;
+const star=(on)=>`<svg viewBox="0 0 24 24"><path d="M12 2l3 6.6 7 .9-5.1 4.9 1.3 7.1L12 18l-6.2 3.5 1.3-7.1L2 9.5l7-.9z" fill="${on?'#a4311e':'none'}" stroke="${on?'#6f2a1c':'#9c8f6b'}" stroke-width="1.7" stroke-linejoin="round"/></svg>`;
+const stars=n=>`<span class="st">${star(n>=1)}${star(n>=2)}${star(n>=3)}</span>`;
+const medalI=on=>`<svg viewBox="0 0 40 40"><path d="M13 2h14l-4 13h-6z" fill="${on?'#2b4c7a':'#b5a67f'}"/><circle cx="20" cy="26" r="11" fill="${on?'#c79a3b':'#cfc29d'}" stroke="${on?'#6f5118':'#9c8f6b'}" stroke-width="2"/><path d="M20 19l2.2 4.7 5 .6-3.7 3.5 1 5L20 30.300l-4.500 2.500 1-5-3.700-3.500 5-.6z" fill="${on?'#6f5118':'#9c8f6b'}"/></svg>`;
+/* ---------- messages ---------- */
+function say(t,cl){if(G)(G.msgs=G.msgs||[]).push({t,cl:cl||'',at:performance.now()});if(G&&G.msgs.length>4)G.msgs.shift();renderSay();const pm=$('pmsg');if(pm&&G&&G.o.scope){pm.textContent=t;clearTimeout(say._t);say._t=setTimeout(()=>{pm.textContent='';},3500);}}
+function renderSay(){const b=$('say');if(!G)return;const now=performance.now();G.msgs=(G.msgs||[]).filter(m=>m.at&&now-m.at<8000);const h=G.msgs.map(m=>`<div class="${m.cl}">${m.t}</div>`).join('');if(b._h!==h){b._h=h;b.innerHTML=h;}}
+function hintOnce(k,t){if(!S.opt.hints||!G)return;S.seenH=S.seenH||{};if(S.seenH[k])return;S.seenH[k]=1;showHint(t);saveS();}
+function showHint(t){$('hint').innerHTML=`<b>LT. TOLLIVER</b>${t}<button data-a="hintX" aria-label="Close">${ic('x')}</button>`;$('hint').classList.add('on');}
+function shake(v){const g=$('game');if(!g.classList.contains('on'))return;const f=$('flash');f.style.transition='none';f.style.opacity=clamp(v*.32,0,.32);requestAnimationFrame(()=>{f.style.transition='opacity .5s';f.style.opacity=0;});g.style.transition='none';g.style.transform=`translate(${(Math.random()-.5)*14*v}px,${(Math.random()-.5)*14*v}px)`;setTimeout(()=>{g.style.transition='transform .22s';g.style.transform='';},70);}
+/* ---------- tutorial ---------- */
+const TUT=[
+ ['Tap the chart to the east to set a course towards the hulk. The dashed pencil line is your track. Use 8x at the top to save time on long runs.',()=>G.o.wp],
+ ['You are at 2/3 on the Order board. Slow is quiet, and fast makes you loud and deaf. Press 8x and hold this until you are within about 7 km of the marked hulk.',()=>{const e=G.es.find(q=>q.k==='hulk');return e&&dist(e,G.o)<7500;}],
+ ['Close enough. The hulk makes no noise, so you need your eyes. Press SCOPE. The boat comes up to periscope depth by itself, and the scope opens when she gets there.',()=>G.o.scope],
+ ['Drag to turn the scope until the hulk sits on the crosshair, then press MARK. A periscope mark gives an exact fix.',()=>{const e=G.es.find(q=>q.k==='hulk');return e&&(e.c.sol>=85||e.dead);}],
+ ['Now press FIRE. The torpedo runs to the target and its seeker takes over for the last kilometre.',()=>G.st.fired>0],
+ ['Torpedo running. You can press DOWN to go back to the chart and watch it there.',()=>(G.tag.hulk||0)>0],
+ ['Target destroyed. Well done, sir. In a real fight, everyone within miles would now be coming for us. Take us back to the green gate on the chart, then press LEAVE.',()=>false],
+];
+function tutTick(){if(G.tutI<0||!S.opt.hints)return;const t=TUT[G.tutI];if(!t)return;if(G.tutShown!==G.tutI){G.tutShown=G.tutI;showHint(t[0]);}if(t[1]()){G.tutI++;$('hint').classList.remove('on');G.tutShown=-1;}}
+/* ---------- periscope ---------- */
+let PZ={az:0,mag:0,t:0},PD2=null,cloud=null,pw=0,ph=0;
+const pFov=()=>PZ.mag?rad(9):rad(32);
+function presize(){const c=$('pcv'),dp=Math.min(window.devicePixelRatio||1,1.25);pw=innerWidth;ph=innerHeight;c.width=pw*dp;c.height=ph*dp;PD2=c.getContext('2d');PD2.setTransform(dp,0,0,dp,0,0);}
+function openScope(){const o=G.o;if(G.ice&&!G.polys.some(p=>Math.hypot(p[0]-o.x,p[1]-o.y)<p[2])){say('Solid ice overhead. No periscope here.','h');return;}if(o.z>21.5){o.ordZ=PD;G.wantScope=true;say('Coming to periscope depth.');return;}o.scope=true;PZ.az=PZ.az||o.h;if(sel){const e=G.es.find(x=>x.id===sel);if(e)PZ.az=brg(o,e);}$('peri').classList.add('on');presize();A.clk(1);}
+function closeScope(msg){const o=G.o;if(o)o.scope=false;G.wantScope=false;$('peri').classList.remove('on');if(msg)say(msg);}
+function buildCloud(){const pal={day:['#ffffff','#a6c2d2'],dusk:['#f6b184','#5d4a57'],night:['#202a3a','#10151f']}[G.tod];cloud=document.createElement('canvas');cloud.width=1024;cloud.height=150;const c=cloud.getContext('2d'),rn=rng(G.seed+9);for(let i=0;i<(G.wx>=2?90:46);i++){const x=rn()*1024,y=30+rn()*90,r=30+rn()*70;for(const dx of[0,1024,-1024]){const g=c.createRadialGradient(x+dx,y,1,x+dx,y,r);g.addColorStop(0,pal[rn()<.6?0:1]+(G.wx>=2?'cc':'88'));g.addColorStop(1,pal[0]+'00');c.fillStyle=g;c.beginPath();c.ellipse(x+dx,y,r,r*.28,0,0,TAU);c.fill();}}}
+function drawPeri(){const c=PD2,o=G.o;if(!c)return;PZ.t+=.033;if(!cloud)buildCloud();const W=pw,H=ph,fov=pFov(),ppr=W/fov,az=PZ.az,swell=Math.sin(PZ.t*.9)*(3+G.wx*6)+Math.sin(PZ.t*1.7)*(1+G.wx*2),hz=H*.52+swell;
+ const col={day:['#6fa3c9','#c8dfe7','#2a5a6c','#0f3341'],dusk:['#3a4468','#f2a06a','#35404f','#141a24'],night:['#050a14','#141e2e','#0a1420','#02060a']}[G.tod],sk=c.createLinearGradient(0,0,0,hz);if(G.wx>=2&&G.tod==='day'){col[0]='#7a8a93';col[1]='#b6bfc0';col[2]='#3f5a62';}sk.addColorStop(0,col[0]);sk.addColorStop(1,col[1]);c.fillStyle=sk;c.fillRect(0,0,W,hz+1);
+ /* clouds */const cw2=TAU*ppr*.25,cox=-(az/TAU*cw2*4)%cw2;c.globalAlpha=.9;for(let i=-1;i<3;i++)c.drawImage(cloud,cox+i*cw2,hz-Math.min(hz,ppr*.11)-20,cw2,Math.min(hz,ppr*.11)+24);c.globalAlpha=1;
+ if(G.tod!=='night'){const sa=rad(G.tod==='dusk'?250:150),sx=W/2+adiff(az,sa)*ppr;const r=G.tod==='dusk'?ppr*.05:ppr*.03;if(sx>-r*5&&sx<W+r*5&&G.wx<2){const g=c.createRadialGradient(sx,hz-(G.tod==='dusk'?r*1.2:ppr*.11),1,sx,hz-(G.tod==='dusk'?r*1.2:ppr*.11),r*5);g.addColorStop(0,'#fff6d8');g.addColorStop(.18,'#ffe7a899');g.addColorStop(1,'#ffe7a800');c.fillStyle=g;c.fillRect(0,0,W,hz);}}
+ else{c.fillStyle='#cfd8e6';const rn=rng(7);for(let i=0;i<70;i++){const sx=(rn()*TAU-az);const xx=W/2+((sx%TAU+TAU+PI)%TAU-PI)*ppr;if(xx>0&&xx<W)c.fillRect(xx,rn()*hz*.9,1.2,1.2);}}
+ const sea=c.createLinearGradient(0,hz,0,H);sea.addColorStop(0,col[2]);sea.addColorStop(1,col[3]);c.fillStyle=sea;c.fillRect(0,hz,W,H-hz);
+ /* wave rows */const rows=20;c.lineCap='round';for(let i=0;i<rows;i++){const q=i/rows,y=hz+Math.pow(q,1.9)*(H-hz)+1,amp=1+q*q*(6+G.wx*8),L=40+q*260;c.strokeStyle=i%3?(G.tod==='night'?'#ffffff0d':'#ffffff1c'):'#00000022';c.lineWidth=.8+q*2.2;c.beginPath();const off=(az*ppr*.9*(.4+q)+PZ.t*(14+q*40));for(let x=-L;x<=W+L;x+=L/7){const ph2=(x+off)/L;const yy=y+Math.sin(ph2*TAU/1+i)*amp;x===-L?c.moveTo(x,yy):c.lineTo(x,yy);}c.stroke();}
+ /* ships */const vis=visR(),lst=G.es.filter(e=>!e.dead&&!SHIP[e.k].air&&(!SHIP[e.k].sub||(e.z<3))).map(e=>({e,r:dist(e,o)})).sort((a,b)=>b.r-a.r);
+ for(const q of lst){const e=q.e,r=Math.max(q.r,60);if(r>vis)continue;const bb=brg(o,e),rel=adiff(az,bb),x=W/2+rel*ppr;const cl=SHIP[e.k],lp=(cl.len/r)*ppr;if(x<-lp||x>W+lp)continue;const sp=sprite(e.k),unit=(cl.len/100)/r*ppr,sc=unit/SPU,asp=adiff(bb,e.h),fx=Math.max(.14,Math.abs(Math.sin(asp))),dir=Math.sin(asp)>=0?1:-1,bob=Math.sin(PZ.t*.7+e.id)*Math.min(2,unit*.3),wy=hz+(12/r)*ppr+bob;
+   let tilt=0,sinkY=0;if(e.sink!=null){const f=1-e.sink/(cl.tons>5000?46:26);tilt=f*.32*(e.id%2?1:-1);sinkY=f*f*SPY*sc*.9;}
+   c.save();c.beginPath();c.rect(0,0,W,wy+Math.max(1,unit*.25));c.clip();c.globalAlpha=clamp(1.15-Math.pow(r/vis,2.2),.06,1);c.imageSmoothingEnabled=true;c.imageSmoothingQuality='high';c.translate(x,wy+sinkY);c.rotate(tilt);c.scale(sc*fx*dir,sc);c.drawImage(sp,-(16+51*SPU),-SPY);c.restore();
+   c.save();c.globalAlpha=clamp(1-r/vis,.15,.9);if(e.v>.5&&unit>1.2){c.fillStyle='#f4f8f8';const fw=cl.len/r*ppr*fx;c.beginPath();c.ellipse(x+dir*fw*.47,wy+1,fw*.07,Math.max(.8,unit*.2),0,0,TAU);c.fill();c.globalAlpha*=.5;c.fillRect(x-fw*.5,wy,fw*.95,Math.max(.8,unit*.13));}c.restore();
+   if(e.flee||e.sink!=null){for(let i=0;i<6;i++){const t=(PZ.t*.5+i*.3+e.id)%2,s=unit*(3+t*5),sxp=x+Math.sin(i*2.7)*unit*8*fx,syp=wy-unit*(10+t*20)+sinkY*.2,g=c.createRadialGradient(sxp,syp,1,sxp,syp,s);g.addColorStop(0,'#1a1a1acc');g.addColorStop(1,'#1a1a1a00');c.fillStyle=g;c.fillRect(sxp-s,syp-s,s*2,s*2);}if(e.sink!=null){const g=c.createRadialGradient(x,wy-unit*2,1,x,wy-unit*2,unit*9);g.addColorStop(0,'#ffd27acc');g.addColorStop(1,'#ff5a1f00');c.fillStyle=g;c.fillRect(x-unit*9,wy-unit*11,unit*18,unit*18);}}
+ }
+ /* near-surface water on the lens */if(G.wx>=1){const d=Math.sin(PZ.t*.85+1)*(H*.04*G.wx);if(d>H*.05){c.fillStyle='#22505e88';c.fillRect(0,H-d*2.2,W,d*2.2);}}
+ if(G.wx===3){c.strokeStyle='#d4dfe688';c.lineWidth=1;c.beginPath();for(let i=0;i<70;i++){const x=(i*97+PZ.t*600)%W,y=(i*53+PZ.t*900)%H;c.moveTo(x,y);c.lineTo(x-3,y+12);}c.stroke();}
+ if(G.tod==='night'){c.fillStyle='#00100a33';c.fillRect(0,0,W,H);}
+ /* lens */const R0=Math.min(W*.46,H*.48),cx=W/2,cy=H/2;c.fillStyle='#000';c.beginPath();c.rect(0,0,W,H);c.arc(cx,cy,R0,0,TAU,true);c.fill('evenodd');const vg=c.createRadialGradient(cx,cy,R0*.5,cx,cy,R0);vg.addColorStop(0,'rgba(0,0,0,0)');vg.addColorStop(.55,'rgba(0,0,0,.12)');vg.addColorStop(.85,'rgba(0,0,0,.45)');vg.addColorStop(1,'rgba(0,0,0,.9)');c.fillStyle=vg;c.beginPath();c.arc(cx,cy,R0,0,TAU);c.fill();
+ c.strokeStyle='#e8f0e0cc';c.fillStyle='#e8f0e0';c.lineWidth=1.3;c.beginPath();c.moveTo(cx-R0*.9,cy);c.lineTo(cx-34,cy);c.moveTo(cx+34,cy);c.lineTo(cx+R0*.9,cy);c.moveTo(cx,cy-R0*.8);c.lineTo(cx,cy-30);c.moveTo(cx,cy+30);c.lineTo(cx,cy+R0*.8);for(let k=-6;k<=6;k++){if(!k)continue;const x=cx+k*R0*.13;c.moveTo(x,cy-(k%2?5:9));c.lineTo(x,cy+(k%2?5:9));}c.stroke();
+ /* bearing tape */c.font='13px "Courier New",monospace';c.textAlign='center';const step=PZ.mag?5:10,a0=deg(az);for(let d=Math.floor((a0-deg(fov)/2)/step)*step;d<=a0+deg(fov)/2+step;d+=step){const x=cx+rad(d-a0)*ppr;if(Math.abs(x-cx)>R0*.72)continue;c.fillRect(x,cy-R0*.86,1,(d%(step*2)?5:9));if(d%(step*2)===0)c.fillText(pad(((d%360)+360)%360,3),x,cy-R0*.86+22);}c.beginPath();c.moveTo(cx,cy-R0*.89);c.lineTo(cx-5,cy-R0*.94);c.lineTo(cx+5,cy-R0*.94);c.closePath();c.fill();
+ if(PZ.t*30%6<1)updatePInfo(lst);}
+function targetInView(lim){const o=G.o,vis=visR(),fov=pFov();let best=null,bd=1e9;for(const e of G.es){if(e.dead||SHIP[e.k].air)continue;if(SHIP[e.k].sub&&e.z>3)continue;const r=dist(e,o);if(r>vis)continue;const d=Math.abs(adiff(PZ.az,brg(o,e)));if(d<fov*(lim||.16)&&d<bd){bd=d;best=e;}}return best;}
+function updatePInfo(){const o=G.o,t=targetInView(.16),txt=[`BRG ${b3(PZ.az)}  ${PZ.mag?'6X':'1.5X'}`];if(t){const r=dist(t,o);txt.push((t.name||SHIP[t.k].n).toUpperCase());txt.push(`RANGE ${t.c.sol>=85?fmt(r)+' m':'mark for range'}`);}else txt.push('NO TARGET ON WIRE');const pips=o.tubes.filter(x=>x===0).length;txt.push(`TUBES READY ${pips}  STOWED ${o.stow}`);$('pinfo').innerHTML=txt.join('<br>');}
+function doMark(){const t=targetInView(.2);if(!t){say('Nothing on the wire to mark.');return;}const c=t.c,o=G.o;c.seen=true;c.sol=Math.max(c.sol,U('crew')>=5?100:90);c.er=U('crew')>=5?0:40;c.ex=t.x;c.ey=t.y;c.eh=t.h;c.ev=t.v;c.last=G.t;sel=t.id;A.clk(1);say(`Mark. ${t.name||SHIP[t.k].n}, bearing ${b3(brg(o,t))}, ${fmt(dist(t,o))} m.`,'g');}
+function doPhoto(){const t=targetInView(.26),o=G.o;A.clk(1);const f=$('pcv');f.style.filter='brightness(2)';setTimeout(()=>{f.style.filter='';},90);const q=G.objs.filter(x=>x.t==='photo'&&!x.d);if(!q.length){say('Picture taken, sir. Very pretty.');return;}if(!t){say('Nothing in frame.');return;}const m=q.find(x=>x.tag===t.tag);if(!m){say('Wrong ship in frame.');return;}const r=dist(t,o);if(r>m.maxR){say(`Too far for a clean picture: ${fmt(r)} m. Need under ${fmt(m.maxR)} m.`,'h');return;}if(!PZ.mag){say('Switch the scope to 6X for a usable picture.');return;}m.d=true;m.p=1;A.ok();say('Good photograph. '+m.label+' done.','g');}
+/* ---------- HUD ---------- */
+function syncTs(){const ts=[1,2,4,8];document.querySelectorAll('#tsc button').forEach((b,i)=>b.classList.toggle('on',ts[i]===G.ts));}
+function setBtn(el,icon,label){const h=ic(icon)+`<span>${label}</span>`;if(el._h!==h){el._h=h;el.innerHTML=h;}}
+function syncHUD(){const o=G.o,b=B();const mm=Math.floor(G.t/60),hh=Math.floor(mm/60);$('clock').textContent=pad(hh)+':'+pad(mm%60);
+ document.querySelectorAll('#tel button').forEach(el=>{const i=+el.dataset.t;el.classList.toggle('on',o.tel===i);el.classList.toggle('cap',b.batt&&o.batt<=0&&telF[i]>.2);});
+ $('bScope').classList.toggle('lit',!!(o.scope||G.wantScope));$('bSnork').style.display=b.batt?'':'none';$('bSnork').classList.toggle('lit',!!o.snork);$('bPing').disabled=o.pingT>0;$('bDecoy').disabled=o.decoys<=0;
+ setBtn($('bScope'),'scope','SCOPE');setBtn($('bSnork'),'snork','SNORKEL');setBtn($('bPing'),'ping',o.pingT>0?'PING '+Math.ceil(o.pingT/10):'PING');setBtn($('bDecoy'),'decoy','DECOY '+o.decoys);
+ const pp=o.tubes.map(t=>`<i class="${t===0?'ok':t>0?'ld':''}"></i>`).join(''),fh=`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">${IC.torp}</svg><span>FIRE ${o.stow}</span><div id="pips">${pp}</div>`;if($('bFire')._h!==fh){$('bFire')._h=fh;$('bFire').innerHTML=fh;}
+ $('bFire').classList.toggle('lit',!!armed);
+ const lv=$('bLeave');lv.style.display=G.inGate?'':'none';setBtn(lv,'gate','LEAVE');
+ const lt=(id,bad,warn)=>{const e=$(id);e.className='lt'+(bad?' bad':warn?' warn':'');};lt('lSon',o.sys.sonar>.5,o.sys.sonar>.05);lt('lTub',o.sys.tubes>.5,o.sys.tubes>.05);lt('lMot',o.sys.motor>.5,o.sys.motor>.05);lt('lFlo',o.flood>40,o.flood>3);const held=G.es.some(e=>!e.dead&&SHIP[e.k].asw&&G.t-(e.fix||-999)<80);lt('lHeld',held,G.es.some(e=>!e.dead&&e.st==='hunt'));
+ A.tens(held?1:G.es.some(e=>!e.dead&&e.st==='hunt')?.4:0);
+ let ohtml='<b>ORDERS</b>';if(!G.objs.length)ohtml+='<div class="o">Reach the gate undetected</div>';for(const q of G.objs){let bar='';if(!q.d&&q.p&&q.t!=='photo')bar=`<div class="b"><i style="width:${clamp(q.p,0,1)*100}%"></i></div>`;let ex='';if(q.t==='tons')ex=` (${fmt(G.st.tons)})`;ohtml+=`<div class="o${q.d?' d':''}">${q.label}${ex}</div>${bar}`;}if(G.gateOpen)ohtml+='<div class="o">Leave by the gate</div>';if($('ordr')._h!==ohtml){$('ordr')._h=ohtml;$('ordr').innerHTML=ohtml;}
+ renderSay();
+ const card=$('card');let e=sel?G.es.find(x=>x.id===sel):null;if(e&&e.dead){sel=0;e=null;}if(e){const q=e.c,r=q.vis||q.sol>=90?dist(e,o):Math.hypot(q.ex-o.x,q.ey-o.y),k=q.sol>=45||q.vis,nm=k?(e.name||SHIP[e.k].n):(SHIP[e.k].sub?'Submerged?':'Unknown');const ch=`<button class="x" data-a="cardX" aria-label="Close">${ic('x')}</button><h4>${nm}${e.friend?' (FRIEND)':''}</h4>BRG ${b3(brg(o,e))}${q.held?'':' (lost)'}<br>RANGE ${q.sol<18?'unknown':'~'+fmt(Math.round(r/100)*100)+' m'}<br>SOLUTION ${Math.round(q.sol)}%<div class="sol"><i style="width:${q.sol}%"></i></div>${e.friend?'':`<button class="key rd" data-a="fireSel">FIRE AT TRACK</button>`}`;if(card._h!==ch){card._h=ch;card.innerHTML=ch;}card.classList.add('on');}else{card.classList.remove('on');card._h='';}
+ if(G.wantScope&&o.z<=21.5&&!o.scope){G.wantScope=false;openScope();}
+}
+/* ---------- screens ---------- */
+let screen='title',paused=true,tab='orders',ttlT=0,tcx=null;
+const scr=$('scr');
+function showScr(html,name){scr.innerHTML=html;scr.classList.add('on');screen=name;$('game').classList.remove('on');$('peri').classList.remove('on');scr.scrollTop=0;}
+function title(){const has=S.st.patrols>0||S.logs.length>0||peekM();showScr(`<canvas id="ttl"></canvas><div class="tname">THERMOCLINE</div><div class="tsub">A submarine command, under the layer</div><div class="tmenu"><button class="tbtn pri" data-a="toWard">${has?'CONTINUE':'TAKE COMMAND'}</button><button class="tbtn" data-a="manualT">FIELD MANUAL</button><button class="tbtn" data-a="optsT">SETTINGS</button><button class="tbtn" data-a="hub">GO BACK TO GAMES</button></div>`,'title');const c=$('ttl');c.width=innerWidth*Math.min(devicePixelRatio,1.25);c.height=innerHeight*Math.min(devicePixelRatio,1.25);tcx=c.getContext('2d');paused=true;A.amb(false);}
+function drawTitle(){const c=tcx,cv=$('ttl');if(!c||!cv)return;const W=cv.width,H=cv.height,sc=W/1180;ttlT+=.016;c.setTransform(sc,0,0,sc,0,0);const w=1180,h=H/sc,ly=h*.4;
+ const g=c.createLinearGradient(0,0,0,h);g.addColorStop(0,'#6fb0bd');g.addColorStop(.1,'#2a7482');g.addColorStop(.36,'#124b58');g.addColorStop(.46,'#0a2a35');g.addColorStop(1,'#020a10');c.fillStyle=g;c.fillRect(0,0,w,h);
+ c.globalCompositeOperation='lighter';for(let i=0;i<7;i++){const x=(i*190+Math.sin(ttlT*.3+i)*40)%1300-60,sw=70+i*9;const sg=c.createLinearGradient(0,0,0,ly);sg.addColorStop(0,'#bdefe61c');sg.addColorStop(1,'#bdefe600');c.fillStyle=sg;c.beginPath();c.moveTo(x,0);c.lineTo(x+sw,0);c.lineTo(x+sw*.3-90,ly);c.lineTo(x-140,ly);c.closePath();c.fill();}c.globalCompositeOperation='source-over';
+ /* surface */c.fillStyle='#c5e9e8';c.beginPath();c.moveTo(0,0);for(let x=0;x<=w;x+=20)c.lineTo(x,12+Math.sin(x*.02+ttlT)*3+Math.sin(x*.05-ttlT*1.3)*1.5);c.lineTo(w,0);c.closePath();c.fill();
+ /* thermocline */c.strokeStyle='#a6efe433';c.lineWidth=1;for(let k=0;k<5;k++){c.beginPath();for(let x=0;x<=w+18;x+=18){const y=ly+k*7+Math.sin(x*.008+ttlT*.45+k)*6;x?c.lineTo(x,y):c.moveTo(x,y);}c.stroke();}
+ /* far hunter on the surface seen from below */c.save();c.globalAlpha=.85;c.fillStyle='#04202a';const hx=(w*1.1-ttlT*8)%(w*1.25)-40;c.beginPath();c.moveTo(hx-90,14);c.bezierCurveTo(hx-60,30,hx+50,32,hx+96,12);c.closePath();c.fill();c.restore();
+ /* ping ring */const pr=((ttlT*.28)%1);c.strokeStyle=`rgba(190,255,235,${(1-pr)*.42})`;c.lineWidth=2;c.beginPath();c.arc(hx,24,pr*560,.1,PI-.1);c.stroke();c.strokeStyle=`rgba(190,255,235,${(1-pr)*.14})`;c.beginPath();c.arc(hx,24,pr*420,.1,PI-.1);c.stroke();
+ /* boat beneath the layer */const bx=w*.66+Math.sin(ttlT*.14)*30,by=h*.66+Math.sin(ttlT*.3)*8;drawOwnSide(c,bx,by,560);c.fillStyle='#cfe7e422';for(let i=0;i<14;i++){const yy=by-((ttlT*16+i*37)%260),xx=bx-250+Math.sin(i*5+ttlT)*16+(i%3)*5;c.beginPath();c.arc(xx,yy,1+(i%3),0,TAU);c.fill();}
+ c.setTransform(1,0,0,1,0,0);}
+function deskHead(t,backA,backL){return`<div class="deskhead"><button class="key" data-a="${backA}" aria-label="Back">${ic('back')}<span>${backL||'BACK'}</span></button><h2>${t}</h2><span class="chip">${rankOf()}</span><span class="chip">${fmt(S.merit)} MERIT</span></div>`;}
+function ward(t){tab=t||tab;const tabs=[['orders','ORDERS'],['refit','REFIT'],['hunt','HUNTING GROUNDS'],['log','LOGBOOK'],['record','RECORD']];showScr(`<div class="desk">${deskHead('WARDROOM','toTitle','TITLE')}<div class="tabs">${tabs.map(x=>`<button data-a="tab" data-t="${x[0]}" class="${tab===x[0]?'on':''}">${x[1]}</button>`).join('')}</div><div class="folder" id="fold">${({orders:wOrders,refit:wRefit,hunt:wHunt,log:wLog,record:wRecord})[tab]()}</div></div>`,'ward');paused=true;A.amb(false);drawBoats();}
+const avail=i=>{if(i===0)return true;let j=i-1;while(j>=0&&M[j].hide)j--;return !!S.done[M[j].id];};
+function wOrders(){let h='';const sv=peekM();if(sv)h+=`<div class="row" style="margin-bottom:8px;background:#f6efdc;border:2px solid #6f2a1c;padding:7px 10px"><span style="flex:1">Patrol in progress: <b>${getDef(sv.id).n}</b></span><button class="btn pri" data-a="resume">RESUME</button><button class="btn" data-a="dropM">ABANDON</button></div>`;
+ let curN=M.findIndex((m,i)=>!m.hide&&avail(i)&&!S.done[m.id]);TH.forEach((th,ti)=>{const ms=M.map((m,i)=>[m,i]).filter(x=>x[0].th===ti&&!x[0].hide);if(!ms.length)return;const open=avail(ms[0][1]);h+=`<div class="thead"><b>${th.n}</b><span>${open?th.d:'Locked. Complete the earlier patrols.'}</span></div>`;if(!open)return;h+='<div class="grid2">'+ms.map(([m,i])=>{const av=avail(i);return`<button class="mcard${i===curN?' next':''}" data-a="brief" data-id="${m.id}" ${av?'':'disabled'}><div><b>${pad(i+1)} ${m.n}</b><small>${av?WX[m.wx]+', '+m.tod+(m.decide?'':', '+m.rw+' merit'):'Locked'}</small></div>${av?(m.decide?(Object.keys(S.endings).length?`<span class="stamp" style="margin-left:auto">${Object.keys(S.endings).length}/3</span>`:''):stars(S.stars[m.id]||0)):`<span style="margin-left:auto">${ic('lock',20)}</span>`}</button>`;}).join('')+'</div>';});return h;}
+function wRefit(){let h=`<h3>REFIT</h3><h5>COMMAND</h5>`;BOATS.forEach((b,i)=>{const own=i<S.boats;h+=`<div class="boat${S.boat===i?' on':''}"><canvas data-boat="${i}" width="340" height="96"></canvas><div><b style="font:600 18px var(--sten);letter-spacing:.06em">${own?b.n:'Unknown hull'}</b><small style="display:block;font-size:13px;color:#574d35;line-height:1.25">${own?`${b.cls}. ${b.vmax} kt, test ${b.test} m, ${b.tubes} tubes, ${b.stow} torpedoes. ${b.d}`:'Assigned by Fleet later in the campaign.'}</small></div>${own?(S.boat===i?'<span class="stamp">IN COMMAND</span>':`<button class="btn" data-a="pickBoat" data-i="${i}">TAKE COMMAND</button>`):ic('lock',22)}</div>`;});
+ h+='<h5>YARD WORK</h5><div class="grid2">';for(const k in UPS){const u=UPS[k],l=S.up[k];h+=`<div class="up"><div><b>${u.n}</b><div class="pips">${[0,1,2,3,4].map(i=>`<i class="${i<l?'on':''}"></i>`).join('')}</div><small>${l<5?'Next: '+u.lv[l]:'Complete. '+u.lv[4]}</small></div>${l<5?`<button class="btn" data-a="buy" data-k="${k}" ${S.merit>=u.c[l]?'':'disabled'}>${fmt(u.c[l])}</button>`:'<span class="stamp">DONE</span>'}</div>`;}return h+'</div>';}
+function drawBoats(){document.querySelectorAll('canvas[data-boat]').forEach(cv=>{const c=cv.getContext('2d'),i=+cv.dataset.boat;c.clearRect(0,0,340,96);if(i<S.boats){const L=[240,265,290,315][i];c.fillStyle='#b6cdd0';c.fillRect(0,0,340,96);drawOwnSide(c,172,54,L,['#6b7c7c','#22312f']);}else{c.fillStyle='#cfc29d';c.fillRect(0,0,340,96);c.save();c.globalAlpha=.3;drawOwnSide(c,172,54,270,['#3c3423','#3c3423']);c.restore();}});}
+function hgDef(L){const rn=rng(hash('hg'+L)),ths=[0,1,2,4,5],th=ths[Math.floor(rn()*ths.length)],mer=['freighter','freighter','tanker'],n=2+Math.min(5,Math.floor(L/3)),esc=[],f=[];const es=['corvette','frigate','destroyer'];for(let i=0;i<1+Math.min(5,Math.floor(L/3));i++)esc.push(es[Math.min(2,Math.floor(rn()*(1+L/5)))]);const list=[];for(let i=0;i<n;i++)list.push(mer[Math.floor(rn()*3)]);const a=rn()<.5;f.push(conv(a?[.98,.1+rn()*.3]:[.5+rn()*.3,.02],a?[.1,.6+rn()*.3]:[.4+rn()*.3,.98],list,esc,'c'));if(L>=4)for(let i=0;i<Math.min(3,Math.floor(L/6)+1);i++)f.push(sub([[.4+rn()*.2,.2+rn()*.6],[.7+rn()*.2,.2+rn()*.6]],{}));if(L>=3)f.push(air([[.1,.1+rn()*.8],[.9,.1+rn()*.8]]));if(L>=8)f.push(hunt('destroyer',[.5,.15]));const need=Math.min(5,1+Math.floor(L/3))*5000;return{id:'hg'+L,th,n:'Hunting Ground '+L,wx:Math.floor(rn()*4),tod:['day','dusk','night'][Math.floor(rn()*3)],lvl:Math.min(9,2+L*.3),rw:500+L*170,hg:1,seedK:'x',brief:`A free patrol on the open lanes. Sink ${fmt(need)} tons, then get out. Each ground is harder than the last, and the merit keeps growing.`,objs:[{t:'tons',n:need,label:`Sink ${fmt(need)} tons`}],f};}
+const getDef=id=>/^hg/.test(id)?hgDef(+id.slice(2)):M[MIDX[id]];
+function wHunt(){const opened=S.done.m06;if(!opened)return'<h3>HUNTING GROUNDS</h3><p>Finish the Sound of Merrow patrols to open the free hunting lanes.</p>';return`<h3>HUNTING GROUNDS</h3><p>Endless free patrols for merit and tonnage. There is always a harder ground. You have reached level <b>${S.hg}</b>.</p><div class="grid2">${[S.hg,Math.max(1,S.hg-1),Math.max(1,S.hg-2)].filter((v,i,a)=>a.indexOf(v)===i).map(l=>`<button class="mcard${l===S.hg?' next':''}" data-a="brief" data-id="hg${l}"><div><b>Ground ${l}</b><small>${500+l*170} merit</small></div></button>`).join('')}</div>`;}
+function wLog(){if(!S.logs.length)return'<h3>LOGBOOK</h3><p>No entries yet. Every patrol you finish adds a page.</p>';return`<h3>LOGBOOK</h3><p>${S.logs.length} of ${M.filter(m=>m.log).length} pages recovered.</p>`+S.logs.map(id=>{const m=M[MIDX[id]];return`<button class="logi" data-a="readLog" data-id="${id}"><b>${m.log[0]}</b><small>${m.n}</small></button>`;}).join('');}
+function wRecord(){const st=S.st,acc=st.fired?Math.round(st.hits/st.fired*100):0;return`<h3>SERVICE RECORD</h3><div class="stat"><div><b>${rankOf()}</b>Rank</div><div><b>${fmt(st.tons)}</b>Tons sunk</div><div><b>${st.kills}</b>Ships sunk</div><div><b>${st.war}</b>Warships sunk</div><div><b>${st.subs}</b>Submarines sunk</div><div><b>${st.patrols}</b>Patrols complete</div><div><b>${st.lost}</b>Boats lost</div><div><b>${acc}%</b>Torpedo hits</div></div><h5>DECORATIONS</h5><div class="grid2">${MEDALS.map(m=>{const on=S.med[m[0]];return`<div class="medal${on?'':' off'}">${medalI(on)}<div><b>${m[1]}</b><small>${m[2]}</small></div></div>`;}).join('')}</div>`;}
+function checkMedals(){const nw=[];for(const m of MEDALS){if(!S.med[m[0]]&&m[3](S)){S.med[m[0]]=1;nw.push(m[1]);}}return nw;}
+function brief(id){const d=getDef(id);if(d.decide){showScr(`<div class="desk">${deskHead(d.n.toUpperCase(),'toWard','ORDERS')}<div class="folder"><p class="memo" style="max-width:none">${d.brief}</p><h5>WHAT WILL YOU DO?</h5><div class="grid2">${[['e1','Obey','Sink the Concord as ordered.','a'],['e2','Testify','Take Reyne\'s tape to Station Nine.','b'],['e3','Vanish','Take the crew under the ice and do not come back.','c']].map(x=>`<button class="mcard" data-a="brief" data-id="${x[0]}"><div><b>${x[1]}</b><small>${x[2]}</small></div>${S.endings[x[3]]?'<span class="stamp" style="margin-left:auto">SEEN</span>':''}</button>`).join('')}</div></div></div>`,'brief');return;}
+ const th=TH[d.th],b=BOATS[S.boat],tod={day:'Daylight',dusk:'Dusk',night:'Night (rigged for red)'}[d.tod];const backTo=d.hide?'35back':'toWard';showScr(`<div class="desk">${deskHead(d.n.toUpperCase(),d.hide?'brief':'toWard',d.hide?'DECISION':'ORDERS').replace('data-a="brief"','data-a="brief" data-id="m35"')}<div class="folder"><div class="brief"><div class="memo">${d.brief}</div><div><span class="stamp">SECRET</span><h5>ASSIGNED AREA</h5>${th.n}<h5>CONDITIONS</h5>${WX[d.wx]}. ${tod}.<h5>COMMAND</h5>${b.n}, ${b.tubes} tubes, ${b.stow} torpedoes.<h5>OBJECTIVES</h5>${d.objs.length?d.objs.map(o=>o.label).join('<br>'):'Reach the gate.'}<div class="row" style="margin-top:12px"><button class="btn pri" data-a="launch" data-id="${d.id}">PUT TO SEA</button><button class="btn" data-a="openRefit">REFIT</button></div></div></div></div></div>`,'brief');}
+function startGame(){buildTerrain();buildChart();CB&&0;$('game').classList.add('on');scr.classList.remove('on');screen='game';paused=false;$('hint').classList.remove('on');sel=0;armed=false;$('arm').classList.remove('on');cloud=null;WF=null;
+ $('tel').innerHTML=[['FLANK',5],['FULL',4],['STD',3],['2/3',2],['1/3',1],['STOP',0]].map(x=>`<button data-a="tel" data-t="${x[1]}">${x[0]}</button>`).join('');
+ $('bPause').innerHTML=ic('pause');$('bPause2').innerHTML=ic('pause');$('bZi').innerHTML=ic('plus');$('bZo').innerHTML=ic('minus');$('bZc').innerHTML=ic('me');$('bDown').innerHTML=ic('down')+'<span>DOWN</span>';$('bMark').innerHTML=ic('mark')+'<span>MARK</span>';$('bPhoto').innerHTML=ic('photo')+'<span>PHOTO</span>';$('bPFire').innerHTML=ic('torp')+'<span>FIRE</span>';$('bMag').textContent='6X';
+ document.querySelector('#tsc').innerHTML='<button data-a="ts" data-v="1">1x</button><button data-a="ts" data-v="2">2x</button><button data-a="ts" data-v="4">4x</button><button data-a="ts" data-v="8">8x</button>';
+ resizeCanvases();V={z:1.25,cx:G.o.x,cy:G.o.y,follow:true};clampV();syncTs();syncHUD();drawDep();wfInit();$('peri').classList.toggle('on',false);if(G.o.scope){G.o.scope=false;}A.ens();A.amb(true);}
+function launchM(id){const d=getDef(id);clearM();buildMission(d);startGame();say(d.n+': patrol begins.');if(d.tut==null&&S.opt.hints&&d.id==='m04')hintOnce('layer','The DIVING PLANES panel shows the thermocline. Press BELOW to go under it, and they will struggle to hear you.');if(d.th===3)hintOnce('ice','Ice overhead: stay below 40 m unless you are in a marked patch of open water.');}
+function resumeM(){const s=peekM();if(!s)return;G=s;startGame();say('Patrol resumed.');}
+function finish(ok,why){if(G.over)return;G.over=true;window.__last=(ok?'WIN':'LOSS: '+why);const d=getDef(G.id),o=G.o,st=G.st;A.amb(false);A.tens(0);clearM();let html='',merit=0,stn=0;if(ok){stn=1;if(o.hull>=70)stn++;if(!st.located&&!st.charges)stn++;const first=!S.done[d.id];merit=Math.round((first||d.hg?d.rw:d.rw*.35)+st.tons/40+(stn-1)*d.rw*.12);S.merit+=merit;S.st.earned=(S.st.earned||0)+merit;S.done[d.id]=1;S.st.patrols++;if(st.deep)S.st.deep++;if(o.hull<10)S.st.shave++;S.stars[d.id]=Math.max(S.stars[d.id]||0,stn);if(d.log&&S.logs.indexOf(d.id)<0)S.logs.push(d.id);if(d.hg)S.hg=Math.max(S.hg,+d.id.slice(2)+1);if(d.boat!=null&&d.boat+1>S.boats){S.boats=d.boat+1;S.boat=d.boat;S.newBoat=d.boat;}if(d.ending)S.endings[d.ending]=1;}else S.st.lost++;
+ const med=checkMedals();saveS();const nb=ok&&d.boat!=null&&S.newBoat===d.boat?BOATS[d.boat]:null;S.newBoat=null;
+ html=`<div class="desk">${deskHead(ok?'PATROL REPORT':'BOAT LOST','toWard','WARDROOM')}<div class="folder"><div class="brief"><div><h3>${d.n}</h3><span class="stamp">${ok?'COMPLETE':'FAILED'}</span>${ok?`<p style="margin-top:8px">${stars(stn)}</p>`:`<p style="margin-top:8px">${why||'The boat did not come home.'}</p>`}${ok?`<div class="res"><span>Mission complete</span><span>Yes</span></div><div class="res"><span>Hull over 70%</span><span>${o.hull>=70?'Yes':'No ('+Math.round(o.hull)+'%)'}</span></div><div class="res"><span>Never located</span><span>${!st.located&&!st.charges?'Yes':'No'}</span></div>`:''}<div class="res"><span>Tons sunk</span><span>${fmt(st.tons)}</span></div><div class="res"><span>Torpedoes fired / hits</span><span>${st.fired} / ${st.hits}</span></div>${ok?`<div class="res"><b>Merit</b><b>+${fmt(merit)}</b></div>`:''}${med.map(m=>`<div class="res"><span>Decoration</span><b>${m}</b></div>`).join('')}${nb?`<div class="res"><span>New command</span><b>${nb.n}</b></div>`:''}</div><div>${ok&&d.log?`<h5>${d.log[0].toUpperCase()}</h5><div class="memo">${d.log[1]}</div>`:''}<div class="row" style="margin-top:10px">${ok&&d.ending?`<button class="btn pri" data-a="ending" data-k="${d.ending}">THE END</button>`:`<button class="btn pri" data-a="toWard">WARDROOM</button>`}<button class="btn" data-a="launch" data-id="${d.id}">${ok?'FLY THIS AGAIN':'RETRY'}</button></div></div></div></div></div>`.replace('FLY THIS AGAIN','RUN AGAIN');const g0=G;setTimeout(()=>{if(G===g0)G=null;},0);closeOverlays();showScr(html,'deb');}
+function win(){finish(true);}function lost(why){finish(false,why);}function fail(why){finish(false,why);}
+function closeOverlays(){$('pause').classList.remove('on');$('modal').classList.remove('on');$('peri').classList.remove('on');$('game').classList.remove('on');}
+function ending(k){const e=ENDINGS[k];showScr(`<div class="desk">${deskHead('ENDING','toWard','WARDROOM')}<div class="folder"><h3>${e.t}</h3><div class="memo" style="max-width:none">${e.x}</div><p style="margin-top:10px">Endings found: ${Object.keys(S.endings).length} of 3. Return to The Decision to choose differently. The Hunting Grounds and every patrol stay open.</p><button class="btn pri" data-a="toWard">WARDROOM</button></div></div>`,'end');}
+const MANUAL=`<h3>FIELD MANUAL</h3>
+<h5>THE IDEA</h5><p>You cannot see. You can only listen, and be heard. Find them first, shoot first, then disappear.</p>
+<h5>STEERING</h5><p>Tap the chart to set a course. Drag to move the chart, pinch or use + and - to zoom. The target-cross button recentres on you. ORDER sets speed. Fast means loud, and fast also makes you deaf.</p>
+<h5>DEPTH AND THE LAYER</h5><p>Drag on DIVING PLANES or use SCOPE, ABOVE, BELOW, DEEP. The dashed THERMOCLINE line bends sound. Below it, ships on the surface hear you far less and their pings reach far less. Do not pass the red TEST line for long.</p>
+<h5>SONAR</h5><p>The green screen shows noise by bearing. Bright lines are contacts. You are deaf in the dark arc behind your boat. New contacts start as a bearing line. Moving across the line builds a solution, shown as a pencil mark with a ring of doubt. Tap a mark to select it.</p>
+<h5>PERISCOPE</h5><p>At periscope depth press SCOPE. Drag to look around. MARK gives an exact fix on the ship on the crosshair. PHOTO needs 6X. A raised scope can be spotted, so be quick.</p>
+<h5>TORPEDOES</h5><p>Select a contact and press FIRE AT TRACK, or press FIRE and tap the chart. Better solutions mean better shots. The seeker takes over in the last kilometre. Tubes need time to reload.</p>
+<h5>BEING HUNTED</h5><p>The HELD light means they have you on active sonar. Cross the layer, change course, slow down or stop, and drop a DECOY. Hugging the seabed also confuses pings. PING gives you a fix on everything nearby, and tells everyone exactly where you are.</p>
+<h5>BATTERY</h5><p>Diesel boats drain fast at speed. At periscope depth press SNORKEL to recharge. It is loud and visible.</p>
+<h5>COMMENDATIONS</h5><p>Three stars per patrol: finish it, keep the hull over 70%, and never be located.</p>`;
+function modal(html){$('modal').innerHTML=`<div class="pcard">${html}</div>`;$('modal').classList.add('on');}
+function pauseMenu(){paused=true;if(G)saveM();saveS();$('pause').innerHTML=`<div class="pcard"><h3>PAUSED</h3><button class="btn pri" data-a="resumeP">RESUME</button><button class="btn" data-a="manualP">FIELD MANUAL</button><button class="btn" data-a="optsP">SETTINGS</button><button class="btn" data-a="restartP">RESTART PATROL</button><button class="btn" data-a="abortP">ABANDON PATROL</button><button class="btn" data-a="hub">Go back to games</button></div>`;$('pause').classList.add('on');}
+function opts(){const row=(k,l)=>`<div class="opt"><span>${l}</span><button class="btn${S.opt[k]?' pri':''}" data-a="opt" data-k="${k}">${S.opt[k]?'ON':'OFF'}</button></div>`;modal(`<h3>SETTINGS</h3>${row('music','Music')}${row('sfx','Sound effects')}${row('hints','Lt. Tolliver\'s hints')}<div class="opt"><span>Erase career</span><button class="btn" data-a="wipe1">ERASE</button></div><button class="btn pri" data-a="modalX">BACK</button>`);}
+/* ---------- actions ---------- */
+const ACT={
+ hub(){if(G&&!G.over)saveM();saveS();location.href='index.html';},
+ toWard(){closeOverlays();ward('orders');},toTitle(){title();},
+ tab(el){ward(el.dataset.t);},
+ manualT(){modal(MANUAL+'<button class="btn pri" data-a="modalX">BACK</button>');},optsT(){opts();},
+ manualP(){modal(MANUAL+'<button class="btn pri" data-a="modalX">BACK</button>');},optsP(){opts();},
+ modalX(){$('modal').classList.remove('on');},
+ opt(el){const k=el.dataset.k;S.opt[k]=S.opt[k]?0:1;saveS();A.apply();opts();},
+ wipe1(){modal('<h3>ERASE CAREER?</h3><p>This removes all progress for good.</p><button class="btn pri" data-a="wipe2">YES, ERASE</button><button class="btn" data-a="optsT">BACK</button>');},
+ wipe2(){S=fresh();saveS();clearM();$('modal').classList.remove('on');if(!G)title();},
+ brief(el){brief(el.dataset.id);},launch(el){launchM(el.dataset.id);},openRefit(){ward('refit');},
+ resume(){resumeM();},dropM(){clearM();ward('orders');},
+ pickBoat(el){S.boat=+el.dataset.i;saveS();ward('refit');},
+ buy(el){const k=el.dataset.k,l=S.up[k],c=UPS[k].c[l];if(l<5&&S.merit>=c){S.merit-=c;S.up[k]++;A.ok();checkMedals();saveS();ward('refit');}},
+ readLog(el){const m=M[MIDX[el.dataset.id]];modal(`<h3>${m.log[0].toUpperCase()}</h3><p style="white-space:pre-wrap">${m.log[1]}</p><button class="btn pri" data-a="modalX">BACK</button>`);},
+ ending(el){ending(el.dataset.k);},
+ pause(){if(G)pauseMenu();},
+ resumeP(){$('pause').classList.remove('on');paused=false;A.ens();},
+ restartP(){const id=G.id;$('pause').classList.remove('on');G=null;launchM(id);},
+ abortP(){modal('<h3>ABANDON PATROL?</h3><p>You will lose this patrol\'s progress. No penalty.</p><button class="btn pri" data-a="abortY">ABANDON</button><button class="btn" data-a="modalX">BACK</button>');},
+ abortY(){clearM();G=null;closeOverlays();ward('orders');},
+ ts(el){G.ts=+el.dataset.v;syncTs();A.key();},
+ tel(el){G.o.tel=+el.dataset.t;A.clk(.7);if(G.o.tel>=4&&G.o.scope)say('Scope will shake at this speed, sir.');},
+ zin(){V.z=clamp(V.z*1.35,1,5);clampV();},zout(){V.z=clamp(V.z/1.35,1,5);clampV();},zme(){V.follow=true;V.cx=G.o.x;V.cy=G.o.y;clampV();},
+ dPD(){G.o.ordZ=PD;A.key();},dAB(){G.o.ordZ=Math.max(PD+6,G.layer-14);A.key();},dBE(){G.o.ordZ=G.layer+30;A.key();},dDP(){G.o.ordZ=Math.min(testD()-12,depthAt(G.o.x,G.o.y)-14);A.key();},
+ scope(){if(G.o.scope)closeScope();else if(G.wantScope){G.wantScope=false;}else openScope();},
+ scopeDown(){closeScope();A.clk(.7);},pmag(){PZ.mag=PZ.mag?0:1;$('bMag').textContent=PZ.mag?'1.5X':'6X';A.key();},
+ mark(){doMark();},photo(){doPhoto();},
+ pfire(){const t=targetInView(.2),e=t||(sel?G.es.find(x=>x.id===sel&&!x.dead):null);if(e){if(e.friend){say('Check fire. That is a friendly.','h');return;}fire(e);}else{const o=G.o;fire(null,o.x+Math.sin(PZ.az)*6000,o.y-Math.cos(PZ.az)*6000);}},
+ snork(){const o=G.o;if(o.snork){o.snork=false;A.key();return;}if(o.z>21.5){o.ordZ=PD;say('Coming to periscope depth first. Press SNORKEL again when we arrive.');return;}o.snork=true;say('Snorkel up. Diesels running, batteries charging.');A.clk(1);},
+ ping(){const o=G.o;if(o.pingT>0)return;o.pingT=80;A.ping(1);fxAdd('ping',o.x,o.y);G.st.located=G.st.located;const rr=6000+U('sonar')*1000;for(const e of G.es){if(e.dead||SHIP[e.k].air)continue;const r=dist(e,o),k=across(o.z,e.z)?.6:1;if(r<rr*k){const q=e.c;q.seen=true;q.sol=Math.max(q.sol,clamp(92-r/120,35,92));q.held=true;q.last=G.t;const qq=Math.pow(1-q.sol/100,1.4),er=r*.5*qq;q.ex=e.x+Math.cos(q.ang)*er;q.ey=e.y+Math.sin(q.ang)*er;q.er=er;q.eh=e.h;q.ev=e.v;}if(SHIP[e.k].asw&&r<rr*2){e.st='hunt';e.lkx=o.x;e.lky=o.y;e.lkz=o.z;e.lkT=G.t;e.fix=G.t;}if(SHIP[e.k].sub&&!e.passive&&r<rr*2){e.sus=2;e.lkx=o.x;e.lky=o.y;e.lkT=G.t;}}for(const m of G.mines)if(Math.hypot(m.x-o.x,m.y-o.y)<2200)m.known=true;say('Active ping! Everyone heard that.','h');},
+ fire(){const e=sel?G.es.find(x=>x.id===sel&&!x.dead):null;if(e&&!e.friend){fire(e);return;}if(armed){armed=false;$('arm').classList.remove('on');return;}if(!G.o.tubes.some(t=>t===0)){say(G.o.tubes.some(t=>t>0)?'Tubes reloading, sir.':'Tubes are dry, sir.','h');return;}armed=true;$('arm').classList.add('on');A.clk(.6);},
+ disarm(){armed=false;$('arm').classList.remove('on');},
+ fireSel(){const e=sel?G.es.find(x=>x.id===sel&&!x.dead):null;if(e)fire(e);},cardX(){sel=0;},
+ decoy(){const o=G.o;if(o.decoys<=0)return;o.decoys--;o.dT=260;G.dec.push({x:o.x,y:o.y,z:o.z,life:260,dec:true});A.splash();say('Noisemaker away.');},
+ hintX(){$('hint').classList.remove('on');if(G&&G.tutI>=0&&G.tutShown===G.tutI){G.tutHide=true;}},
+ leave(){if(G&&G.inGate){G.st.tons=G.st.tons;win();}},
+};
+document.addEventListener('click',e=>{const el=e.target.closest('[data-a]');if(!el||el.disabled)return;const f=ACT[el.dataset.a];if(f){A.ens();f(el);}});
+/* ---------- chart input ---------- */
+(function(){const c=$('chart'),pts=new Map();let moved=false,d0=0,z0=1,sx=0,sy=0;
+ c.addEventListener('pointerdown',e=>{c.setPointerCapture(e.pointerId);pts.set(e.pointerId,[e.offsetX,e.offsetY]);if(pts.size===1){moved=false;sx=e.offsetX;sy=e.offsetY;}else if(pts.size===2){const a=[...pts.values()];d0=Math.hypot(a[0][0]-a[1][0],a[0][1]-a[1][1]);z0=V.z;moved=true;}});
+ c.addEventListener('pointermove',e=>{if(!pts.has(e.pointerId)||!G)return;const prev=pts.get(e.pointerId),nx=e.offsetX,ny=e.offsetY;pts.set(e.pointerId,[nx,ny]);if(pts.size===2){const a=[...pts.values()],d=Math.hypot(a[0][0]-a[1][0],a[0][1]-a[1][1]);V.z=clamp(z0*d/Math.max(d0,1),1,5);clampV();return;}if(Math.hypot(nx-sx,ny-sy)>12)moved=true;if(moved){const s=fitS()*V.z;V.cx-=(nx-prev[0])/s;V.cy-=(ny-prev[1])/s;V.follow=false;clampV();}});
+ const up=e=>{if(!pts.has(e.pointerId))return;const was=pts.size;pts.delete(e.pointerId);if(!G||paused||moved||was>1)return;const x=e.offsetX,y=e.offsetY;let best=null,bd=36;const o=G.o,op=WS(o.x,o.y);for(const q of G.es){const k=q.c;if(q.dead||!k.seen||SHIP[q.k].air)continue;let p;if(k.sol<18&&!k.vis){if(!k.held)continue;const bb=brg(o,q),L=2400*fitS()*V.z;p=[op[0]+Math.sin(bb)*L,op[1]-Math.cos(bb)*L];}else p=WS(k.vis?q.x:k.ex,k.vis?q.y:k.ey);const d=Math.hypot(p[0]-x,p[1]-y);if(d<bd){bd=d;best=q;}}
+  const w=SW(x,y);if(armed){armed=false;$('arm').classList.remove('on');if(best&&!best.friend)fire(best);else fire(null,w[0],w[1]);return;}if(best){sel=best.id;A.blip(.5);return;}G.o.wp=[clamp(w[0],0,G.W),clamp(w[1],0,G.H)];A.key();};
+ c.addEventListener('pointerup',up);c.addEventListener('pointercancel',e=>pts.delete(e.pointerId));
+ const dp=$('dep');let dn=false;const setZ=e=>{const r=dp.getBoundingClientRect(),y=e.clientY-r.top,mx=depMax();G.o.ordZ=clamp((y-6)/(r.height-8)*mx,PD,crushD()*1.1);};dp.addEventListener('pointerdown',e=>{if(!G)return;dn=true;dp.setPointerCapture(e.pointerId);setZ(e);});dp.addEventListener('pointermove',e=>{if(dn&&G)setZ(e);});dp.addEventListener('pointerup',()=>{dn=false;});dp.addEventListener('pointercancel',()=>{dn=false;});
+ const pc=$('pcv');let pdn=false,px=0;pc.addEventListener('pointerdown',e=>{pdn=true;px=e.clientX;pc.setPointerCapture(e.pointerId);});pc.addEventListener('pointermove',e=>{if(!pdn)return;PZ.az=wrap(PZ.az-(e.clientX-px)/(pw/pFov()));px=e.clientX;});pc.addEventListener('pointerup',()=>{pdn=false;});pc.addEventListener('pointercancel',()=>{pdn=false;});
+})();
+/* ---------- loop ---------- */
+let last=0,acc=0,fr=0,tH=0,tS=0;
+function frame(ts){requestAnimationFrame(frame);const dt=Math.min(.1,(ts-last)/1000||0);last=ts;fr++;
+ if(screen==='title'){if(fr%2===0)drawTitle();return;}
+ if(screen!=='game'||!G)return;
+ if(!paused&&!document.hidden&&!G.over){acc+=dt*10*G.ts;let n=0;while(acc>=1&&n<120){step(1);acc-=1;n++;if(!G||G.over)return;G.wfT+=1;if(G.wfT>=3){G.wfT=0;wfTick();}}
+  tS+=dt;if(tS>20){tS=0;saveM();}}
+ if(!G)return;if(V.follow){V.cx=G.o.x;V.cy=G.o.y;clampV();}
+ if(G.o.scope){drawPeri();tH+=dt;if(tH>.25){tH=0;syncHUD();updatePInfo();}return;}
+ if(fr%2===0)drawChart();
+ if(fr%4===1){drawWF();drawDials();}
+ if(fr%6===2)drawDep();
+ tH+=dt;if(tH>.2){tH=0;syncHUD();}
+}
+window.addEventListener('resize',()=>{if(G&&screen==='game'){resizeCanvases();if(G.o.scope)presize();drawDep();}if(screen==='title')title();});
+document.addEventListener('visibilitychange',()=>{if(document.hidden){if(G&&!G.over)saveM();saveS();}});
+loadS();title();requestAnimationFrame(frame);
+window.__fire=e=>fire(e);window.B_bat=(o,G)=>B().batt&&o.batt<15;window.__tc={PZ,get V(){return V;},get G(){return G;},get S(){return S;},set S(v){S=v;},step,ACT,M,sprite,SHIP,finish,get screen(){return screen;},get paused(){return paused;},hgDef,get sel(){return sel;}};
+</script></body></html>
