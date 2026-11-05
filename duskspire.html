@@ -1482,6 +1482,7 @@ function chooseMove(f){f.move=f.d.ai(f,B);f.hist.push(f.move);}
 function makeBattle(enc,kind){
  const P={block:0,st:{},get hp(){return R.hp;}};
  B={P,kind,foes:enc.map((id,i)=>mkFoe(id,i,enc.length)),dp:[],hand:[],disc:[],exh:[],energy:0,maxE:3,turn:0,atkTurn:0,sklTurn:0,busy:true,phase:'start',sel:null,potTarget:null,gainedGold:0,
+  get R(){return R;},
   foes2(){return this.foes.filter(f=>f.hp>0);},
   rndFoe(){const a=this.foes2();return a.length?pick(a):null;},
   toast,
@@ -1501,7 +1502,7 @@ function makeBattle(enc,kind){
   addCard(id,pile){const c=mkCard(id);if(pile==='hand'&&this.hand.length<10)this.hand.push(c);else if(pile==='draw')this.dp.splice(ri(0,this.dp.length),0,c);else this.disc.push(c);renderHand();},
   exhaustCard(c){const i=this.hand.indexOf(c);if(i>=0)this.hand.splice(i,1);this.exh.push(c);},
   upAll(){[this.hand,this.dp,this.disc].forEach(p=>p.forEach(c=>{if(CARDS[c.id].u&&CARDS[c.id].y!=='c')c.up=1;}));renderHand();},
-  usePot(i,T){const id=R.potions[i];if(!id)return;R.potions[i]=null;this.potTarget=null;POTIONS[id].f(this,T);sfx('magic');renderTop();renderHand();if(!checkEnd())snapB();},
+  usePot(i,T){const id=R.potions[i];if(!id||this.busy||this.phase!=='player'){this.potTarget=null;return;}R.potions[i]=null;this.potTarget=null;try{POTIONS[id].f(this,T);}catch(err){console.error(err);}sfx('magic');renderTop();renderHand();if(!checkEnd())snapB();},
  };
  B.dp=shuf(R.deck.map(c=>({id:c.id,up:c.up,u:c.u})));
  // innate-like: none. layout
@@ -1570,7 +1571,7 @@ async function playCard(ci,T){if(!B||B.busy||B.phase!=='player')return;const d=C
  sfx(d.y==='a'?'swish':d.y==='p'?'magic':'click');
  if(d.y==='a'){B.atkTurn++;B.lunge=1;}if(d.y==='s')B.sklTurn++;
  await wait(140);
- d.f(B,cv(ci),T,ci);
+ try{d.f(B,cv(ci),T,ci);}catch(err){console.error(err);}
  // card-played triggers
  if(d.y==='s')B.foes2().forEach(f=>{if(f.st.enrage)B.apply(f,'str',f.st.enrage);});
  if(B.P.st.cuts)B.foes2().forEach(f=>dmgFoe(f,B.P.st.cuts,'jugg'));
@@ -1612,6 +1613,10 @@ async function foeAct(f){const m=f.d.moves[f.move];f.anim.lunge=1;await wait(180
  if(m.s)m.s.forEach(([w,k,n])=>{if(w==='p')B.apply(B.P,k,n);else if(w==='m')B.apply(f,k,n);else B.foes2().forEach(o=>B.apply(o,k,n));});
  if(m.add){for(let i=0;i<m.add[1];i++)B.addCard(m.add[0],m.add[2]==='draw'?'draw':'disc');toast(m.add[1]+' '+CARDS[m.add[0]].n+' added to your '+(m.add[2]==='draw'?'draw':'discard')+' pile');}
  await wait(260);}
+/* safety net: if anything ever goes wrong mid-fight, get the battle moving again instead of freezing */
+function recoverBattle(){if(!B||scene!=='battle'||ending||['won','done','lost'].includes(B.phase))return;if(R.hp<=0){lose();return;}if(checkEnd())return;
+ if(B.phase==='enemy'){startTurn();return;}B.phase='player';B.busy=false;renderHand();snapB();}
+addEventListener('unhandledrejection',recoverBattle);
 function checkEnd(){if(!B||ending)return false;if(R.hp<=0){lose();return true;}if(B.foes2().length)return false;ending=true;B.busy=true;B.phase='won';
  const tk=BT;setTimeout(async()=>{if(tk!==BT)return;ending=false;await winCombat();},700);return true;}
 async function winCombat(){if(!B)return;const kind=B.kind;B.hand=[];$('hand').innerHTML='';handEls.clear();$('battle').classList.add('won');
