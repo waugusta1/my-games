@@ -364,6 +364,20 @@ h1,h2,h3{margin:0;font-weight:700;letter-spacing:.04em}
 #tip .k{margin-top:5px;color:#c9bfae}
 #toast{position:absolute;left:50%;top:76px;transform:translateX(-50%);background:rgba(12,8,18,.92);border:1px solid #8b6d3c;padding:10px 20px;border-radius:5px;font-size:18px;z-index:95;pointer-events:none;opacity:0;transition:opacity .25s}
 #toast.on{opacity:1}
+#rareRev{z-index:90;background:radial-gradient(ellipse at center,rgba(34,22,9,.985),rgba(4,2,8,.995))}
+.rrRow{display:flex;flex-wrap:wrap;justify-content:center;gap:12px 16px;margin:18px 0 20px;max-width:1170px}
+.rrC{display:flex;flex-direction:column;align-items:center;gap:6px}
+.rrC .card{position:relative;transform:none}
+.rrL{font:600 13px system-ui;color:#e8c27a}
+.card.rr .cf{box-shadow:0 0 16px rgba(255,205,110,.8)}
+.oddsL{font:600 17px system-ui;color:#e8c27a;margin:4px 0 26px}
+.rrRow.small{gap:6px 10px;margin:14px 0 16px;max-width:1170px}
+.rrRow.small .rrC{width:124px}
+.rrRow.small .card{transform:scale(.78);transform-origin:50% 0;margin-bottom:-46px;margin-left:-13px;margin-right:-13px}
+.lockW{position:relative;margin:-14px -10px}
+.lockW .card{margin:0!important}
+.lockL{position:absolute;left:14px;right:14px;top:50%;transform:translateY(-50%);text-align:center;font:700 15px/1.3 system-ui;color:#e8c27a;text-shadow:0 1px 3px #000;pointer-events:none}
+.cxNote{width:100%;text-align:center;font:600 16px system-ui;color:#e8c27a;padding-bottom:2px}
 /* ---------- map ---------- */
 #mapWrap{position:absolute;left:0;right:0;top:58px;bottom:0;overflow-x:auto;overflow-y:hidden;-webkit-overflow-scrolling:touch}
 #mapSvg{display:block;height:100%}
@@ -533,6 +547,7 @@ h1,h2,h3{margin:0;font-weight:700;letter-spacing:.04em}
    <div class="sub" id="pNote" style="font-size:14px;margin-top:2px">Your climb is saved, even in the middle of a fight.</div>
   </div>
  </div>
+ <div id="rareRev" class="ov" hidden></div>
  <div id="tip" hidden></div><div id="toast"></div>
 </div>
 <script>__boot(function(){
@@ -723,6 +738,21 @@ strategy:{n:'Master Plan',c:0,y:'s',r:3,k:'n',i:'scroll',p:'gold',v:{n:3},u:{n:4
 instinct:{n:'Good Instincts',c:0,y:'s',r:2,k:'n',i:'shield',p:'teal',v:{b:6},u:{b:9},ds:'Gain {b} block.',f:(B,v)=>B.block(v.b)},
 trip:{n:'Trip',c:0,y:'s',r:2,k:'n',t:'e',i:'chain',p:'pink',v:{n:2},u:{n:3},ds:'Apply {n} <em>Vulnerable</em>.',f:(B,v,T)=>B.apply(T,'vul',v.n)},
 apotheosis:{n:'Ascension',c:2,y:'s',r:3,k:'n',i:'sun',p:'gold',v:{},u:{c:1},x:{ex:1},ds:'Upgrade ALL your cards for the rest of combat. Exhaust.',f:B=>B.upAll()},
+// ---- rare cards unlocked by total bosses slain (ul)
+crushwall:{n:'Crushing Wall',c:2,y:'a',r:3,k:'w',ul:1,t:'e',i:'shield',p:'gold',v:{},u:{c:1},ds:'Deal damage equal to twice your block. Lose all your block.',dyn:B=>B?B.P.block*2:0,f:(B,v,T)=>{const b=B.P.block;B.P.block=0;B.hit(T,b*2,1,1);}},
+standfirm:{n:'Stand Firm',c:2,y:'s',r:3,k:'w',ul:3,i:'plate',p:'blue',v:{b:18,n:2},u:{b:24,n:3},ds:'Gain {b} block. Apply {n} <em>Weak</em> to ALL enemies.',f:(B,v)=>{B.block(v.b);B.foes2().forEach(f=>B.apply(f,'weak',v.n));}},
+warlord:{n:'War Banner',c:1,y:'s',r:3,k:'w',ul:6,i:'crown',p:'gold',v:{n:3},u:{n:4},x:{ex:1},ds:'Gain {n} <em>Strength</em>. Draw 2 cards. Exhaust.',f:(B,v)=>{B.apply(B.P,'str',v.n);B.draw(2);}},
+titanfall:{n:'Titan\'s Fall',c:3,y:'a',r:3,k:'w',ul:10,i:'horns',p:'red',v:{d:22,n:2},u:{d:28,n:3},ds:'Deal {d} damage to ALL enemies. Apply {n} <em>Vulnerable</em> to ALL.',f:(B,v)=>{B.hitAll(v.d);B.foes2().forEach(f=>B.apply(f,'vul',v.n));}},
+cinderbloom:{n:'Cinder Bloom',c:1,y:'s',r:3,k:'m',ul:1,i:'flame',p:'fire',v:{},u:{c:0},x:{ex:1},ds:'Double the <em>Burn</em> on ALL enemies. Exhaust.',f:B=>B.foes2().forEach(f=>B.apply(f,'burn',f.st.burn||0,1))},
+sunfall:{n:'Sunfall',c:2,y:'a',r:3,k:'m',ul:3,i:'sun',p:'gold',v:{d:10},u:{d:14},ds:'Deal {d} damage to ALL enemies. Burning enemies are hit twice.',f:(B,v)=>B.foes2().forEach(f=>{const b=f.st.burn;B.hit(f,v.d);if(b)B.hit(f,v.d);})},
+emberfont:{n:'Ember Font',c:0,y:'s',r:3,k:'m',ul:6,i:'camp',p:'fire',v:{n:2},u:{n:3},x:{ex:1},ds:'Gain {n} energy. Apply 3 <em>Burn</em> to ALL enemies. Exhaust.',f:(B,v)=>{B.gainE(v.n);B.foes2().forEach(f=>B.apply(f,'burn',3));}},
+inferno:{n:'Living Inferno',c:3,y:'p',r:3,k:'m',ul:10,i:'flame',p:'red',v:{n:2},u:{c:2},ds:'At turn end, apply {n} <em>Burn</em> to ALL enemies. Burn you apply gains +{n}.',f:(B,v)=>{B.apply(B.P,'wildfire',v.n);B.apply(B.P,'eternal',v.n);}},
+reaptoll:{n:'Reaper\'s Toll',c:1,y:'a',r:3,k:'s',ul:1,t:'e',i:'skull',p:'green',v:{},u:{c:0},ds:'Deal damage equal to the enemy\'s <em>Poison</em>. It keeps its Poison.',f:(B,v,T)=>B.hit(T,T.st.poison||0,1,1)},
+bladestorm:{n:'Storm of Blades',c:2,y:'s',r:3,k:'s',ul:3,i:'dagger',p:'purple',v:{n:5},u:{n:6},ds:'Add {n} <em>Shivs</em> to your hand. <em>Shivs</em> deal 2 more damage this fight.',f:(B,v)=>{B.apply(B.P,'accuracy',2);for(let i=0;i<v.n;i++)B.addCard('shiv','hand');}},
+shadowform:{n:'Shadow Form',c:2,y:'p',r:3,k:'s',ul:6,i:'eye',p:'teal',v:{n:2},u:{n:3},ds:'Gain {n} <em>Dexterity</em>. Draw 1 more card each turn.',f:(B,v)=>{B.apply(B.P,'dex',v.n);B.apply(B.P,'study',1);}},
+plaguelord:{n:'Plague Lord',c:3,y:'p',r:3,k:'s',ul:10,i:'claw',p:'green',v:{n:3},u:{n:4},ds:'Apply {n} <em>Poison</em> to ALL enemies now and at the start of each of your turns.',f:(B,v)=>{B.foes2().forEach(f=>B.apply(f,'poison',v.n));B.apply(B.P,'fumes',v.n);}},
+borrowed:{n:'Borrowed Time',c:0,y:'s',r:3,k:'n',ul:3,i:'bolt',p:'purple',v:{n:2},u:{n:3},x:{ex:1},ds:'Lose 5 HP. Gain {n} energy. Draw 2 cards. Exhaust.',f:(B,v)=>{B.loseHP(5);B.gainE(v.n);B.draw(2);}},
+duskgift:{n:'Dusk\'s Gift',c:2,y:'s',r:3,k:'n',ul:10,i:'star',p:'pink',v:{b:20,n:2},u:{b:28,n:3},x:{ex:1},ds:'Gain {b} block. Gain {n} <em>Strength</em>. Exhaust.',f:(B,v)=>{B.block(v.b);B.apply(B.P,'str',v.n);}},
 // ---- status & curses
 wound:{n:'Wound',c:-1,y:'c',r:9,k:'x',i:'wound',p:'red',v:{},x:{un:1},ds:'Unplayable.'},
 dazed:{n:'Dazed',c:-1,y:'c',r:9,k:'x',i:'daze',p:'ash',v:{},x:{un:1,et:1},ds:'Unplayable. Ethereal.'},
@@ -1280,7 +1310,7 @@ const sfx=(n,...a)=>{try{SND.play(n,...a);}catch(_){}};
 const mus=n=>{try{SND.music(n);}catch(_){}};
 /* ---- save data ---- */
 const MK='duskspire-meta',RK='duskspire-run';
-const META={embers:0,total:0,sanct:{},unl:{w:1},dusk:{w:0,m:0,s:0},best:{w:-1,m:-1,s:-1},seen:{},relSeen:{},foes:{},stats:{runs:0,wins:0,kills:0,floors:0,bosses:0,best:0,dmg:0},opt:{music:true,sfx:true,fast:false},tut:0,last:'w'};
+const META={embers:0,total:0,sanct:{},unl:{w:1},dusk:{w:0,m:0,s:0},best:{w:-1,m:-1,s:-1},seen:{},relSeen:{},foes:{},stats:{runs:0,wins:0,kills:0,floors:0,bosses:0,best:0,dmg:0},opt:{music:true,sfx:true,fast:false},tut:0,last:'w',rareT:0};
 function loadMeta(){try{const s=JSON.parse(__store.get(MK));if(s){for(const k in s){if(META[k]&&typeof META[k]==='object'&&!Array.isArray(META[k]))Object.assign(META[k],s[k]);else META[k]=s[k];}}}catch(_){}}
 function saveMeta(){try{__store.set(MK,JSON.stringify(META));}catch(_){}}
 let R=null;
@@ -1303,8 +1333,11 @@ function gainRelic(R,id){if(!id)return null;R.relics.push(id);META.relSeen[id]=1
  try{renderTop();}catch(_){}return id;}
 function pickRelic(R,r){let pool=Object.keys(RELICS).filter(k=>RELICS[k].r===r&&!R.relics.includes(k));if(!pool.length)pool=Object.keys(RELICS).filter(k=>RELICS[k].r>=1&&RELICS[k].r<=3&&!R.relics.includes(k));return pool.length?pick(pool):'vial';}
 function gainPotion(R,id){const i=R.potions.indexOf(null);if(i<0)return false;R.potions[i]=id||pick(Object.keys(POTIONS));renderTop();return true;}
-function cardPool(R,r){return Object.keys(CARDS).filter(k=>{const c=CARDS[k];return c.r===r&&(c.k===R.hero||(c.k==='n'&&R0()<.35));});}
-function rollCard(R,force,elite){let r=force;if(!r){const x=R0()*100,rare=(elite?10:5)*(1+.25*sl('rarity'))+(R.act-1)*2;r=x<rare?3:x<rare+(elite?40:33)?2:1;}
+function cardOpen(k){const u=CARDS[k].ul;return !u||META.stats.bosses>=u;}
+function cardPool(R,r){return Object.keys(CARDS).filter(k=>{const c=CARDS[k];return c.r===r&&cardOpen(k)&&(c.k===R.hero||(c.k==='n'&&R0()<.35));});}
+/* the higher you climb, the better the cards: about +0.5% rare and +0.25% uncommon per floor */
+function rareOdds(R,elite){return (elite?10:5)*(1+.25*sl('rarity'))+(R.floorsTotal||0)*.5;}
+function rollCard(R,force,elite){let r=force;if(!r){const x=R0()*100,rare=rareOdds(R,elite),unc=(elite?40:33)+(R.floorsTotal||0)*.25;r=x<rare?3:x<rare+unc?2:1;}
  let p=cardPool(R,r);if(!p.length)p=cardPool(R,1);return pick(p);}
 function rollCards(R,n,elite,boss){const out=[];let g=0;while(out.length<n&&g++<60){const c=rollCard(R,boss?3:0,elite);if(!out.includes(c))out.push(c);}return out;}
 /* ---- toast / tooltip ---- */
@@ -1330,6 +1363,12 @@ function descOf(ci,B,T){const d=CARDS[ci.id],v=cv(ci);let s=(ci.up&&d.dsu)||d.ds
  if(d.dyn&&B)s+=' <b>('+d.dyn(B)+')</b>';return s;}
 function cardHTML(ci,B,T){const d=CARDS[ci.id],c=cc(ci),pal=ICC[d.p]||ICC.gold;
  return '<div class="cf" style="--rim:'+RIM[d.r>3?9:d.r]+'"><div class="cnm">'+d.n+(ci.up?'+':'')+'</div><div class="cart" style="background:radial-gradient(ellipse at 50% 60%,'+pal[1]+'cc,'+pal[2]+' 62%,#07050a)">'+ICX(d.i,d.p,'','style="position:absolute;left:50%;top:50%;width:70px;height:70px;margin:-35px 0 0 -35px;filter:drop-shadow(0 3px 4px rgba(0,0,0,.8)) drop-shadow(0 0 12px '+pal[1]+')"')+'</div><div class="cty">'+TYN[d.y]+'</div><div class="cds"><span>'+descOf(ci,B,T)+'</span></div></div>'+(c>=0?'<div class="cco" style="background:'+GEM[d.k]+';border-radius:50%;box-shadow:0 0 0 2px #1a0c04,0 0 0 4px rgba(232,194,122,.5),0 3px 6px #000"><span>'+c+'</span></div>':'');}
+const RARE_STEPS=[1,3,6,10];
+function checkRareUnlocks(){const n=META.stats.bosses,fresh=Object.keys(CARDS).filter(k=>{const u=CARDS[k].ul;return u&&u>META.rareT&&u<=n;});
+ if(n>META.rareT){META.rareT=n;saveMeta();}if(!fresh.length)return;
+ const o=$('rareRev');o.innerHTML='<div class="ttl" style="font-size:40px">New Rare Cards</div><div class="sub">'+n+' boss'+(n===1?'':'es')+' slain. These can now turn up in your climbs.</div><div class="rrRow" id="rrRow"></div><button class="bt" id="rrGo">Continue</button>';
+ const row=$('rrRow');row.classList.toggle('small',fresh.length>7);fresh.forEach(k=>{const w=document.createElement('div');w.className='rrC';const el=cardEl(mkCard(k));el.classList.add('rr');w.appendChild(el);const l=document.createElement('div');l.className='rrL';l.textContent=CARDS[k].k==='n'?'Any climber':HEROES[CARDS[k].k].n;w.appendChild(l);row.appendChild(w);});
+ o.hidden=false;sfx('rare');$('rrGo').onclick=()=>{sfx('click');o.hidden=true;o.innerHTML='';};}
 function cardEl(ci,B,cls){const e=document.createElement('div');e.className='card'+(ci.up?' up':'')+(cls?' '+cls:'');e.dataset.y=CARDS[ci.id].y;e.innerHTML=cardHTML(ci,B);return e;}
 /* ---- top bar ---- */
 function drawCrest(){const c=$('crestCv').getContext('2d');c.setTransform(2,0,0,2,0,0);c.clearRect(0,0,132,50);if(!R)return;
@@ -1650,10 +1689,10 @@ function rewards(kind,rw){B&&(B.phase='done');
    renderTop();saveRun();render();});
   $('rwGo').onclick=()=>{if(rw.gold&&!rw.took.g){R.gold+=rw.gold;R.stats.gold+=rw.gold;}nodeDone();};};
  render();}
-function cardPick(ids,done,back,canReroll){const draw=()=>{let h='<div class="ttl">Choose a Card</div><div class="choice">';ids.forEach((id,i)=>h+='<div data-i="'+i+'"></div>');h+='</div><div style="display:flex;gap:14px">';
+function cardPick(ids,done,back,canReroll){const kind=R.cur&&R.cur.t==='reward'?R.cur.kind:'';const draw=()=>{let h='<div class="ttl">Choose a Card</div>'+(canReroll?'<div class="oddsL">'+(kind==='boss'?'Boss reward: all rare cards':'Rare card chance on this floor: '+Math.round(rareOdds(R,kind==='elite'))+'%')+'</div>':'')+'<div class="choice">';ids.forEach((id,i)=>h+='<div data-i="'+i+'"></div>');h+='</div><div style="display:flex;gap:14px">';
   if(canReroll&&R.rerolls>0)h+='<button class="bt dk sm" id="cpRe">Reroll ('+R.rerolls+')</button>';h+='<button class="bt dk" id="cpSkip" style="min-width:180px">'+(back?'Back':'Skip')+'</button></div>';ovl(h);$('ovl').style.background='linear-gradient(180deg,rgba(14,9,20,.94),rgba(5,3,9,.97))';
-  ids.forEach((id,i)=>{const el=cardEl(mkCard(id,hasR('whetstone')&&false?1:0));el.style.transform='scale(1.25)';el.style.margin='0 26px';el.onclick=()=>{addDeck(R,id);sfx('sparkle');toast(CARDS[id].n+' added to your deck');renderTop();done();};$('ovl').querySelector('[data-i="'+i+'"]').replaceWith(el);});
-  if($('cpRe'))$('cpRe').onclick=()=>{R.rerolls--;ids=rollCards(R,3);sfx('swish');draw();};
+  ids.forEach((id,i)=>{const el=cardEl(mkCard(id,hasR('whetstone')&&false?1:0));if(CARDS[id].r===3)el.classList.add('rr');el.style.transform='scale(1.25)';el.style.margin='0 26px';el.onclick=()=>{addDeck(R,id);sfx('sparkle');toast(CARDS[id].n+' added to your deck');renderTop();done();};$('ovl').querySelector('[data-i="'+i+'"]').replaceWith(el);});
+  if($('cpRe'))$('cpRe').onclick=()=>{R.rerolls--;ids=rollCards(R,3,kind==='elite',kind==='boss');sfx('swish');draw();};
   $('cpSkip').onclick=()=>{sfx('click');(back||done)();};};draw();}
 /* ---- deck grid (view / choose) ---- */
 const BACKSVG='<svg viewBox="0 0 24 24" width="24" height="24"><path d="M15 4L6 12l9 8" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
@@ -1711,7 +1750,7 @@ function openChest(){show('room');mus(ACTS[R.act].music);if(!R.cur.rel){R.cur.re
  $('chL').onclick=()=>{sfx('click');nodeDone();};
  $('chB').onclick=()=>{sfx('rare');gainRelic(R,R.cur.rel);R.gold+=R.cur.gold;R.stats.gold+=R.cur.gold;R.cur.opened=1;renderTop();saveRun();opened();};}
 /* ---- shop ---- */
-function genShop(){const it=[];const cls=rollCards(R,5),neu=shuf(Object.keys(CARDS).filter(k=>CARDS[k].k==='n')).slice(0,2);
+function genShop(){const it=[];const cls=rollCards(R,5),neu=shuf(Object.keys(CARDS).filter(k=>CARDS[k].k==='n'&&cardOpen(k))).slice(0,2);
  const pr=r=>Math.round((r===3?150:r===2?75:50)*(.9+R0()*.2));
  cls.forEach(id=>it.push({k:'c',id,p:pr(CARDS[id].r)}));neu.forEach(id=>it.push({k:'c',id,p:pr(CARDS[id].r)+10}));
  const rels=[pickRelic(R,1),pickRelic(R,2),pickRelic(R,R0()<.5?3:2)];[...new Set(rels)].forEach(id=>it.push({k:'r',id,p:RELICS[id].r===1?ri(140,160):RELICS[id].r===2?ri(230,260):ri(280,310)}));
@@ -1758,7 +1797,7 @@ function paintEventArt(cv,E){const c=cv.getContext('2d');c.scale(2,2);const pal=
 function onBossDown(paid){const a=R.act;
  if(a===1&&!META.unl.m){META.unl.m=1;toastLater('New climber unlocked: The Ember Witch');}
  if(a===2&&!META.unl.s){META.unl.s=1;toastLater('New climber unlocked: The Shade');}
- saveMeta();
+ saveMeta();checkRareUnlocks();
  const gold=paid||Math.round(ri(95,105)*(hasR('gskull')?1.25:1));if(!paid){R.gold+=gold;R.stats.gold+=gold;}renderTop();
  if(a===3){endRun(true);return;}
  R.cur={t:'bossdown',gold};saveRun();show('room');
@@ -1782,7 +1821,7 @@ function endRun(win){if(!R)return;BT++;const H=R.hero,L=R.dusk;const fl=R.floors
   '<div style="display:flex;gap:16px;margin-top:14px"><button class="bt" id="enSan">Sanctum</button><button class="bt dk" id="enTi">Title</button><button class="bt dk" id="enHub">Go back to games</button></div>');
  $('enHub').onclick=goHub;$('enSan').onclick=()=>{closeOvl();openSanctum();};$('enTi').onclick=()=>{closeOvl();openTitle();};}
 /* ---- title, heroes, sanctum, codex, settings ---- */
-function openTitle(){closeOvl();R=loadRun();show('title');mus('calm');$('bCont').hidden=!R;$('tEmb').innerHTML=ICX('ember','fire')+META.embers+' Embers';const S=META.stats;$('tRec').textContent=S.runs?S.runs+(S.runs===1?' climb':' climbs')+' started, '+S.wins+' won, highest floor '+S.best:'';}
+function openTitle(){closeOvl();R=loadRun();show('title');mus('calm');$('bCont').hidden=!R;$('tEmb').innerHTML=ICX('ember','fire')+META.embers+' Embers';const S=META.stats;$('tRec').textContent=S.runs?S.runs+(S.runs===1?' climb':' climbs')+' started, '+S.wins+' won, highest floor '+S.best:'';checkRareUnlocks();}
 function goHub(){sfx('click');try{if(B)snapB();saveMeta();saveRun();}catch(_){}$('pause').hidden=true;if(window.__goHub)window.__goHub();else location.href='index.html';}
 $('bHub').onclick=goHub;$('pHub').onclick=goHub;
 $('bCont').onclick=()=>{sfx('click');R=loadRun();if(!R)return;UID=1+Math.max(0,...R.deck.map(c=>c.u||0));if(R.cur)runNode();else openMap();};
@@ -1814,7 +1853,7 @@ $('bSanct').onclick=()=>{sfx('click');openSanctum();};
 let codexTab='cards';
 function openCodex(){show('none');const all=Object.keys(CARDS).filter(k=>CARDS[k].r<9);const seen=all.filter(k=>META.seen[k]).length,rels=Object.keys(RELICS),rs=rels.filter(k=>META.relSeen[k]).length;
  let h='<div class="panel" style="position:relative;width:1120px;height:770px;padding:20px;display:flex;flex-direction:column"><div class="ttl" style="font-size:30px">Codex</div><div class="tabs"><button data-t="cards" class="'+(codexTab==='cards'?'on':'')+'">Cards '+seen+'/'+all.length+'</button><button data-t="relics" class="'+(codexTab==='relics'?'on':'')+'">Relics '+rs+'/'+rels.length+'</button><button data-t="foes" class="'+(codexTab==='foes'?'on':'')+'">Bestiary</button><button data-t="stats" class="'+(codexTab==='stats'?'on':'')+'">Records</button></div><div class="grid" id="cxG" style="flex:1"></div></div>'+backBtn('cxX');ovl(h);const g=$('cxG');
- if(codexTab==='cards')all.sort((a,b)=>('wmsn'.indexOf(CARDS[a].k)-'wmsn'.indexOf(CARDS[b].k))||CARDS[a].r-CARDS[b].r).forEach(k=>{const el=cardEl(mkCard(k));if(!META.seen[k]){el.style.filter='brightness(.15) grayscale(1)';}el.style.transform='scale(.85)';el.style.margin='-14px -10px';if(META.seen[k])el.onclick=()=>{sfx('tap');cardZoom(mkCard(k));};g.appendChild(el);});
+ if(codexTab==='cards'){const nb=META.stats.bosses,nx=RARE_STEPS.find(u=>u>nb),nt=document.createElement('div');nt.className='cxNote';nt.textContent='Bosses slain: '+nb+(nx?'. More rare cards unlock at '+nx+'.':'. Every rare card is unlocked.');g.appendChild(nt);all.sort((a,b)=>('wmsn'.indexOf(CARDS[a].k)-'wmsn'.indexOf(CARDS[b].k))||CARDS[a].r-CARDS[b].r).forEach(k=>{const el=cardEl(mkCard(k));if(!META.seen[k]){el.style.filter='brightness(.15) grayscale(1)';}el.style.transform='scale(.85)';el.style.margin='-14px -10px';if(META.seen[k])el.onclick=()=>{sfx('tap');cardZoom(mkCard(k));};if(cardOpen(k)){g.appendChild(el);return;}const w=document.createElement('div');w.className='lockW';w.appendChild(el);const l=document.createElement('div');l.className='lockL';l.textContent='Slay '+CARDS[k].ul+' boss'+(CARDS[k].ul===1?'':'es')+' to unlock';w.appendChild(l);g.appendChild(w);});}
  if(codexTab==='relics')rels.forEach(k=>{const r=RELICS[k],s=META.relSeen[k];const d=document.createElement('div');d.style.cssText='width:250px;display:flex;gap:10px;align-items:center;padding:8px;border:1px solid rgba(232,194,122,.15);border-radius:4px;'+(s?'':'opacity:.3');d.innerHTML=ICX(s?r.i:'quest',s?r.p:'ash','','style="width:44px;height:44px;flex:none"')+'<div><b style="color:#e8c27a">'+(s?r.n:'???')+'</b><div style="font:12.5px system-ui;color:#c9bfae">'+(s?r.d:'Not yet found')+'</div></div>';g.appendChild(d);});
  if(codexTab==='foes')Object.values(ENEMIES).forEach(e=>{const n=META.foes[e.id]||0;const d=document.createElement('div');d.style.cssText='width:200px;height:220px;position:relative;border:1px solid rgba(232,194,122,.15);border-radius:4px;background:radial-gradient(circle at 50% 70%,#2a2036,#0c0812)';const c=document.createElement('canvas');c.width=400;c.height=360;c.style.cssText='width:200px;height:180px';d.appendChild(c);
   const x=c.getContext('2d');x.scale(2,2);const h2=HT[e.art],w=WD[e.art];const s=Math.min(150/h2,170/w);x.translate(100,170);x.scale(s,s);if(e.d||1){}if(!n){x.globalAlpha=1;}ART[e.art](x,e.pal,1.5);if(!n){x.globalCompositeOperation='source-atop';x.fillStyle='#000';x.fillRect(-400,-500,800,700);}
@@ -1826,7 +1865,7 @@ function optRender(){const o=META.opt;$('optBox').innerHTML=[['music','Music'],[
  $('optBox').querySelectorAll('[data-o]').forEach(b=>b.onclick=()=>{const k=b.dataset.o;o[k]=!o[k];saveMeta();try{if(k==='music')SND.set('music',o.music);if(k==='sfx')SND.set('sfx',o.sfx);}catch(_){}sfx('click');optRender();});}
 function openPause(){untip();optRender();const inRun=!!(R&&!$('top').hidden);$('pAband').hidden=!inRun;
  $('pTtl').textContent=inRun?'Paused':'Settings';$('pRes').textContent=inRun?'Resume':'Back';$('pNote').hidden=!inRun;
- $('pRun').textContent=inRun?HEROES[R.hero].n+', '+ACTS[R.act].n+', floor '+(R.floorsTotal||0)+(R.dusk?', Dusk '+R.dusk:''):'';$('pRun').hidden=!inRun;$('pause').hidden=false;}
+ $('pRun').textContent=inRun?HEROES[R.hero].n+', '+ACTS[R.act].n+', floor '+(R.floorsTotal||0)+(R.dusk?', Dusk '+R.dusk:'')+', rare cards '+Math.round(rareOdds(R))+'%':'';$('pRun').hidden=!inRun;$('pause').hidden=false;}
 $('tPause').onclick=()=>{sfx('click');openPause();};$('bOpt').onclick=()=>{sfx('click');openPause();};
 $('pRes').onclick=()=>{sfx('click');$('pause').hidden=true;};
 $('pAband').onclick=()=>{if(!$('pAband').dataset.arm){$('pAband').dataset.arm=1;$('pAband').textContent='Tap again to abandon';setTimeout(()=>{delete $('pAband').dataset.arm;$('pAband').textContent='Abandon Climb';},2000);return;}
@@ -2016,5 +2055,5 @@ loadMeta();try{SND.set('music',META.opt.music);SND.set('sfx',META.opt.sfx);}catc
 fit();openTitle();requestAnimationFrame(frame);
 addEventListener('pagehide',()=>{saveMeta();saveRun();});
 document.addEventListener('visibilitychange',()=>{if(document.hidden){saveMeta();saveRun();}});
-window.__ds={get R(){return R;},get B(){return B;},get scene(){return scene;},ART,HART,ENEMIES,RELICS,POTIONS,EVENTS,META,CARDS,saveRun,rewards,onBossDown,openChest,endRun,show,newRun,startCombat,endTurn,playCard,openShop,openRest,openEvent,enterNode,availNodes,openMap,openSanctum,openCodex,winCombat};
+window.__ds={get R(){return R;},get B(){return B;},get scene(){return scene;},ART,HART,ENEMIES,RELICS,POTIONS,EVENTS,META,CARDS,saveRun,rewards,onBossDown,openChest,endRun,show,newRun,startCombat,endTurn,playCard,openShop,openRest,openEvent,enterNode,availNodes,openMap,openSanctum,openCodex,winCombat,rollCards,rareOdds,cardOpen,cardPick,checkRareUnlocks,saveMeta};
 });</script></body></html>
