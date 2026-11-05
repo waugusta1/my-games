@@ -643,6 +643,7 @@ const STAT={
  kindsoul:{n:'Kindled Soul',i:'heart',p:'fire',d:'Whenever an enemy takes Burn damage, gain {n} block.',buff:1},
  fumes:{n:'Noxious Fumes',i:'drop',p:'green',d:'At the start of your turn, apply {n} Poison to all enemies.',buff:1},
  accuracy:{n:'Accuracy',i:'dagger',p:'steel',d:'Shivs deal {n} more damage.',buff:1},
+ knives:{n:'Cloak of Knives',i:'dagger',p:'dark',d:'Add {n} Shiv to your hand at the start of your turn.',buff:1},
  cuts:{n:'Thousand Cuts',i:'dagger',p:'purple',d:'Whenever you play a card, deal {n} damage to all enemies.',buff:1},
 };
 
@@ -738,6 +739,71 @@ strategy:{n:'Master Plan',c:0,y:'s',r:3,k:'n',i:'scroll',p:'gold',v:{n:3},u:{n:4
 instinct:{n:'Good Instincts',c:0,y:'s',r:2,k:'n',i:'shield',p:'teal',v:{b:6},u:{b:9},ds:'Gain {b} block.',f:(B,v)=>B.block(v.b)},
 trip:{n:'Trip',c:0,y:'s',r:2,k:'n',t:'e',i:'chain',p:'pink',v:{n:2},u:{n:3},ds:'Apply {n} <em>Vulnerable</em>.',f:(B,v,T)=>B.apply(T,'vul',v.n)},
 apotheosis:{n:'Ascension',c:2,y:'s',r:3,k:'n',i:'sun',p:'gold',v:{},u:{c:1},x:{ex:1},ds:'Upgrade ALL your cards for the rest of combat. Exhaust.',f:B=>B.upAll()},
+// ---- wider card pool. No a: from the start. a:2 / a:3 join the rewards once a climb reaches that act
+// Warden
+pommel:{n:'Pommel Strike',c:1,y:'a',r:1,k:'w',t:'e',i:'sword',p:'bone',v:{d:7},u:{d:10},ds:'Deal {d} damage. Draw 1 card.',f:(B,v,T)=>{B.hit(T,v.d);B.draw(1);}},
+shieldwall:{n:'Shield Wall',c:1,y:'s',r:1,k:'w',i:'shield',p:'steel',v:{b:5},u:{b:7},ds:'Gain {b} block. If you played an Attack this turn, gain it again.',f:(B,v)=>{B.block(v.b);if(B.atkTurn>0)B.block(v.b);}},
+sweep:{n:'Sweeping Blow',c:2,y:'a',r:1,k:'w',i:'sword',p:'teal',v:{d:6,b:6},u:{d:8,b:8},ds:'Deal {d} damage to ALL enemies. Gain {b} block.',f:(B,v)=>{B.hitAll(v.d);B.block(v.b);}},
+counterblow:{n:'Counterblow',c:1,y:'a',r:1,k:'w',a:2,t:'e',i:'shield',p:'fire',v:{d:6},u:{d:8},ds:'Deal {d} damage. With 10 or more block, deal it again.',f:(B,v,T)=>{B.hit(T,v.d);if(B.P.block>=10&&T.hp>0)B.hit(T,v.d);}},
+holdline:{n:'Hold the Line',c:1,y:'s',r:1,k:'w',a:2,t:'e',i:'anchor',p:'blue',v:{b:6,n:1},u:{b:9,n:1},ds:'Gain {b} block. Apply {n} <em>Weak</em>.',f:(B,v,T)=>{B.block(v.b);B.apply(T,'weak',v.n);}},
+crack:{n:'Cracking Blow',c:1,y:'a',r:1,k:'w',a:2,t:'e',i:'crack',p:'ash',v:{d:6,n:1},u:{d:8,n:2},ds:'Deal {d} damage. Apply {n} <em>Vulnerable</em>.',f:(B,v,T)=>{B.hit(T,v.d);if(T.hp>0)B.apply(T,'vul',v.n);}},
+steady:{n:'Steady Breath',c:0,y:'s',r:1,k:'w',a:2,i:'regen',p:'teal',v:{b:3},u:{b:5},ds:'Gain {b} block. Draw 1 card.',f:(B,v)=>{B.block(v.b);B.draw(1);}},
+shieldthrow:{n:'Shield Throw',c:1,y:'a',r:2,k:'w',a:2,i:'shield',p:'teal',v:{},u:{c:0},ds:'Deal damage equal to half your block to ALL enemies.',dyn:B=>B?Math.floor(B.P.block/2):0,f:B=>{const x=Math.floor(B.P.block/2);B.foes2().forEach(f=>B.hit(f,x,1,1));}},
+bloodrage:{n:'Blood Rage',c:0,y:'s',r:2,k:'w',a:2,i:'wound',p:'red',v:{n:2},u:{n:3},x:{ex:1},ds:'Lose 4 HP. Gain {n} <em>Strength</em>. Exhaust.',f:(B,v)=>{B.loseHP(4);B.apply(B.P,'str',v.n);}},
+anvil:{n:'Anvil Drop',c:2,y:'a',r:2,k:'w',a:2,t:'e',i:'stone',p:'steel',v:{d:12},u:{d:16},ds:'Deal {d} damage. If the enemy is <em>Vulnerable</em>, deal it again.',f:(B,v,T)=>{const x=T.st.vul;B.hit(T,v.d);if(x&&T.hp>0)B.hit(T,v.d);}},
+stonewall:{n:'Stonewall',c:1,y:'s',r:2,k:'w',a:2,i:'plate',p:'bone',v:{b:6},u:{b:8},ds:'Gain {b} block for each enemy.',f:(B,v)=>B.foes2().forEach(()=>B.block(v.b))},
+headsman:{n:'Headsman',c:2,y:'a',r:1,k:'w',a:3,t:'e',i:'skull',p:'steel',v:{d:11},u:{d:14},ds:'Deal {d} damage. At half HP or less, the enemy is hit twice.',f:(B,v,T)=>{const w=T.hp*2<=T.maxhp;B.hit(T,v.d);if(w&&T.hp>0)B.hit(T,v.d);}},
+whirl:{n:'Whirling Steel',c:1,y:'a',r:1,k:'w',a:3,i:'spiral',p:'steel',v:{d:3},u:{d:4},ds:'Deal {d} damage to ALL enemies twice.',f:(B,v)=>{B.hitAll(v.d);B.hitAll(v.d);}},
+towerguard:{n:'Tower Guard',c:2,y:'s',r:1,k:'w',a:3,i:'plate',p:'gold',v:{b:12,n:1},u:{b:16,n:2},ds:'Gain {b} block. Gain {n} <em>Thorns</em>.',f:(B,v)=>{B.block(v.b);B.apply(B.P,'thorns',v.n);}},
+hardlesson:{n:'Hard Lesson',c:1,y:'a',r:1,k:'w',a:3,t:'e',i:'book',p:'red',v:{d:8},u:{d:11},ds:'Deal {d} damage. If this kills, draw 2 cards.',f:(B,v,T)=>{B.hit(T,v.d);if(T.hp<=0)B.draw(2);}},
+ironwill:{n:'Iron Will',c:2,y:'p',r:2,k:'w',a:3,i:'ring',p:'steel',v:{n:1},u:{n:2},ds:'Gain {n} <em>Strength</em>. At the end of your turn, gain 3 block.',f:(B,v)=>{B.apply(B.P,'str',v.n);B.apply(B.P,'ironskin',3);}},
+siege:{n:'Siege Breaker',c:2,y:'a',r:2,k:'w',a:3,t:'e',i:'broken',p:'fire',v:{d:14},u:{d:18},ds:'Destroy the enemy\'s block. Deal {d} damage.',f:(B,v,T)=>{T.block=0;B.hit(T,v.d);}},
+scarred:{n:'Scarred Fury',c:1,y:'a',r:2,k:'w',a:3,t:'e',i:'claw',p:'pink',v:{d:5},u:{d:8},ds:'Deal {d} damage, plus 1 for every 4 HP you are missing.',dyn:()=>Math.floor((R.maxhp-R.hp)/4),f:(B,v,T)=>B.hit(T,v.d+Math.floor((R.maxhp-R.hp)/4))},
+// Ember Witch
+spark:{n:'Spark',c:0,y:'a',r:1,k:'m',t:'e',i:'bolt',p:'fire',v:{d:3,n:1},u:{d:5,n:2},ds:'Deal {d} damage. Apply {n} <em>Burn</em>.',f:(B,v,T)=>{B.hit(T,v.d);if(T.hp>0)B.apply(T,'burn',v.n);}},
+kindling:{n:'Kindling',c:1,y:'s',r:1,k:'m',t:'e',i:'root',p:'fire',v:{n:4},u:{n:6},ds:'Apply {n} <em>Burn</em>. Draw 1 card.',f:(B,v,T)=>{B.apply(T,'burn',v.n);B.draw(1);}},
+emberbolt:{n:'Ember Bolt',c:1,y:'a',r:1,k:'m',t:'e',i:'ember',p:'red',v:{d:6,n:1},u:{d:9,n:1},ds:'Deal {d} damage. Apply {n} <em>Weak</em>.',f:(B,v,T)=>{B.hit(T,v.d);if(T.hp>0)B.apply(T,'weak',v.n);}},
+flare:{n:'Flare',c:1,y:'a',r:1,k:'m',a:2,i:'star',p:'fire',v:{d:5},u:{d:7},ds:'Deal {d} damage to ALL enemies.',f:(B,v)=>B.hitAll(v.d)},
+scald:{n:'Scald',c:1,y:'a',r:1,k:'m',a:2,t:'e',i:'drop',p:'fire',v:{d:7,n:1},u:{d:9,n:2},ds:'Deal {d} damage. If the enemy is burning, apply {n} <em>Vulnerable</em>.',f:(B,v,T)=>{const b=T.st.burn;B.hit(T,v.d);if(b&&T.hp>0)B.apply(T,'vul',v.n);}},
+heatshield:{n:'Heat Shield',c:1,y:'s',r:1,k:'m',a:2,i:'shield',p:'fire',v:{b:5,n:3},u:{b:7,n:4},ds:'Gain {b} block. Gain {n} more for each burning enemy.',f:(B,v)=>B.block(v.b+B.foes2().filter(f=>f.st.burn).length*v.n)},
+clearmind:{n:'Clear Mind',c:0,y:'s',r:1,k:'m',a:2,i:'eye',p:'blue',v:{n:2},u:{n:3},x:{ex:1},ds:'Draw {n} cards. Exhaust.',f:(B,v)=>B.draw(v.n)},
+smoulder:{n:'Smoulder',c:1,y:'p',r:2,k:'m',a:2,i:'camp',p:'ash',v:{n:1},u:{n:2},ds:'At the end of your turn, apply {n} <em>Burn</em> to ALL enemies.',f:(B,v)=>B.apply(B.P,'eternal',v.n)},
+siphon:{n:'Ember Siphon',c:1,y:'a',r:2,k:'m',a:2,t:'e',i:'heart',p:'fire',v:{d:6,n:3},u:{d:8,n:4},ds:'Deal {d} damage. If the enemy is burning, heal {n} HP.',f:(B,v,T)=>{const b=T.st.burn;B.hit(T,v.d);if(b)B.heal(v.n);}},
+backdraft:{n:'Backdraft',c:2,y:'a',r:2,k:'m',a:2,t:'e',i:'flame',p:'purple',v:{d:8},u:{d:11},ds:'Deal {d} damage, plus the enemy\'s <em>Burn</em>.',f:(B,v,T)=>B.hit(T,v.d+(T.st.burn||0))},
+manasurge:{n:'Mana Surge',c:0,y:'s',r:2,k:'m',a:2,i:'gem',p:'blue',v:{n:2},u:{n:3},ds:'Gain {n} energy. Add a <em>Dazed</em> to your discard pile.',f:(B,v)=>{B.gainE(v.n);B.addCard('dazed','disc');}},
+searing:{n:'Searing Ray',c:2,y:'a',r:1,k:'m',a:3,t:'e',i:'sun',p:'pink',v:{d:13,n:3},u:{d:17,n:4},ds:'Deal {d} damage. Apply {n} <em>Burn</em>.',f:(B,v,T)=>{B.hit(T,v.d);if(T.hp>0)B.apply(T,'burn',v.n);}},
+cauterize:{n:'Cauterize',c:1,y:'s',r:1,k:'m',a:3,i:'regen',p:'fire',v:{b:6,n:3},u:{b:8,n:5},x:{ex:1},ds:'Gain {b} block. Heal {n} HP. Exhaust.',f:(B,v)=>{B.block(v.b);B.heal(v.n);}},
+wallfire:{n:'Wall of Fire',c:2,y:'s',r:1,k:'m',a:3,i:'flame',p:'gold',v:{b:10,n:3},u:{b:13,n:4},ds:'Gain {b} block. Apply {n} <em>Burn</em> to ALL enemies.',f:(B,v)=>{B.block(v.b);B.foes2().forEach(f=>B.apply(f,'burn',v.n));}},
+ashharvest:{n:'Ash Harvest',c:1,y:'a',r:1,k:'m',a:3,t:'e',i:'urn',p:'ash',v:{d:8},u:{d:11},ds:'Deal {d} damage. If this kills, gain 2 energy.',f:(B,v,T)=>{B.hit(T,v.d);if(T.hp<=0)B.gainE(2);}},
+overflow:{n:'Overflow',c:2,y:'p',r:2,k:'m',a:3,i:'book',p:'purple',v:{n:1},u:{c:1},ds:'Draw {n} more card each turn. <em>Burn</em> you apply gains +{n}.',f:(B,v)=>{B.apply(B.P,'study',v.n);B.apply(B.P,'wildfire',v.n);}},
+supernova:{n:'Supernova',c:2,y:'a',r:2,k:'m',a:3,i:'sun',p:'red',v:{},u:{c:1},ds:'Remove ALL <em>Burn</em>. Deal the total removed to ALL enemies.',dyn:B=>B?B.foes2().reduce((a,f)=>a+(f.st.burn||0),0):0,f:B=>{const l=B.foes2();let x=0;l.forEach(f=>{x+=f.st.burn||0;delete f.st.burn;});l.forEach(f=>B.hit(f,x,1,1));}},
+scrying:{n:'Scrying',c:1,y:'s',r:2,k:'m',a:3,i:'lantern',p:'blue',v:{n:6},u:{n:8},x:{ex:1},ds:'Draw until you hold {n} cards. Exhaust.',f:(B,v)=>B.draw(Math.max(0,v.n-B.hand.length))},
+// Shade
+jab:{n:'Jab',c:0,y:'a',r:1,k:'s',t:'e',i:'dagger',p:'bone',v:{d:3,b:2},u:{d:5,b:3},ds:'Deal {d} damage. Gain {b} block.',f:(B,v,T)=>{B.hit(T,v.d);B.block(v.b);}},
+bitterdose:{n:'Bitter Dose',c:1,y:'s',r:1,k:'s',t:'e',i:'potion',p:'purple',v:{n:6},u:{n:8},ds:'Apply {n} <em>Poison</em>.',f:(B,v,T)=>B.apply(T,'poison',v.n)},
+slipaway:{n:'Slip Away',c:1,y:'s',r:1,k:'s',i:'moon',p:'purple',v:{b:6},u:{b:9},ds:'Gain {b} block. Add a <em>Shiv</em> to your hand.',f:(B,v)=>{B.block(v.b);B.addCard('shiv','hand');}},
+doublecut:{n:'Double Cut',c:1,y:'a',r:1,k:'s',a:2,t:'e',i:'claw',p:'steel',v:{d:4},u:{d:6},ds:'Deal {d} damage twice.',f:(B,v,T)=>{B.hit(T,v.d);if(T.hp>0)B.hit(T,v.d);}},
+cheapshot:{n:'Cheap Shot',c:0,y:'a',r:1,k:'s',a:2,t:'e',i:'fang',p:'ash',v:{d:4,n:1},u:{d:6,n:1},ds:'Deal {d} damage. Apply {n} <em>Weak</em>.',f:(B,v,T)=>{B.hit(T,v.d);if(T.hp>0)B.apply(T,'weak',v.n);}},
+envenom:{n:'Venom Blade',c:1,y:'s',r:1,k:'s',a:2,i:'dagger',p:'green',v:{n:3},u:{n:5},ds:'Add a <em>Shiv</em> to your hand. Apply {n} <em>Poison</em> to a random enemy.',f:(B,v)=>{B.addCard('shiv','hand');const e=B.rndFoe();if(e)B.apply(e,'poison',v.n);}},
+vanish:{n:'Vanish',c:1,y:'s',r:1,k:'s',a:2,i:'spiral',p:'ash',v:{b:5,n:1},u:{b:8,n:1},ds:'Gain {b} block. Apply {n} <em>Weak</em> to ALL enemies.',f:(B,v)=>{B.block(v.b);B.foes2().forEach(f=>B.apply(f,'weak',v.n));}},
+deepcut:{n:'Deep Cut',c:1,y:'a',r:2,k:'s',a:2,t:'e',i:'wound',p:'green',v:{d:6},u:{d:8},ds:'Deal {d} damage. If the enemy is poisoned, deal it again.',f:(B,v,T)=>{const x=T.st.poison;B.hit(T,v.d);if(x&&T.hp>0)B.hit(T,v.d);}},
+risingvenom:{n:'Rising Venom',c:1,y:'s',r:2,k:'s',a:2,i:'up',p:'green',v:{n:4},u:{n:6},ds:'Every poisoned enemy gains {n} more <em>Poison</em>.',f:(B,v)=>B.foes2().filter(f=>f.st.poison).forEach(f=>B.apply(f,'poison',v.n))},
+hiddenknives:{n:'Hidden Knives',c:0,y:'s',r:2,k:'s',a:2,i:'bag',p:'steel',v:{n:2},u:{n:3},x:{ex:1},ds:'Add {n} <em>Shivs</em> to your hand. Exhaust.',f:(B,v)=>{for(let i=0;i<v.n;i++)B.addCard('shiv','hand');}},
+cutpurse:{n:'Cutpurse',c:1,y:'a',r:2,k:'s',a:2,t:'e',i:'coin',p:'gold',v:{d:8,n:15},u:{d:10,n:25},ds:'Deal {d} damage. If this kills, gain {n} gold.',f:(B,v,T)=>{B.hit(T,v.d);if(T.hp<=0){R.gold+=v.n;R.stats.gold+=v.n;B.toast('+'+v.n+' gold');}}},
+shadowstrike:{n:'Shadow Strike',c:1,y:'a',r:1,k:'s',a:3,t:'e',i:'moon',p:'teal',v:{d:7},u:{d:10},ds:'Deal {d} damage. If you played a Skill this turn, gain 1 energy.',f:(B,v,T)=>{B.hit(T,v.d);if(B.sklTurn>0)B.gainE(1);}},
+venomwave:{n:'Venom Wave',c:1,y:'s',r:1,k:'s',a:3,i:'drop',p:'teal',v:{n:2},u:{n:3},ds:'Apply {n} <em>Poison</em> to ALL enemies.',f:(B,v)=>B.foes2().forEach(f=>B.apply(f,'poison',v.n))},
+nimble:{n:'Nimble',c:1,y:'s',r:1,k:'s',a:3,i:'feather',p:'gold',v:{b:4},u:{b:5},ds:'Gain {b} block twice.',f:(B,v)=>{B.block(v.b);B.block(v.b);}},
+assassinate:{n:'Assassinate',c:2,y:'a',r:1,k:'s',a:3,t:'e',i:'skull',p:'purple',v:{d:10},u:{d:13},ds:'Deal {d} damage. At half HP or less, the enemy is hit twice.',f:(B,v,T)=>{const w=T.hp*2<=T.maxhp;B.hit(T,v.d);if(w&&T.hp>0)B.hit(T,v.d);}},
+pandemic:{n:'Pandemic',c:2,y:'s',r:2,k:'s',a:3,t:'e',i:'ritual',p:'green',v:{n:3},u:{n:5},x:{ex:1},ds:'Apply {n} <em>Poison</em>. Other enemies gain the same Poison it has. Exhaust.',f:(B,v,T)=>{B.apply(T,'poison',v.n);const x=T.st.poison||0;B.foes2().filter(f=>f!==T).forEach(f=>B.apply(f,'poison',x));}},
+bleedout:{n:'Bleed Out',c:1,y:'a',r:2,k:'s',a:3,t:'e',i:'wound',p:'red',v:{d:5,n:4},u:{d:7,n:6},ds:'Deal {d} damage. Apply {n} <em>Poison</em> and 1 <em>Vulnerable</em>.',f:(B,v,T)=>{B.hit(T,v.d);if(T.hp>0){B.apply(T,'poison',v.n);B.apply(T,'vul',1);}}},
+knifecloak:{n:'Cloak of Knives',c:2,y:'p',r:2,k:'s',a:3,i:'dagger',p:'dark',v:{n:1},u:{n:2},ds:'At the start of your turn, add {n} <em>Shiv</em> to your hand.',f:(B,v)=>B.apply(B.P,'knives',v.n)},
+// Any climber
+reshuffle:{n:'Fresh Start',c:0,y:'s',r:2,k:'n',a:2,i:'cards',p:'blue',v:{n:1},u:{n:2},x:{ex:1},ds:'Shuffle your discard pile into your draw pile. Draw {n} card. Exhaust.',f:(B,v)=>{B.dp=shuf(B.dp.concat(B.disc));B.disc=[];B.draw(v.n);}},
+blindswing:{n:'Blind Swing',c:1,y:'a',r:2,k:'n',a:2,i:'chain',p:'bone',v:{d:11},u:{d:15},ds:'Deal {d} damage to a random enemy.',f:(B,v)=>{const e=B.rndFoe();if(e)B.hit(e,v.d);}},
+luckyshot:{n:'Lucky Shot',c:1,y:'a',r:2,k:'n',a:2,t:'e',i:'coin',p:'teal',v:{d:7},u:{d:10},ds:'Deal {d} damage. Half the time, deal it again.',f:(B,v,T)=>{B.hit(T,v.d);if(T.hp>0&&R0()<.5)B.hit(T,v.d);}},
+panacea:{n:'Panacea',c:1,y:'s',r:2,k:'n',a:3,i:'potion',p:'teal',v:{b:5},u:{b:9},ds:'Remove your <em>Weak</em>, <em>Vulnerable</em> and <em>Frail</em>. Gain {b} block.',f:(B,v)=>{['weak','vul','frail'].forEach(k=>delete B.P.st[k]);B.block(v.b);}},
+lastgasp:{n:'Last Gasp',c:1,y:'s',r:2,k:'n',a:3,i:'heart',p:'ash',v:{b:8},u:{b:11},ds:'Gain {b} block. Below half HP, gain it again.',f:(B,v)=>{B.block(v.b);if(R.hp*2<R.maxhp)B.block(v.b);}},
+quickthink:{n:'Quick Thinking',c:0,y:'s',r:2,k:'n',a:3,i:'hourglass',p:'gold',v:{n:1},u:{n:2},x:{ex:1},ds:'Gain {n} energy. Draw 1 card. Exhaust.',f:(B,v)=>{B.gainE(v.n);B.draw(1);}},
 // ---- rare cards unlocked by total bosses slain (ul)
 crushwall:{n:'Crushing Wall',c:2,y:'a',r:3,k:'w',ul:1,t:'e',i:'shield',p:'gold',v:{},u:{c:1},ds:'Deal damage equal to twice your block. Lose all your block.',dyn:B=>B?B.P.block*2:0,f:(B,v,T)=>{const b=B.P.block;B.P.block=0;B.hit(T,b*2,1,1);}},
 standfirm:{n:'Stand Firm',c:2,y:'s',r:3,k:'w',ul:3,i:'plate',p:'blue',v:{b:18,n:2},u:{b:24,n:3},ds:'Gain {b} block. Apply {n} <em>Weak</em> to ALL enemies.',f:(B,v)=>{B.block(v.b);B.foes2().forEach(f=>B.apply(f,'weak',v.n));}},
@@ -1334,7 +1400,7 @@ function gainRelic(R,id){if(!id)return null;R.relics.push(id);META.relSeen[id]=1
 function pickRelic(R,r){let pool=Object.keys(RELICS).filter(k=>RELICS[k].r===r&&!R.relics.includes(k));if(!pool.length)pool=Object.keys(RELICS).filter(k=>RELICS[k].r>=1&&RELICS[k].r<=3&&!R.relics.includes(k));return pool.length?pick(pool):'vial';}
 function gainPotion(R,id){const i=R.potions.indexOf(null);if(i<0)return false;R.potions[i]=id||pick(Object.keys(POTIONS));renderTop();return true;}
 function cardOpen(k){const u=CARDS[k].ul;return !u||META.stats.bosses>=u;}
-function cardPool(R,r){return Object.keys(CARDS).filter(k=>{const c=CARDS[k];return c.r===r&&cardOpen(k)&&(c.k===R.hero||(c.k==='n'&&R0()<.35));});}
+function cardPool(R,r){return Object.keys(CARDS).filter(k=>{const c=CARDS[k];return c.r===r&&cardOpen(k)&&(c.a||1)<=R.act&&(c.k===R.hero||(c.k==='n'&&R0()<.35));});}
 /* the higher you climb, the better the cards: about +0.5% rare and +0.25% uncommon per floor */
 function rareOdds(R,elite){return (elite?10:5)*(1+.25*sl('rarity'))+(R.floorsTotal||0)*.5;}
 function rollCard(R,force,elite){let r=force;if(!r){const x=R0()*100,rare=rareOdds(R,elite),unc=(elite?40:33)+(R.floorsTotal||0)*.25;r=x<rare?3:x<rare+unc?2:1;}
@@ -1491,6 +1557,7 @@ async function startTurn(){const P=B.P;B.turn++;B.phase='start';B.busy=true;
  B.atkTurn=0;B.sklTurn=0;
  const n=5+(P.st.study||0)+(hasR('ringx')?1:0)+(hasR('grandtome')?2:0)-(hasR('voidlens')?1:0);
  B.draw(n);
+ if(P.st.knives)for(let i=0;i<P.st.knives;i++)B.addCard('shiv','hand');
  if(B.turn===1&&hasR('viperfang')){B.addCard('shiv','hand');B.addCard('shiv','hand');flashRelic('viperfang');}
  renderEnergy();await wait(350);B.phase='player';B.busy=false;renderHand();snapB();
  if(!META.tut&&R.floorsTotal<=1)tutorial();}
@@ -1750,7 +1817,7 @@ function openChest(){show('room');mus(ACTS[R.act].music);if(!R.cur.rel){R.cur.re
  $('chL').onclick=()=>{sfx('click');nodeDone();};
  $('chB').onclick=()=>{sfx('rare');gainRelic(R,R.cur.rel);R.gold+=R.cur.gold;R.stats.gold+=R.cur.gold;R.cur.opened=1;renderTop();saveRun();opened();};}
 /* ---- shop ---- */
-function genShop(){const it=[];const cls=rollCards(R,5),neu=shuf(Object.keys(CARDS).filter(k=>CARDS[k].k==='n'&&cardOpen(k))).slice(0,2);
+function genShop(){const it=[];const cls=rollCards(R,5),neu=shuf(Object.keys(CARDS).filter(k=>CARDS[k].k==='n'&&cardOpen(k)&&(CARDS[k].a||1)<=R.act)).slice(0,2);
  const pr=r=>Math.round((r===3?150:r===2?75:50)*(.9+R0()*.2));
  cls.forEach(id=>it.push({k:'c',id,p:pr(CARDS[id].r)}));neu.forEach(id=>it.push({k:'c',id,p:pr(CARDS[id].r)+10}));
  const rels=[pickRelic(R,1),pickRelic(R,2),pickRelic(R,R0()<.5?3:2)];[...new Set(rels)].forEach(id=>it.push({k:'r',id,p:RELICS[id].r===1?ri(140,160):RELICS[id].r===2?ri(230,260):ri(280,310)}));
@@ -1807,7 +1874,7 @@ function onBossDown(paid){const a=R.act;
  pool.forEach(id=>{const r=RELICS[id];h+='<button class="panel bossR" data-id="'+id+'" style="position:relative;width:250px;padding:22px 16px;display:flex;flex-direction:column;align-items:center;gap:10px">'+ICX(r.i,r.p,'','style="width:90px;height:90px;filter:drop-shadow(0 0 18px rgba(255,200,120,.5))"')+'<h3 style="color:#e8c27a">'+r.n+'</h3><div style="font:15px system-ui;color:#c9bfae">'+r.d+'</div></button>';});
  h+='</div><button class="bt dk sm" id="brSkip">Skip</button>';ovl(h);
  const next=()=>{R.act++;R.map=genMap(R.act);R.pos=null;R.path=[];const heal=Math.ceil((R.maxhp-R.hp)*(R.dusk>=5?.5:.75));healR(R,heal);R.cur=null;saveRun();
-  ovl('<div class="sub" style="font-size:20px">'+ACTS[R.act].s+'</div><div class="ttl" style="font-size:54px">'+ACTS[R.act].n+'</div><svg class="orn" viewBox="0 0 260 14"><path d="M0 7h100M160 7h100" stroke="#b8893e" stroke-width="1.5"/><path d="M130 0l9 7-9 7-9-7z" fill="#e8c27a"/></svg><div class="sub">You climb higher and catch your breath. Healed '+heal+' HP.</div><button class="bt" id="actGo" style="margin-top:24px">Climb On</button>');sfx('chime');$('actGo').onclick=()=>openMap();};
+  ovl('<div class="sub" style="font-size:20px">'+ACTS[R.act].s+'</div><div class="ttl" style="font-size:54px">'+ACTS[R.act].n+'</div><svg class="orn" viewBox="0 0 260 14"><path d="M0 7h100M160 7h100" stroke="#b8893e" stroke-width="1.5"/><path d="M130 0l9 7-9 7-9-7z" fill="#e8c27a"/></svg><div class="sub">You climb higher and catch your breath. Healed '+heal+' HP.</div><div class="oddsL" style="margin:10px 0 0">'+Object.keys(CARDS).filter(k=>{const c=CARDS[k];return c.a===R.act&&(c.k===R.hero||c.k==='n');}).length+' new cards can now turn up as rewards.</div><button class="bt" id="actGo" style="margin-top:24px">Climb On</button>');sfx('chime');$('actGo').onclick=()=>openMap();};
  $('ovl').querySelectorAll('.bossR').forEach(b=>b.onclick=()=>{gainRelic(R,b.dataset.id);sfx('rare');next();});$('brSkip').onclick=next;}
 let laterQ=[];function toastLater(t){laterQ.push(t);setTimeout(()=>{const x=laterQ.shift();if(x)toast(x);},1500);}
 function endRun(win){if(!R)return;BT++;const H=R.hero,L=R.dusk;const fl=R.floorsTotal;
@@ -1853,7 +1920,7 @@ $('bSanct').onclick=()=>{sfx('click');openSanctum();};
 let codexTab='cards';
 function openCodex(){show('none');const all=Object.keys(CARDS).filter(k=>CARDS[k].r<9);const seen=all.filter(k=>META.seen[k]).length,rels=Object.keys(RELICS),rs=rels.filter(k=>META.relSeen[k]).length;
  let h='<div class="panel" style="position:relative;width:1120px;height:770px;padding:20px;display:flex;flex-direction:column"><div class="ttl" style="font-size:30px">Codex</div><div class="tabs"><button data-t="cards" class="'+(codexTab==='cards'?'on':'')+'">Cards '+seen+'/'+all.length+'</button><button data-t="relics" class="'+(codexTab==='relics'?'on':'')+'">Relics '+rs+'/'+rels.length+'</button><button data-t="foes" class="'+(codexTab==='foes'?'on':'')+'">Bestiary</button><button data-t="stats" class="'+(codexTab==='stats'?'on':'')+'">Records</button></div><div class="grid" id="cxG" style="flex:1"></div></div>'+backBtn('cxX');ovl(h);const g=$('cxG');
- if(codexTab==='cards'){const nb=META.stats.bosses,nx=RARE_STEPS.find(u=>u>nb),nt=document.createElement('div');nt.className='cxNote';nt.textContent='Bosses slain: '+nb+(nx?'. More rare cards unlock at '+nx+'.':'. Every rare card is unlocked.');g.appendChild(nt);all.sort((a,b)=>('wmsn'.indexOf(CARDS[a].k)-'wmsn'.indexOf(CARDS[b].k))||CARDS[a].r-CARDS[b].r).forEach(k=>{const el=cardEl(mkCard(k));if(!META.seen[k]){el.style.filter='brightness(.15) grayscale(1)';}el.style.transform='scale(.85)';el.style.margin='-14px -10px';if(META.seen[k])el.onclick=()=>{sfx('tap');cardZoom(mkCard(k));};if(cardOpen(k)){g.appendChild(el);return;}const w=document.createElement('div');w.className='lockW';w.appendChild(el);const l=document.createElement('div');l.className='lockL';l.textContent='Slay '+CARDS[k].ul+' boss'+(CARDS[k].ul===1?'':'es')+' to unlock';w.appendChild(l);g.appendChild(w);});}
+ if(codexTab==='cards'){const nb=META.stats.bosses,nx=RARE_STEPS.find(u=>u>nb),nt=document.createElement('div');nt.className='cxNote';nt.textContent='Bosses slain: '+nb+(nx?'. More rare cards unlock at '+nx+'.':'. Every rare card is unlocked.');g.appendChild(nt);all.sort((a,b)=>('wmsn'.indexOf(CARDS[a].k)-'wmsn'.indexOf(CARDS[b].k))||CARDS[a].r-CARDS[b].r).forEach(k=>{const el=cardEl(mkCard(k));if(!META.seen[k]){el.style.filter='brightness(.15) grayscale(1)';}el.style.transform='scale(.85)';el.style.margin='-14px -10px';if(META.seen[k])el.onclick=()=>{sfx('tap');cardZoom(mkCard(k));};if(cardOpen(k)&&(META.seen[k]||!CARDS[k].a)){g.appendChild(el);return;}const w=document.createElement('div');w.className='lockW';w.appendChild(el);const l=document.createElement('div');l.className='lockL';l.textContent=cardOpen(k)?'From Act '+CARDS[k].a:'Slay '+CARDS[k].ul+' boss'+(CARDS[k].ul===1?'':'es')+' to unlock';w.appendChild(l);g.appendChild(w);});}
  if(codexTab==='relics')rels.forEach(k=>{const r=RELICS[k],s=META.relSeen[k];const d=document.createElement('div');d.style.cssText='width:250px;display:flex;gap:10px;align-items:center;padding:8px;border:1px solid rgba(232,194,122,.15);border-radius:4px;'+(s?'':'opacity:.3');d.innerHTML=ICX(s?r.i:'quest',s?r.p:'ash','','style="width:44px;height:44px;flex:none"')+'<div><b style="color:#e8c27a">'+(s?r.n:'???')+'</b><div style="font:12.5px system-ui;color:#c9bfae">'+(s?r.d:'Not yet found')+'</div></div>';g.appendChild(d);});
  if(codexTab==='foes')Object.values(ENEMIES).forEach(e=>{const n=META.foes[e.id]||0;const d=document.createElement('div');d.style.cssText='width:200px;height:220px;position:relative;border:1px solid rgba(232,194,122,.15);border-radius:4px;background:radial-gradient(circle at 50% 70%,#2a2036,#0c0812)';const c=document.createElement('canvas');c.width=400;c.height=360;c.style.cssText='width:200px;height:180px';d.appendChild(c);
   const x=c.getContext('2d');x.scale(2,2);const h2=HT[e.art],w=WD[e.art];const s=Math.min(150/h2,170/w);x.translate(100,170);x.scale(s,s);if(e.d||1){}if(!n){x.globalAlpha=1;}ART[e.art](x,e.pal,1.5);if(!n){x.globalCompositeOperation='source-atop';x.fillStyle='#000';x.fillRect(-400,-500,800,700);}
@@ -2055,5 +2122,5 @@ loadMeta();try{SND.set('music',META.opt.music);SND.set('sfx',META.opt.sfx);}catc
 fit();openTitle();requestAnimationFrame(frame);
 addEventListener('pagehide',()=>{saveMeta();saveRun();});
 document.addEventListener('visibilitychange',()=>{if(document.hidden){saveMeta();saveRun();}});
-window.__ds={get R(){return R;},get B(){return B;},get scene(){return scene;},ART,HART,ENEMIES,RELICS,POTIONS,EVENTS,META,CARDS,saveRun,rewards,onBossDown,openChest,endRun,show,newRun,startCombat,endTurn,playCard,openShop,openRest,openEvent,enterNode,availNodes,openMap,openSanctum,openCodex,winCombat,rollCards,rareOdds,cardOpen,cardPick,checkRareUnlocks,saveMeta};
+window.__ds={get R(){return R;},get B(){return B;},get scene(){return scene;},ART,HART,ENEMIES,RELICS,POTIONS,EVENTS,META,CARDS,saveRun,rewards,onBossDown,openChest,endRun,show,newRun,startCombat,endTurn,playCard,openShop,openRest,openEvent,enterNode,availNodes,openMap,openSanctum,openCodex,winCombat,cardEl,mkCard,rollCards,rareOdds,cardOpen,cardPick,checkRareUnlocks,saveMeta};
 });</script></body></html>
