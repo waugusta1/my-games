@@ -657,7 +657,7 @@ secondwind:{n:'Second Wind',c:1,y:'s',r:2,k:'w',i:'heart',p:'blue',v:{b:5},u:{b:
 rampage:{n:'Rampage',c:1,y:'a',r:2,k:'w',t:'e',i:'claw',p:'red',v:{d:8,n:5},u:{d:8,n:8},ds:'Deal {d} damage. Increases this card\'s damage by {n} this combat.',f:(B,v,T,C)=>{B.hit(T,v.d+(C.bonus||0));C.bonus=(C.bonus||0)+v.n;},dynb:1},
 flex:{n:'Flex',c:0,y:'s',r:2,k:'w',i:'up',p:'fire',v:{n:2},u:{n:4},ds:'Gain {n} <em>Strength</em> this turn.',f:(B,v)=>{B.apply(B.P,'str',v.n);B.apply(B.P,'tempstr',v.n);}},
 entrench:{n:'Entrench',c:2,y:'s',r:2,k:'w',i:'plate',p:'gold',v:{},u:{c:1},ds:'Double your block.',f:B=>B.block(B.P.block,1)},
-bastion:{n:'Bastion',c:3,y:'p',r:3,k:'w',i:'shield',p:'gold',v:{},u:{c:2},ds:'Block is no longer removed at the start of your turn.',f:B=>B.apply(B.P,'bastion',1)},
+bastion:{n:'Bastion',c:3,y:'p',r:3,k:'w',i:'shield',p:'gold',v:{n:10},u:{n:10,c:2},ds:'At the end of your turn, gain {n} block.',f:(B,v)=>B.apply(B.P,'ironskin',v.n)},
 oath:{n:'Oath of Fury',c:3,y:'p',r:3,k:'w',i:'crown',p:'red',v:{n:2},u:{n:3},ds:'At the start of each turn, gain {n} <em>Strength</em>.',f:(B,v)=>B.apply(B.P,'oath',v.n)},
 bludgeon:{n:'Bludgeon',c:3,y:'a',r:3,k:'w',t:'e',i:'horns',p:'ash',v:{d:32},u:{d:42},ds:'Deal {d} damage.',f:(B,v,T)=>B.hit(T,v.d)},
 impervious:{n:'Impervious',c:2,y:'s',r:3,k:'w',i:'plate',p:'gold',v:{b:30},u:{b:40},x:{ex:1},ds:'Gain {b} block. Exhaust.',f:(B,v)=>B.block(v.b)},
@@ -734,7 +734,7 @@ for(const k in CARDS)CARDS[k].id=k;
 /* ===== heroes ===== */
 const HEROES={
  w:{id:'w',n:'The Warden',t:'Oathsworn knight of the fallen keep',hp:80,deck:['strike_w','strike_w','strike_w','strike_w','strike_w','defend_w','defend_w','defend_w','defend_w','bash'],relic:'emberheart',col:'#d9a35a',
-   blurb:'Heavy armor, big blocks, and Strength that keeps growing. The steadiest climber.'},
+   blurb:'Heavy armor, block that carries over between turns, and Strength that keeps growing. The steadiest climber.'},
  m:{id:'m',n:'The Ember Witch',t:'Last keeper of the dawn-flame',hp:70,deck:['spark','spark','spark','spark','ward','ward','ward','ward','kindle','ember'],relic:'locket',col:'#ff7a3c',
    blurb:'Set enemies on fire and watch Burn stack up. Extra energy and card draw.',unlock:'Defeat the first boss with any climber.'},
  s:{id:'s',n:'The Shade',t:'A thief who stole her own shadow',hp:72,deck:['slash','slash','slash','slash','slash','evade','evade','evade','evade','venomdart','sidestep'],relic:'viperfang',col:'#6fd6a8',
@@ -1440,7 +1440,7 @@ async function startCombat(enc,kind){BT++;ending=false;$('hand').innerHTML='';ha
  if(hasR('locket')){B.foes2().forEach(f=>B.apply(f,'burn',2,1));flashRelic('locket');}
  await startTurn();}
 async function startTurn(){const P=B.P;B.turn++;B.phase='start';B.busy=true;
- if(!P.st.bastion&&!P.st.blur)P.block=0;if(P.st.blur){P.st.blur--;if(!P.st.blur)delete P.st.blur;}
+ if(R.hero!=='w'&&!P.st.bastion&&!P.st.blur)P.block=0;if(P.st.blur){P.st.blur--;if(!P.st.blur)delete P.st.blur;}
  banner(B.turn===1?'Battle':'Your Turn');
  if(P.st.poison){dmgPlayer(P.st.poison,'poison',1);P.st.poison--;if(!P.st.poison)delete P.st.poison;if(R.hp<=0)return lose();}
  if(P.st.oath)B.apply(P,'str',P.st.oath);
@@ -1559,7 +1559,7 @@ $('battle').addEventListener('pointerdown',e=>{if(!B||scene!=='battle')return;if
 function foeTip(f){const it=intentOf(f);let h='<b>'+f.d.n+'</b>'+f.hp+' / '+f.maxhp+' HP'+(f.block?' &middot; '+f.block+' block':'');
  if(it){h+='<div class="k"><span style="color:#ffd27a">Intends: '+it.m.n+'</span> &mdash; '+(it.dmg!=null?'attack for '+it.dmg+(it.times>1?' x'+it.times:'')+'. ':'')+(it.blk?'gain block. ':'')+(it.buf?'grow stronger. ':'')+(it.deb?'curse you. ':'')+'</div>';}
  for(const k in f.st)if(STAT[k])h+='<div class="k">'+statTip(k,f.st[k])+'</div>';tip(h,f.x,BASE_Y+70>700?600:BASE_Y+70);}
-function heroTip(){let h='<b>'+HEROES[R.hero].n+'</b>'+R.hp+' / '+R.maxhp+' HP'+(B.P.block?' &middot; '+B.P.block+' block':'');for(const k in B.P.st)if(STAT[k])h+='<div class="k">'+statTip(k,B.P.st[k])+'</div>';tip(h,HERO_X,BASE_Y+60);}
+function heroTip(){let h='<b>'+HEROES[R.hero].n+'</b>'+R.hp+' / '+R.maxhp+' HP'+(B.P.block?' &middot; '+B.P.block+' block':'')+(R.hero==='w'?'<div class="k"><b>Oathsworn Guard</b> Unused block carries over to your next turn.</div>':'');for(const k in B.P.st)if(STAT[k])h+='<div class="k">'+statTip(k,B.P.st[k])+'</div>';tip(h,HERO_X,BASE_Y+60);}
 $('endT').onclick=()=>endTurn();
 function pileView(which){if(!B)return;const l=which==='draw'?[...B.dp].sort((a,b)=>CARDS[a.id].n.localeCompare(CARDS[b.id].n)):which==='disc'?B.disc:B.exh;
  deckGrid(l,{title:which==='draw'?'Draw Pile':which==='disc'?'Discard Pile':'Exhausted',sub:which==='draw'?'The order is hidden until you draw them':which==='disc'?'These shuffle back when the draw pile runs out':'Gone until the fight ends',noOrder:which==='draw'});}
@@ -1675,7 +1675,7 @@ function deckGrid(list,o={}){const s=$('sheet'),keys=o.noOrder?['name','cost','t
 /* a single card, large, with every keyword explained */
 function cardKeys(ci){const d=CARDS[ci.id],t=(d.ds+' '+(d.dsu||'')).replace(/<[^>]+>/g,''),out=[];
  for(const k in STAT){const n=STAT[k].n;if(n&&new RegExp('\\b'+n+'\\b').test(t))out.push('<b>'+n+'</b> '+STAT[k].d.replace(/\{n\}/g,'X'));}
- if(/\bblock\b/i.test(t))out.push('<b>Block</b> Soaks up attack damage. It fades at the start of your next turn.');
+ if(/\bblock\b/i.test(t))out.push(d.k==='w'||(R&&R.hero==='w')?'<b>Block</b> Soaks up attack damage. The Warden keeps unused block from turn to turn until the fight ends.':'<b>Block</b> Soaks up attack damage. It fades at the start of your next turn.');
  if(d.x&&d.x.ex)out.push('<b>Exhaust</b> Removed for the rest of the fight when played.');
  if(d.x&&d.x.et)out.push('<b>Ethereal</b> Exhausted if it is still in your hand when the turn ends.');
  if(d.x&&d.x.un)out.push('<b>Unplayable</b> This card cannot be played.');
