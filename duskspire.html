@@ -828,6 +828,33 @@ doubt:{n:'Doubt',c:-1,y:'c',r:9,k:'x',i:'spiral',p:'dark',v:{},x:{un:1},curse:1,
 };
 for(const k in CARDS)CARDS[k].id=k;
 
+Object.assign(CARDS,{
+// warden, act IV+
+titanstrike:{n:'Titan Strike',c:3,y:'a',r:2,k:'w',t:'e',a:4,i:'sword',p:'gold',v:{d:24,b:12},u:{d:30,b:16},ds:'Deal {d} damage. Gain {b} block.',f:(B,v,T)=>{B.hit(T,v.d);B.block(v.b);}},
+unbreak:{n:'Unbreakable',c:2,y:'p',r:3,k:'w',a:4,i:'plate',p:'gold',v:{n:6},u:{n:9},ds:'At the end of your turn, gain {n} block. At the start of each turn, gain 1 <em>Strength</em>.',f:(B,v)=>{B.apply(B.P,'ironskin',v.n);B.apply(B.P,'oath',1);}},
+shieldwall:{n:'Shield Wall',c:1,y:'s',r:1,k:'w',a:4,i:'shield',p:'steel',v:{b:9,n:5},u:{b:12,n:7},ds:'Gain {b} block. If you already have block, gain {n} more.',f:(B,v)=>{const had=B.P.block>0;B.block(v.b);if(had)B.block(v.n);}},
+earthshaker:{n:'Earthshaker',c:2,y:'a',r:2,k:'w',a:4,i:'horns',p:'ash',v:{d:12,n:1},u:{d:16,n:2},ds:'Deal {d} damage to ALL enemies. Apply {n} <em>Weak</em> to ALL.',f:(B,v)=>{B.hitAll(v.d);B.foes2().forEach(e=>B.apply(e,'weak',v.n));}},
+laststand:{n:'Last Stand',c:1,y:'s',r:3,k:'w',a:4,i:'heart',p:'red',v:{n:3,b:10},u:{n:4,b:14},x:{ex:1},ds:'Gain {n} <em>Strength</em> and {b} block. Exhaust.',f:(B,v)=>{B.apply(B.P,'str',v.n);B.block(v.b);}},
+// witch, act IV+
+supernova:{n:'Supernova',c:3,y:'a',r:3,k:'m',a:4,i:'sun',p:'fire',v:{d:18},u:{d:24},ds:'Deal {d} damage to ALL enemies, plus each enemy\'s <em>Burn</em>.',f:(B,v)=>{B.foes2().forEach(e=>{if(e.hp>0)B.hit(e,v.d+(e.st.burn||0));});}},
+phoenix:{n:'Phoenix Form',c:2,y:'p',r:3,k:'m',a:4,i:'feather',p:'fire',v:{n:3},u:{n:5},ds:'At the end of your turn, apply {n} <em>Burn</em> to ALL enemies. Draw 2 cards.',f:(B,v)=>{B.apply(B.P,'eternal',v.n);B.draw(2);}},
+cinderstorm:{n:'Cinder Storm',c:1,y:'a',r:2,k:'m',a:4,i:'ember',p:'red',v:{d:4},u:{d:6},ds:'Deal {d} damage to a random enemy 3 times. Each hit applies 1 <em>Burn</em>.',f:(B,v)=>{for(let i=0;i<3;i++){const e=B.rndFoe();if(!e)break;B.hit(e,v.d);if(e.hp>0)B.apply(e,'burn',1);}}},
+emberward:{n:'Ember Ward',c:1,y:'s',r:1,k:'m',a:4,i:'shield',p:'fire',v:{b:7,n:2},u:{b:10,n:3},ds:'Gain {b} block. Apply {n} <em>Burn</em> to ALL enemies.',f:(B,v)=>{B.block(v.b);B.foes2().forEach(e=>B.apply(e,'burn',v.n));}},
+heatwave:{n:'Heat Wave',c:1,y:'s',r:2,k:'m',a:4,i:'flame',p:'gold',v:{},u:{c:0},x:{ex:1},ds:'Every enemy\'s <em>Burn</em> rises to match the highest <em>Burn</em> on any enemy. Exhaust.',f:B=>{const m=Math.max(0,...B.foes2().map(e=>e.st.burn||0));B.foes2().forEach(e=>{const d=m-(e.st.burn||0);if(d>0)B.apply(e,'burn',d,1);});}},
+// shade, act IV+
+deathmark:{n:'Death Mark',c:2,y:'s',r:3,k:'s',t:'e',a:4,i:'skull',p:'green',v:{},u:{c:1},ds:'Triple the enemy\'s <em>Poison</em>.',f:(B,v,T)=>{const p=T.st.poison||0;if(p)B.apply(T,'poison',p*2,1);}},
+fanknives:{n:'Fan of Knives',c:1,y:'a',r:2,k:'s',a:4,i:'dagger',p:'steel',v:{d:6,n:1},u:{d:8,n:2},ds:'Deal {d} damage to ALL enemies. Add {n} <em>Shiv</em> to your hand.',f:(B,v)=>{B.hitAll(v.d);for(let i=0;i<v.n;i++)B.addCard('shiv','hand');}},
+nightveil:{n:'Night Veil',c:1,y:'s',r:1,k:'s',a:4,i:'moon',p:'dark',v:{b:8},u:{b:11},ds:'Gain {b} block. Your block is not removed next turn.',f:(B,v)=>{B.block(v.b);B.apply(B.P,'blur',1);}},
+toxiccloud:{n:'Toxic Cloud',c:2,y:'s',r:2,k:'s',a:4,i:'drop',p:'green',v:{n:6},u:{n:9},ds:'Apply {n} <em>Poison</em> to ALL enemies. Draw 1 card.',f:(B,v)=>{B.foes2().forEach(e=>B.apply(e,'poison',v.n));B.draw(1);}},
+assassinate:{n:'Assassinate',c:2,y:'a',r:3,k:'s',t:'e',a:4,i:'dagger',p:'purple',v:{d:18},u:{d:24},x:{ex:1},ds:'Deal {d} damage. Deals double damage if the enemy is poisoned. Exhaust.',f:(B,v,T)=>B.hit(T,(T.st.poison||0)>0?v.d*2:v.d)},
+// anyone, act IV+
+starfire:{n:'Starfire',c:1,y:'a',r:2,k:'n',a:4,i:'star',p:'gold',v:{d:10},u:{d:14},ds:'Deal {d} damage to ALL enemies.',f:(B,v)=>B.hitAll(v.d)},
+moonward:{n:'Moon Ward',c:1,y:'s',r:2,k:'n',a:4,i:'moon',p:'blue',v:{b:9},u:{b:12},ds:'Gain {b} block. Draw 1 card.',f:(B,v)=>{B.block(v.b);B.draw(1);}},
+dawnbreak:{n:'Dawnbreak',c:2,y:'s',r:3,k:'n',a:4,i:'sun',p:'gold',v:{},u:{c:1},x:{ex:1},ds:'Gain 2 energy. Draw 3 cards. Exhaust.',f:B=>{B.gainE(2);B.draw(3);}},
+bloodmoon:{n:'Blood Moon',c:0,y:'s',r:2,k:'n',a:4,i:'moon',p:'red',v:{n:4},u:{n:2},x:{ex:1},ds:'Lose {n} HP. Gain 2 energy. Exhaust.',f:(B,v)=>{dmgPlayer(v.n,'self',1);B.gainE(2);}},
+});
+for(const k in CARDS)CARDS[k].id=k;
+
 /* ===== heroes ===== */
 const HEROES={
  w:{id:'w',n:'The Warden',t:'Oathsworn knight of the fallen keep',hp:80,deck:['strike_w','strike_w','strike_w','strike_w','strike_w','defend_w','defend_w','defend_w','defend_w','bash'],relic:'emberheart',col:'#d9a35a',
@@ -884,6 +911,23 @@ const POTIONS={
  mist:{n:'Gloom Mist',p:'dark',d:'Apply 2 Weak and 2 Vulnerable to ALL enemies.',f:B=>B.foes2().forEach(e=>{B.apply(e,'weak',2);B.apply(e,'vul',2);})},
  ward:{n:'Ward Oil',p:'teal',d:'Gain 2 Dexterity.',f:B=>B.apply(B.P,'dex',2)},
 };
+
+Object.assign(RELICS,{
+ ironbark:{n:'Ironbark Seed',r:1,i:'root',p:'steel',d:'Start each combat with 3 Iron Skin (gain 3 block at the end of each turn).'},
+ goldleaf:{n:'Gilded Leaf',r:1,i:'coin',p:'gold',d:'After each combat, gain 8 gold.'},
+ lunarbell:{n:'Lunar Bell',r:1,i:'horn',p:'blue',d:'At the start of your 3rd turn, gain 2 energy.'},
+ nightbloom:{n:'Nightbloom',r:2,i:'root',p:'purple',d:'At the start of combat, apply 3 Poison to ALL enemies.'},
+ starmap:{n:'Star Chart',r:2,i:'scroll',p:'blue',d:'Draw 2 extra cards on your first turn of each combat.'},
+ shears:{n:'Garden Shears',r:2,i:'claw',p:'green',d:'Whenever an enemy dies, heal 4 HP.'},
+ eclipseorb:{n:'Eclipse Orb',r:3,i:'moon',p:'purple',d:'At the start of your turn, apply 1 Vulnerable to ALL enemies.'},
+ comet:{n:'Comet Shard',r:3,i:'star',p:'gold',d:'Every 3rd Skill you play in a turn gives 1 energy.'},
+ thorncrown:{n:'Thorn Crown',r:4,i:'crown',p:'green',d:'Gain 1 energy every turn. A Wound is shuffled into your draw pile at the start of each combat.'},
+});
+Object.assign(POTIONS,{
+ thorn:{n:'Thorn Tonic',p:'green',d:'Gain 6 Thorns.',f:B=>B.apply(B.P,'thorns',6)},
+ shadow:{n:'Shadow Oil',p:'dark',d:'Gain 10 block. Your block is not removed next turn.',f:B=>{B.block(10,0,1);B.apply(B.P,'blur',1);}},
+ starlight:{n:'Starlight Vial',p:'blue',d:'Gain 1 energy and draw 2 cards.',f:B=>{B.gainE(1);B.draw(2);}},
+});
 /* ===== enemies ===== */
 // s entries: [who,'stat',n] who: p player, m self, a all allies
 const cyc=(...k)=>e=>k[e.turn%k.length];
@@ -917,6 +961,30 @@ const ENEMIES={
  golem:{n:'Dread Golem',hp:[176,184],art:'golem',pal:['#5a4a3a','#1a120a','#ff5a1a'],sz:1.45,elite:1,start:[['metal',4]],moves:{quake:{n:'Quake',a:[30]},charge:{n:'Charge Up',b:20,s:[['m','str',3]]},rubble:{n:'Rubble',a:[8,4]}},ai:cyc('charge','quake','rubble','quake','charge','rubble')},
  dusk:{n:'The Dusk',hp:[460,460],art:'dusk',pal:['#ffb070','#2a0a3a','#fff0c0'],sz:1.15,boss:1,fly:1,moves:{eclipse:{n:'Eclipse',a:[10,5]},nightfall:{n:'Nightfall',b:40,s:[['m','str',4]]},darksun:{n:'Dark Sun',a:[45]},unmake:{n:'Unmaking',s:[['p','vul',3],['p','weak',3]],add:['dazed',3,'draw']},fading:{n:'Fading Light',a:[14],heal:30}},ai:cyc('unmake','eclipse','nightfall','darksun','fading','eclipse','nightfall','darksun')},
 };
+
+// ---- act 4: the withered gardens
+Object.assign(ENEMIES,{
+ thornsprite:{n:'Thorn Sprite',hp:[46,52],art:'imp',pal:['#8ac04a','#1e3a10','#ffe060'],sz:.85,fly:1,moves:{prick:{n:'Prick',a:[7,2]},pollen:{n:'Pollen',a:[5],s:[['p','weak',2]]},bloom:{n:'Bloom',b:8,s:[['a','str',2]]}},ai:rnd({prick:3,pollen:2,bloom:1})},
+ bloommaw:{n:'Bloom Maw',hp:[78,86],art:'vine',pal:['#ff7aa8','#2a5a1a','#ffe060'],sz:1,moves:{chomp:{n:'Chomp',a:[18]},tangle:{n:'Tangle',a:[8],s:[['p','weak',2]]},root:{n:'Take Root',b:16,s:[['m','regen',5]]}},ai:rnd({chomp:3,tangle:2,root:1})},
+ moth:{n:'Dusk Moth',hp:[56,62],art:'moth',pal:['#c8a070','#3a2414','#ffd060'],sz:.9,fly:1,moves:{dust:{n:'Wing Dust',a:[6],s:[['p','frail',2]]},flutter:{n:'Flutter',a:[5,3]},lull:{n:'Lull',add:['dazed',2,'disc'],b:8}},ai:rnd({dust:2,flutter:3,lull:1})},
+ rothound:{n:'Rot Hound',hp:[62,68],art:'hound',pal:['#5a6a2a','#141c08','#c8ff40'],sz:1,moves:{maul:{n:'Maul',a:[13]},blight:{n:'Blight Bite',a:[6],s:[['p','poison',4]]},howl:{n:'Howl',s:[['a','str',2]]}},ai:rnd({maul:3,blight:2,howl:1})},
+ elder:{n:'Spore Elder',hp:[70,76],art:'shroom',pal:['#c0782a','#3a1a08','#ffe0a0'],sz:1.1,moves:{cloud:{n:'Spore Storm',s:[['p','vul',2],['p','weak',1]],a:[5]},slam:{n:'Cap Slam',a:[16]},mend:{n:'Mycelium',b:10,heal:10}},ai:rnd({cloud:2,slam:3,mend:1})},
+ gwarden:{n:'Garden Warden',hp:[96,104],art:'armor',pal:['#6a8a3a','#16220e','#ffd060'],sz:1.2,moves:{sweep:{n:'Sweep',a:[9,2]},prune:{n:'Prune',a:[22]},hedge:{n:'Hedgewall',b:18,s:[['m','metal',2]]}},ai:rnd({sweep:2,prune:2,hedge:2})},
+ gardener:{n:'Clockwork Gardener',hp:[200,210],art:'clock',pal:['#c8a060','#3a2810','#80ff80'],sz:1.1,elite:1,start:[['metal',4]],moves:{wind:{n:'Wind Up',b:20,s:[['m','str',3]]},shears:{n:'Shears',a:[12,2]},harvest:{n:'Harvest',a:[32]}},ai:cyc('wind','shears','harvest','shears','wind','harvest')},
+ mothqueen:{n:'Moth Queen',hp:[180,190],art:'moth',pal:['#d8c0ff','#3a1a5a','#ffd0ff'],sz:1.45,elite:1,fly:1,moves:{veil:{n:'Silk Veil',s:[['p','weak',3],['p','frail',2]],b:12},storm:{n:'Dust Storm',a:[6,4]},blind:{n:'Blinding Wings',a:[20],add:['dazed',2,'draw']}},ai:cyc('veil','storm','blind','storm','blind')},
+ briar:{n:'Briar Knight',hp:[150,160],art:'armor',pal:['#3a5a2a','#0e1608','#ff6040'],sz:1.3,elite:1,start:[['thorns',5]],moves:{lance:{n:'Bramble Lance',a:[24]},guard:{n:'Thicket',b:24},burst:{n:'Thorn Burst',a:[9,2],s:[['m','thorns',2]]}},ai:cyc('lance','guard','burst','lance','burst')},
+ thornmother:{n:'The Thornmother',hp:[620,620],art:'treant',pal:['#ffb0d0','#4a3420','#a0ff60'],sz:1.12,boss:1,moves:{wither:{n:'Wither',s:[['p','frail',3],['p','vul',3]]},grasp:{n:'Root Grasp',a:[20],s:[['p','weak',2]]},scythe:{n:'Thorn Scythe',a:[8,4]},bloom:{n:'Deathbloom',b:40,s:[['m','str',4],['m','regen',8]]},briars:{n:'Briar Curse',a:[10],add:['wound',2,'disc']}},ai:cyc('wither','grasp','scythe','bloom','grasp','briars','scythe','bloom')},
+// ---- act 5: the starless summit
+ wisp:{n:'Star Wisp',hp:[62,68],art:'ghost',pal:['#cfe0ff','#1a2a6a','#ffffff'],sz:.9,fly:1,moves:{flare:{n:'Flare',a:[14]},chill:{n:'Starchill',a:[7],s:[['p','weak',2]]},fade:{n:'Fade',b:16}},ai:rnd({flare:3,chill:2,fade:1})},
+ voidwatch:{n:'Void Watcher',hp:[76,82],art:'eye',pal:['#ffe8a0','#2a0a4a','#ff60ff'],sz:1.05,fly:1,moves:{gaze:{n:'Abyssal Gaze',a:[16],s:[['p','vul',1]]},glare:{n:'Glare',a:[7,3]},blink:{n:'Blink',b:18}},ai:rnd({gaze:2,glare:2,blink:1})},
+ seraph:{n:'Fallen Seraph',hp:[92,100],art:'seraph',pal:['#e8e0ff','#3a3060','#ffd070'],sz:1,fly:1,moves:{smite:{n:'Smite',a:[20]},hymn:{n:'Black Hymn',b:10,s:[['a','str',2]]},judgment:{n:'Judgment',a:[9,2],s:[['p','frail',1]]}},ai:rnd({smite:3,hymn:1,judgment:2})},
+ nightimp:{n:'Night Imp',hp:[60,66],art:'imp',pal:['#3a4a9a','#080a24','#80c0ff'],sz:.9,fly:1,moves:{claw:{n:'Claw',a:[11,2]},hexspark:{n:'Starfire',a:[12],s:[['p','burn',5]]},cackle:{n:'Cackle',s:[['a','str',3]]}},ai:rnd({claw:3,hexspark:2,cackle:1})},
+ sentry:{n:'Clockwork Sentry',hp:[100,108],art:'clock',pal:['#8aa0b8','#1a2230','#60e0ff'],sz:.95,start:[['metal',3]],moves:{bolt:{n:'Bolt',a:[18]},volley:{n:'Volley',a:[5,4]},brace:{n:'Brace',b:20}},ai:rnd({bolt:2,volley:2,brace:1})},
+ shadehound:{n:'Umbral Hound',hp:[74,80],art:'hound',pal:['#2a2a4a','#05050e','#a080ff'],sz:1.05,moves:{maul:{n:'Maul',a:[15]},rend:{n:'Rend',a:[7],s:[['p','vul',2]]},howl:{n:'Night Howl',s:[['a','str',3]]}},ai:rnd({maul:3,rend:2,howl:1})},
+ wyrm:{n:'Star Wyrm',hp:[280,290],art:'wyrm',pal:['#8ab0ff','#1a2050','#fff0a0'],sz:1.3,elite:1,fly:1,moves:{roar:{n:'Roar',s:[['p','weak',2],['p','vul',2]]},breath:{n:'Starbreath',a:[12,3]},coil:{n:'Coil',b:28,s:[['m','str',3]]},crush:{n:'Crush',a:[36]}},ai:cyc('roar','breath','coil','crush','breath','coil','crush')},
+ abysslich:{n:'Abyss Lich',hp:[250,260],art:'lich',pal:['#c0b0ff','#120a2a','#a060ff','#3a2470'],sz:1.3,elite:1,moves:{drain:{n:'Soul Drain',a:[22],heal:15},bshield:{n:'Void Shield',b:30},doom:{n:'Doom',s:[['p','weak',3],['p','frail',3],['p','vul',2]]}},ai:cyc('doom','drain','bshield','drain','drain','bshield')},
+ starking:{n:'The Starless King',hp:[780,780],art:'king',pal:['#a0b0ff','#1a1640','#c0d0ff'],sz:1.12,boss:1,fly:1,moves:{decree:{n:'Dark Decree',s:[['p','weak',3],['p','vul',3]],add:['regret',1,'disc']},constellation:{n:'Constellation',a:[7,5]},night:{n:'Endless Night',b:50,s:[['m','str',5]]},blade:{n:'Starless Blade',a:[48]},starfall:{n:'Starfall',a:[14,3]},eclipse:{n:'Eclipse',a:[20],heal:40}},ai:cyc('decree','constellation','night','blade','starfall','eclipse','night','blade')},
+});
 for(const k in ENEMIES)ENEMIES[k].id=k;
 const ENC={
  1:{easy:[['slime'],['slimeling','slimeling'],['rat','slimeling'],['bat','bat','bat']],
@@ -929,7 +997,9 @@ const ENC={
     norm:[['shadowknight'],['watcher','imp'],['imp','imp','imp'],['shadowknight','imp'],['watcher','watcher']],
     elite:[['lich'],['golem'],['shadowknight','shadowknight']],boss:['dusk']},
 };
-const ACTS={1:{n:'The Undercroft',s:'Act I',music:'castle',bg:['#1a1424','#0a0710','#ff9a40']},2:{n:'The Drowned Halls',s:'Act II',music:'deep',bg:['#0e1a24','#05090e','#60c0ff']},3:{n:'The Crown of Night',s:'Act III',music:'storm',bg:['#200c26','#0a040e','#c070ff']}};
+ENC[4]={easy:[['thornsprite','thornsprite'],['moth']],norm:[['bloommaw'],['rothound','thornsprite'],['moth','moth'],['elder','thornsprite'],['gwarden'],['rothound','rothound'],['bloommaw','moth']],elite:[['gardener'],['mothqueen'],['briar','thornsprite']],boss:['thornmother']};
+ENC[5]={easy:[['wisp','wisp']],norm:[['seraph'],['voidwatch','wisp'],['nightimp','nightimp','nightimp'],['sentry','wisp'],['shadehound','shadehound'],['seraph','nightimp'],['voidwatch','voidwatch']],elite:[['wyrm'],['seraph','seraph'],['abysslich']],boss:['starking']};
+const ACTS={1:{n:'The Undercroft',s:'Act I',music:'castle',bg:['#1a1424','#0a0710','#ff9a40']},2:{n:'The Drowned Halls',s:'Act II',music:'deep',bg:['#0e1a24','#05090e','#60c0ff']},3:{n:'The Crown of Night',s:'Act III',music:'storm',bg:['#200c26','#0a040e','#c070ff']},4:{n:'The Withered Gardens',s:'Act IV',music:'night',bg:['#1e2c14','#060a04','#c8e060']},5:{n:'The Starless Summit',s:'Act V',music:'space',bg:['#141038','#030208','#a0b8ff']}};
 
 /* ===== events ===== */
 // each: {n,art,t(text),ch:[{l:label, ok:R=>bool, f:R=>resultText}]}
@@ -975,6 +1045,30 @@ const EVENTS=[
   ch:[{l:'Offer 75 gold: <em>remove 2 cards</em>',ok:R=>R.gold>=75&&R.deck.length>6,f:R=>{R.gold-=75;R.pendingRemove=2;return 'Her tears stop. Choose 2 cards to give her.';}},
       {l:'Collect her tears: <em>gain a Healing Draught</em>',f:R=>{gainPotion(R,'heal');return 'You fill a flask with her tears.';}},
       {l:'Leave',f:()=>'You bow and go.'}]},
+ {id:'oldgardener',ma:4,n:'The Old Gardener',art:'drop',p:'green',t:'A stooped figure in a straw hat tends a single living rose among the dead hedges. "Everything grows better pruned," she says.',
+  ch:[{l:'Let her prune: <em>remove a card</em>',ok:R=>R.deck.length>5,f:R=>{R.pendingRemove=1;return 'She hands you her shears. Choose a card to cut away.';}},
+      {l:'Ask for a graft: <em>duplicate a card</em>',f:R=>{R.pendingDup=1;return 'She grafts something new onto something old. Choose a card to copy.';}},
+      {l:'Leave',f:()=>'She goes back to her rose.'}]},
+ {id:'starwell',ma:4,n:'The Star Well',art:'eye',p:'blue',t:'A well with no bottom. Far below, stars drift instead of water. Coins glitter on its rim.',
+  ch:[{l:'Make a wish: <em>gain a rare card</em>, <i>lose 6 Max HP</i>',ok:R=>R.maxhp>20,f:R=>{R.maxhp-=6;R.hp=Math.min(R.hp,R.maxhp);const c=rollCard(R,3);addDeck(R,c);return 'Starlight rises and becomes '+CARDS[c].n+'.';}},
+      {l:'Drink the starlight: <em>heal 40% HP</em>',f:R=>{healR(R,Math.ceil(R.maxhp*.4));return 'It tastes of cold metal and summer nights.';}},
+      {l:'Take the coins: <em>gain 60 gold</em>',f:R=>{R.gold+=60;return 'You pocket the wishes of strangers.';}}]},
+ {id:'automaton',ma:4,n:'Broken Automaton',art:'shield',p:'steel',t:'A brass gardener lies in the weeds, one gear spinning slowly. Its lens follows you.',
+  ch:[{l:'Repair it: <i>lose 40 gold</i>, <em>gain a relic</em>',ok:R=>R.gold>=40,f:R=>{R.gold-=40;const r=gainRelic(R,pickRelic(R,2));return 'It whirs to life and presses the '+RELICS[r].n+' into your hand.';}},
+      {l:'Scrap it: <em>gain 2 potions</em>',f:R=>{gainPotion(R);gainPotion(R);return 'Its oil reservoirs hold strange draughts.';}},
+      {l:'Leave',f:()=>'Its lens dims as you go.'}]},
+ {id:'moths',ma:4,n:'The Moth Cloud',art:'moon',p:'pink',t:'Thousands of pale moths whirl around a lantern hung from a dead tree. They hum in a voice almost like words.',
+  ch:[{l:'Listen: <em>upgrade 2 random cards</em>, <i>take 10 damage</i>',f:R=>{upRandom(R,2);R.hp=Math.max(1,R.hp-10);return 'Their song fills your head with ideas, and their wings cut your skin.';}},
+      {l:'Smash the lantern: <i>fight</i>',f:R=>{R.pendingFight=1;return 'The cloud turns on you.';}},
+      {l:'Leave',f:()=>'You leave them to their lantern.'}]},
+ {id:'throne',ma:5,n:'The Empty Throne',art:'crown',p:'gold',t:'On a ledge of black glass sits a small throne, empty. A crown rests on the seat.',
+  ch:[{l:'Wear the crown: <em>gain a rare relic</em>, <i>gain the curse Doubt</i>',f:R=>{const r=gainRelic(R,pickRelic(R,3));addDeck(R,'doubt');return 'The '+RELICS[r].n+' is yours. So are the whispers.';}},
+      {l:'Kneel: <em>heal to full</em>',f:R=>{R.hp=R.maxhp;return 'You rest a while before the throne.';}}]},
+ {id:'fallenstar',ma:5,n:'A Fallen Star',art:'flame',p:'fire',t:'A star lies cooling in a crater, still too bright to look at.',
+  ch:[{l:'Hold it: <em>upgrade all Attacks</em>, <i>take 15 damage</i>',f:R=>{R.deck.forEach(c=>{if(CARDS[c.id].y==='a')c.up=1;});R.hp=Math.max(1,R.hp-15);return 'It burns, but your weapons remember the fire.';}},
+      {l:'Take a shard: <em>gain 80 gold</em>',f:R=>{R.gold+=80;return 'A merchant will pay well for this.';}},
+      {l:'Leave',f:()=>'You let it cool alone.'}]},
+
 ];
 
 /* ===== Sanctum (meta upgrades bought with Embers) ===== */
@@ -1188,7 +1282,7 @@ const ART={
   c.strokeStyle='#fff';c.lineWidth=2;c.beginPath();c.moveTo(-8,-40);c.quadraticCurveTo(0,-35,8,-40);c.stroke();
   c.save();c.globalCompositeOperation='lighter';c.fillStyle=RG(c,32,-2,0,18,[[0,'#f8f'],[1,'rgba(255,100,255,0)']]);c.beginPath();c.arc(32,-2,18,0,TAU);c.fill();c.restore();c.restore();},
  lich(c,P,t){const s=Math.sin(t*1.5);shadowE(c,70);
-  c.fillStyle=LG(c,-60,0,60,0,[[0,'#0a0e08'],[.5,'#2a3a24'],[1,'#0a0e08']]);c.beginPath();c.moveTo(-64,0);c.quadraticCurveTo(-56,-100,-36,-150);c.lineTo(36,-150);c.quadraticCurveTo(56,-100,64,0);for(let i=0;i<6;i++){const x=64-i*25.6;c.lineTo(x-12,-14+((i%2)*10)+s*3);c.lineTo(x-25.6,0);}c.fill();
+  c.fillStyle=LG(c,-60,0,60,0,[[0,'#0a0e08'],[.5,P[3]||'#2a3a24'],[1,'#0a0e08']]);c.beginPath();c.moveTo(-64,0);c.quadraticCurveTo(-56,-100,-36,-150);c.lineTo(36,-150);c.quadraticCurveTo(56,-100,64,0);for(let i=0;i<6;i++){const x=64-i*25.6;c.lineTo(x-12,-14+((i%2)*10)+s*3);c.lineTo(x-25.6,0);}c.fill();
   c.fillStyle=LG(c,-40,0,40,0,[[0,'#6a5a20'],[.5,'#e8d080'],[1,'#6a5a20']]);c.fillRect(-36,-152,72,8);c.fillRect(-5,-144,10,90);
   c.fillStyle=RG(c,-4,-176,3,30,[[0,'#f8ffe8'],[1,'#5a6a4a']]);c.beginPath();c.arc(0,-172,22,0,TAU);c.fill();c.fillRect(-12,-158,24,10);
   c.fillStyle='#030803';c.beginPath();c.ellipse(-8,-172,6,7,0,0,TAU);c.ellipse(8,-172,6,7,0,0,TAU);c.fill();eyeGlow(c,-8,-172,2.8,P[2]);eyeGlow(c,8,-172,2.8,P[2]);
@@ -1228,6 +1322,127 @@ const ART={
   const lx=Math.sin(t*.6)*14,ly=Math.cos(t*.8)*8;c.fillStyle=RG(c,lx,ly,2,40,[[0,'#fff6d0'],[.4,'#ffb050'],[1,'rgba(255,90,30,0)']]);c.beginPath();c.arc(lx,ly,40,0,TAU);c.fill();c.fillStyle='#000';c.beginPath();c.ellipse(lx,ly,7,24,0,0,TAU);c.fill();
   c.restore();},
 };
+
+function gear(c,x,y,r,n,a,P){c.save();c.translate(x,y);c.rotate(a);c.fillStyle=shade(P[0],-.1);c.beginPath();for(let i=0;i<n*2;i++){const an=i/(n*2)*TAU,rr=i%2?r:r*1.24;c.lineTo(Math.cos(an)*rr,Math.sin(an)*rr);}c.closePath();c.fill();c.strokeStyle=P[1];c.lineWidth=2;c.beginPath();c.arc(0,0,r*.7,0,TAU);c.stroke();c.fillStyle=P[1];c.beginPath();c.arc(0,0,r*.32,0,TAU);c.fill();c.restore();}
+Object.assign(ART,{
+ vine(c,P,t){const s=Math.sin(t*1.6),sw=s*8;shadowE(c,72);
+  // roots spread from the base of the stem
+  c.fillStyle=shade(P[1],-.25);for(const k of[-1,-.45,.45,1]){c.beginPath();c.moveTo(-12,-2);c.quadraticCurveTo(k*40,-6,k*70,6);c.quadraticCurveTo(k*40,4,12,-10);c.closePath();c.fill();}
+  // the stem: one tapered curve from roots to flower
+  const st=LG(c,-24,0,24,0,[[0,shade(P[1],-.3)],[.5,shade(P[1],.12)],[1,shade(P[1],-.35)]]);
+  limb(c,[[0,0],[14,-52],[-4+sw*.3,-102],[-18+sw,-142],[-28+sw,-166]],[36,27,20,16,14],st);
+  // leaves grow from the stem
+  for(const[x,y,a,l]of[[10,-44,-.7,50],[-2,-88,2.5,46],[4,-118,-.25,38]]){c.save();c.translate(x+(y<-80?sw*.5:0),y);c.rotate(a+s*.08);c.fillStyle=LG(c,0,0,l,0,[[0,shade(P[1],-.1)],[1,shade(P[1],.35)]]);c.beginPath();c.moveTo(0,0);c.quadraticCurveTo(l*.5,-l*.38,l,0);c.quadraticCurveTo(l*.5,l*.38,0,0);c.fill();c.strokeStyle=shade(P[1],-.4);c.lineWidth=1.6;c.beginPath();c.moveTo(0,0);c.lineTo(l*.92,0);c.stroke();c.restore();}
+  // thorns on the stem
+  c.fillStyle=shade(P[1],-.45);for(const[x,y,d]of[[18,-34,1],[-8,-70,-1],[10,-96,1],[-12,-130,-1]]){c.beginPath();c.moveTo(x,y-5);c.lineTo(x+d*12,y-9);c.lineTo(x,y+4);c.fill();}
+  // flower head: petals grow from one ring around a toothy maw that faces the hero
+  c.save();c.translate(-34+sw,-180);c.rotate(-.4+s*.05);const o=Math.max(0,Math.sin(t*2.2))*.26;
+  for(let i=0;i<9;i++){c.save();c.rotate(i/9*TAU);c.fillStyle=RG(c,0,-40,4,48,[[0,shade(P[0],.25)],[.65,P[0]],[1,shade(P[0],-.45)]]);c.beginPath();c.moveTo(-11,-14);c.bezierCurveTo(-28,-40,-13,-64,0,-68);c.bezierCurveTo(13,-64,28,-40,11,-14);c.closePath();c.fill();c.strokeStyle='rgba(0,0,0,.18)';c.lineWidth=1.4;c.beginPath();c.moveTo(0,-16);c.lineTo(0,-58);c.stroke();c.restore();}
+  c.fillStyle=shade(P[1],-.1);c.beginPath();c.arc(0,0,27,0,TAU);c.fill();
+  c.fillStyle='#1a0610';c.beginPath();c.ellipse(0,0,21,9+o*30,0,0,TAU);c.fill();
+  c.fillStyle='#f4ecd8';for(let i=-3;i<=3;i++){const xo=i*5.4;c.beginPath();c.moveTo(xo-2.6,-8-o*28);c.lineTo(xo,1-o*22);c.lineTo(xo+2.6,-8-o*28);c.fill();c.beginPath();c.moveTo(xo-2.6,8+o*28);c.lineTo(xo,-1+o*22);c.lineTo(xo+2.6,8+o*28);c.fill();}
+  c.save();c.globalCompositeOperation='lighter';c.fillStyle=RG(c,0,0,0,18,[[0,P[2]+'88'],[1,P[2]+'00']]);c.beginPath();c.arc(0,0,18,0,TAU);c.fill();c.restore();
+  c.restore();},
+ moth(c,P,t){const y=-112+Math.sin(t*2.2)*10,f=.5+.5*Math.abs(Math.sin(t*6.5));shadowE(c,60);c.save();c.translate(0,y);
+  for(const s of[-1,1]){c.save();c.scale(s*f,1);
+   c.fillStyle=LG(c,0,0,90,40,[[0,P[1]],[1,shade(P[0],-.15)]]);c.beginPath();c.moveTo(4,6);c.bezierCurveTo(40,10,82,30,72,62);c.bezierCurveTo(58,84,26,64,6,26);c.closePath();c.fill();
+   c.fillStyle=shade(P[1],-.3);c.beginPath();c.ellipse(48,40,9,7,.5,0,TAU);c.fill();
+   c.fillStyle=LG(c,0,-60,110,0,[[0,shade(P[0],.2)],[.6,P[0]],[1,P[1]]]);c.beginPath();c.moveTo(4,-8);c.bezierCurveTo(30,-62,98,-86,120,-50);c.bezierCurveTo(126,-30,100,-6,60,4);c.bezierCurveTo(40,8,16,6,4,4);c.closePath();c.fill();
+   c.fillStyle=shade(P[1],-.3);c.beginPath();c.ellipse(72,-36,17,12,-.4,0,TAU);c.fill();c.fillStyle=P[2];c.beginPath();c.ellipse(72,-36,10,7,-.4,0,TAU);c.fill();c.fillStyle='#120a04';c.beginPath();c.arc(74,-37,3.6,0,TAU);c.fill();
+   c.strokeStyle='rgba(0,0,0,.26)';c.lineWidth=1.6;c.beginPath();c.moveTo(6,-4);c.quadraticCurveTo(50,-42,114,-50);c.moveTo(6,0);c.quadraticCurveTo(60,-14,102,-14);c.moveTo(8,14);c.quadraticCurveTo(40,30,66,60);c.stroke();
+   c.fillStyle='rgba(255,255,255,.18)';c.beginPath();c.moveTo(20,-30);c.quadraticCurveTo(60,-68,110,-56);c.quadraticCurveTo(60,-50,20,-30);c.fill();c.restore();}
+  c.strokeStyle=P[1];c.lineWidth=2.6;c.lineCap='round';for(const s of[-1,1])for(let i=0;i<3;i++){c.beginPath();c.moveTo(s*7,-4+i*10);c.lineTo(s*20,6+i*12);c.lineTo(s*17,22+i*12);c.stroke();}
+  // head, thorax and tapering abdomen as one furry body
+  c.fillStyle=RG(c,-4,-14,2,64,[[0,shade(P[0],.45)],[.5,P[0]],[1,P[1]]]);c.beginPath();c.moveTo(0,-36);c.bezierCurveTo(12,-36,14,-24,10,-15);c.bezierCurveTo(17,-7,17,10,11,18);c.bezierCurveTo(13,40,6,62,0,72);c.bezierCurveTo(-6,62,-13,40,-11,18);c.bezierCurveTo(-17,10,-17,-7,-10,-15);c.bezierCurveTo(-14,-24,-12,-36,0,-36);c.fill();
+  c.strokeStyle='rgba(0,0,0,.25)';c.lineWidth=2;for(let i=0;i<5;i++){c.beginPath();c.moveTo(-9+i*.9,26+i*9);c.quadraticCurveTo(0,30+i*9,9-i*.9,26+i*9);c.stroke();}
+  for(const s of[-1,1]){c.strokeStyle=P[1];c.lineWidth=2.2;c.beginPath();c.moveTo(s*4,-34);c.quadraticCurveTo(s*14,-58,s*32,-64);c.stroke();c.lineWidth=1.2;for(let i=1;i<8;i++){const k=i/8,ax=s*(4+28*k*k+0*k),ay=-34-24*k-6*k*k;c.beginPath();c.moveTo(ax,ay);c.lineTo(ax+s*6,ay-5);c.moveTo(ax,ay);c.lineTo(ax-s*2,ay-7);c.stroke();}}
+  eyeGlow(c,-5,-27,2.6,P[2]);eyeGlow(c,5,-27,2.6,P[2]);c.restore();},
+ clock(c,P,t){const b=Math.sin(t*2)*2,g=t*1.5;shadowE(c,78);c.save();c.translate(0,b);
+  const metal=LG(c,-50,0,50,0,[[0,shade(P[1],-.2)],[.35,shade(P[0],.28)],[.6,P[0]],[1,P[1]]]);
+  for(const s of[-1,1]){limb(c,[[s*16,-98],[s*25,-54],[s*20,-8]],[24,17,15],metal);c.fillStyle=P[1];c.beginPath();c.moveTo(s*6,-10);c.lineTo(s*38,-10);c.quadraticCurveTo(s*42,0,s*36,2);c.lineTo(s*4,2);c.closePath();c.fill();c.fillStyle=shade(P[0],.35);c.beginPath();c.arc(s*25,-54,6.5,0,TAU);c.fill();c.fillStyle=P[1];c.beginPath();c.arc(s*25,-54,2.4,0,TAU);c.fill();}
+  c.fillStyle=metal;c.beginPath();c.moveTo(-26,-98);c.quadraticCurveTo(-48,-142,-42,-180);c.quadraticCurveTo(-20,-198,0,-198);c.quadraticCurveTo(20,-198,42,-180);c.quadraticCurveTo(48,-142,26,-98);c.quadraticCurveTo(0,-90,-26,-98);c.fill();
+  c.strokeStyle='rgba(0,0,0,.3)';c.lineWidth=2;c.beginPath();c.moveTo(-40,-170);c.quadraticCurveTo(0,-180,40,-170);c.moveTo(-34,-112);c.quadraticCurveTo(0,-104,34,-112);c.stroke();
+  c.fillStyle=shade(P[0],.45);for(let i=0;i<6;i++){c.beginPath();c.arc(-34+i*13.6,-184+Math.abs(i-2.5)*2,2,0,TAU);c.fill();}
+  c.fillStyle='#0c0a08';c.beginPath();c.arc(4,-136,32,0,TAU);c.fill();
+  gear(c,-4,-140,20,10,g,P);gear(c,20,-120,11,8,-g*1.8,P);gear(c,16,-156,8,7,-g*2.4,P);
+  c.save();c.globalCompositeOperation='lighter';c.fillStyle=RG(c,4,-136,0,36,[[0,P[2]+'55'],[1,P[2]+'00']]);c.beginPath();c.arc(4,-136,36,0,TAU);c.fill();c.restore();
+  limb(c,[[-38,-178],[-58,-142],[-52,-106]],[19,15,13],metal);c.fillStyle=P[1];c.beginPath();c.moveTo(-58,-108);c.lineTo(-66,-86);c.lineTo(-56,-94);c.lineTo(-52,-82);c.lineTo(-44,-102);c.closePath();c.fill();
+  const sh=Math.abs(Math.sin(t*3))*.35;limb(c,[[38,-178],[62,-152],[76,-126]],[19,15,13],metal);
+  c.save();c.translate(76,-124);c.rotate(.35);for(const k of[-1,1]){c.save();c.rotate(k*sh);c.fillStyle=LG(c,0,0,0,-64,[[0,'#7a8088'],[1,'#eef2f6']]);c.beginPath();c.moveTo(0,0);c.lineTo(k*6,-10);c.lineTo(k*2.5,-64);c.lineTo(-k*2,-10);c.closePath();c.fill();c.restore();}c.fillStyle=P[1];c.beginPath();c.arc(0,0,6.5,0,TAU);c.fill();c.restore();
+  c.fillStyle=P[1];c.fillRect(-7,-212,14,18);
+  c.fillStyle=metal;c.beginPath();c.moveTo(-23,-212);c.quadraticCurveTo(-27,-250,0,-254);c.quadraticCurveTo(27,-250,23,-212);c.quadraticCurveTo(0,-204,-23,-212);c.fill();
+  c.fillStyle='#0a0806';c.beginPath();c.arc(-5,-232,10.5,0,TAU);c.fill();c.strokeStyle=shade(P[0],.4);c.lineWidth=2;c.stroke();eyeGlow(c,-5,-232,4,P[2]);
+  c.strokeStyle=P[1];c.lineWidth=3;c.beginPath();c.moveTo(10,-252);c.lineTo(16,-270);c.stroke();c.fillStyle=P[2];c.beginPath();c.arc(16,-272,3.2,0,TAU);c.fill();
+  c.restore();},
+ treant(c,P,t){const s=Math.sin(t*1.2);shadowE(c,135);
+  const bark=LG(c,-80,0,80,0,[[0,shade(P[1],-.4)],[.4,P[1]],[.6,shade(P[1],.18)],[1,shade(P[1],-.45)]]);
+  // roots, trunk-body and shoulders as one silhouette
+  c.fillStyle=bark;c.beginPath();c.moveTo(-124,4);c.quadraticCurveTo(-82,-6,-58,-32);c.quadraticCurveTo(-66,-122,-48,-192);c.quadraticCurveTo(-42,-232,-26,-252);c.lineTo(26,-252);c.quadraticCurveTo(42,-232,48,-192);c.quadraticCurveTo(66,-122,58,-32);c.quadraticCurveTo(82,-6,124,4);c.quadraticCurveTo(72,0,42,-8);c.quadraticCurveTo(20,4,0,-6);c.quadraticCurveTo(-20,4,-42,-8);c.quadraticCurveTo(-72,0,-124,4);c.fill();
+  c.strokeStyle='rgba(0,0,0,.35)';c.lineWidth=3;for(const x of[-32,-13,8,28]){c.beginPath();c.moveTo(x,-18);c.bezierCurveTo(x+10,-80,x-12,-152,x+4,-242);c.stroke();}
+  c.fillStyle='rgba(120,170,70,.5)';for(const[x,y,r]of[[-40,-60,12],[30,-110,9],[-20,-200,10],[44,-30,11]]){c.beginPath();c.ellipse(x,y,r,r*.5,.4,0,TAU);c.fill();}
+  // glowing heart in the trunk
+  c.save();c.globalCompositeOperation='lighter';c.fillStyle=RG(c,0,-150,0,44,[[0,P[2]],[1,'rgba(0,0,0,0)']]);c.beginPath();c.arc(0,-150,44,0,TAU);c.fill();c.restore();c.fillStyle='#1a0c06';c.beginPath();c.ellipse(0,-150,10,17,0,0,TAU);c.fill();eyeGlow(c,0,-150,4,P[2]);
+  // branch arms, tapering into twig fingers
+  for(const k of[-1,1]){const w=s*k*8;limb(c,[[k*42,-232],[k*88,-202+w],[k*122,-152+w],[k*132,-102+w]],[32,22,14,8],bark);
+   c.strokeStyle=shade(P[1],-.25);c.lineCap='round';c.lineWidth=5;c.beginPath();for(const[dx,dy]of[[-14,24],[0,30],[14,22]]){c.moveTo(k*132,-102+w);c.quadraticCurveTo(k*(132+dx*.3),-102+w+dy*.6,k*(132+dx),-102+w+dy);}c.stroke();
+   c.lineWidth=4;c.beginPath();c.moveTo(k*98,-192+w);c.quadraticCurveTo(k*114,-234,k*106,-260);c.stroke();
+   c.fillStyle=shade(P[1],-.45);for(let i=0;i<5;i++){const x=k*(54+i*16),y=-226+i*22+w*(i/5);c.beginPath();c.moveTo(x,y);c.lineTo(x+k*4,y-13);c.lineTo(x+k*9,y);c.fill();}}
+  // knotted face rising out of the trunk
+  c.fillStyle=bark;c.beginPath();c.moveTo(-28,-246);c.quadraticCurveTo(-42,-292,-14,-308);c.quadraticCurveTo(0,-314,14,-308);c.quadraticCurveTo(42,-292,28,-246);c.closePath();c.fill();
+  c.fillStyle='#120804';c.beginPath();c.ellipse(-11,-283,7.5,5,.3,0,TAU);c.ellipse(11,-283,7.5,5,-.3,0,TAU);c.fill();eyeGlow(c,-11,-283,3,P[2]);eyeGlow(c,11,-283,3,P[2]);
+  c.strokeStyle='#120804';c.lineWidth=2.6;c.beginPath();c.moveTo(-11,-261);c.quadraticCurveTo(0,-256,11,-261);c.stroke();
+  // crown of branches in bloom
+  c.strokeStyle=shade(P[1],-.25);c.lineWidth=5;for(let i=0;i<7;i++){const a=-Math.PI/2+(i-3)*.33+s*.03;c.beginPath();c.moveTo(Math.cos(a)*14,-302+Math.sin(a)*6);c.quadraticCurveTo(Math.cos(a)*40,-302+Math.sin(a)*40,Math.cos(a)*58,-308+Math.sin(a)*56);c.stroke();
+   const bx=Math.cos(a)*58,by=-308+Math.sin(a)*56;c.fillStyle=P[0];for(let p=0;p<5;p++){const pa=p/5*TAU+t*.2;c.beginPath();c.ellipse(bx+Math.cos(pa)*5.5,by+Math.sin(pa)*5.5,5.5,3.2,pa,0,TAU);c.fill();}c.fillStyle='#fff3a0';c.beginPath();c.arc(bx,by,2.6,0,TAU);c.fill();}},
+ seraph(c,P,t){const y=-36+Math.sin(t*1.8)*8,f=Math.sin(t*2.4)*.12;shadowE(c,62);c.save();c.translate(0,y);
+  // two pairs of feathered wings grow from the shoulder blades
+  for(const s of[-1,1])for(const[oy,sc,rt]of[[-150,1,-.25],[-122,.72,.35]]){c.save();c.translate(s*14,oy);c.scale(s,1);c.rotate(rt+f*sc);for(let i=0;i<7;i++){const a=-1.2+i*.32,L=(112-i*8)*sc;c.save();c.rotate(a);c.fillStyle=LG(c,0,0,L,0,[[0,shade(P[0],-.15)],[1,shade(P[0],.35)]]);c.beginPath();c.moveTo(0,-6);c.quadraticCurveTo(L*.6,-13,L,0);c.quadraticCurveTo(L*.6,10,0,6);c.closePath();c.fill();c.strokeStyle='rgba(0,0,0,.15)';c.lineWidth=1;c.beginPath();c.moveTo(4,0);c.lineTo(L*.9,0);c.stroke();c.restore();}c.restore();}
+  // robe from hem to shoulders in one outline
+  c.fillStyle=LG(c,-40,0,40,0,[[0,P[1]],[.5,shade(P[1],.28)],[1,P[1]]]);c.beginPath();c.moveTo(-42,0);for(let i=0;i<=8;i++)c.lineTo(-42+i*10.5,(i%2?-8:2)+Math.sin(t*2+i)*2);c.quadraticCurveTo(34,-80,24,-150);c.quadraticCurveTo(12,-162,0,-164);c.quadraticCurveTo(-12,-162,-24,-150);c.quadraticCurveTo(-34,-80,-42,0);c.fill();
+  c.strokeStyle=P[2];c.lineWidth=3;c.globalAlpha=.55;c.beginPath();c.moveTo(-2,-150);c.quadraticCurveTo(-6,-80,-4,-6);c.moveTo(-30,-40);c.quadraticCurveTo(0,-30,30,-40);c.stroke();c.globalAlpha=1;
+  const skin=shade(P[0],.45);
+  // spear arm and free arm
+  limb(c,[[-22,-150],[-40,-116],[-50,-86]],[14,11,9],P[1]);c.fillStyle=skin;c.beginPath();c.ellipse(-51,-82,6,7,0,0,TAU);c.fill();
+  c.strokeStyle='#d8c890';c.lineWidth=4;c.beginPath();c.moveTo(-62,-8);c.lineTo(-44,-172);c.stroke();c.fillStyle=LG(c,0,-210,0,-170,[[0,'#fff8e0'],[1,P[2]]]);c.beginPath();c.moveTo(-44,-172);c.lineTo(-51,-178);c.lineTo(-42,-210);c.lineTo(-36,-178);c.closePath();c.fill();
+  limb(c,[[22,-150],[38,-120],[32,-94]],[14,11,9],P[1]);c.fillStyle=skin;c.beginPath();c.ellipse(31,-90,6,7,0,0,TAU);c.fill();
+  // hood around a porcelain mask
+  c.fillStyle=P[1];c.beginPath();c.moveTo(-19,-158);c.quadraticCurveTo(-25,-198,0,-204);c.quadraticCurveTo(25,-198,19,-158);c.quadraticCurveTo(0,-150,-19,-158);c.fill();
+  c.fillStyle=RG(c,-4,-182,2,22,[[0,'#ffffff'],[1,shade(P[0],.05)]]);c.beginPath();c.ellipse(0,-178,11.5,15,0,0,TAU);c.fill();
+  c.fillStyle='#120a20';c.beginPath();c.ellipse(-5,-180,3.2,2.2,0,0,TAU);c.ellipse(5,-180,3.2,2.2,0,0,TAU);c.fill();eyeGlow(c,-5,-180,1.8,P[2]);eyeGlow(c,5,-180,1.8,P[2]);
+  c.strokeStyle='rgba(60,40,80,.6)';c.lineWidth=1.4;c.beginPath();c.moveTo(6,-192);c.lineTo(2,-182);c.lineTo(7,-172);c.stroke();
+  c.save();c.globalCompositeOperation='lighter';c.strokeStyle=P[2];c.lineWidth=3.6;c.beginPath();c.ellipse(0,-216,25,7,0,.25,Math.PI*1.7);c.stroke();c.restore();
+  c.restore();},
+ wyrm(c,P,t){shadowE(c,104);const pts=[],ws=[];for(let i=0;i<=12;i++){const k=i/12;pts.push([-74+k*196,-160+Math.sin(t*2+k*5)*26*(.4+k)+k*100]);ws.push(42*(1-k*.86)+4);}
+  const sk=LG(c,0,-230,0,-40,[[0,shade(P[0],.25)],[.5,P[0]],[1,P[1]]]);
+  const wf=Math.sin(t*3)*.3;c.save();c.translate(pts[2][0],pts[2][1]-12);c.rotate(-.45+wf);c.fillStyle=LG(c,0,0,90,-60,[[0,P[1]],[1,shade(P[0],.1)]]);c.beginPath();c.moveTo(0,0);c.quadraticCurveTo(30,-72,104,-92);c.quadraticCurveTo(86,-62,96,-40);c.quadraticCurveTo(72,-46,66,-22);c.quadraticCurveTo(42,-24,24,10);c.closePath();c.fill();c.strokeStyle=P[1];c.lineWidth=3;c.beginPath();c.moveTo(2,0);c.quadraticCurveTo(30,-72,104,-92);c.moveTo(80,-82);c.lineTo(66,-22);c.stroke();c.restore();
+  limb(c,pts,ws,sk);
+  c.strokeStyle='rgba(0,0,0,.22)';c.lineWidth=2;for(let i=1;i<11;i++){const p=pts[i];c.beginPath();c.arc(p[0],p[1]+ws[i]*.15,ws[i]*.34,.25,Math.PI-.25);c.stroke();}
+  c.fillStyle=P[1];for(let i=1;i<11;i++){const p=pts[i];c.beginPath();c.moveTo(p[0]-5,p[1]-ws[i]*.44);c.lineTo(p[0]+2,p[1]-ws[i]*.44-13*(1-i/12));c.lineTo(p[0]+6,p[1]-ws[i]*.44);c.fill();}
+  c.save();c.globalCompositeOperation='lighter';for(let i=1;i<12;i++){const p=pts[i];c.fillStyle=P[2];c.globalAlpha=.4+.6*Math.abs(Math.sin(t*3+i));c.beginPath();c.arc(p[0]+3,p[1]-ws[i]*.12,2.2,0,TAU);c.fill();}c.restore();c.globalAlpha=1;
+  // a short foreleg tucked under the chest
+  limb(c,[[pts[2][0],pts[2][1]+10],[pts[2][0]-12,pts[2][1]+34],[pts[2][0]-4,pts[2][1]+50]],[14,10,8],sk);
+  const h=pts[0];c.save();c.translate(h[0]+6,h[1]);const jo=Math.max(0,Math.sin(t*1.6))*.28;
+  const hg=LG(c,0,-34,0,24,[[0,shade(P[0],.3)],[1,shade(P[0],-.1)]]);c.fillStyle=hg;c.beginPath();c.moveTo(18,-22);c.quadraticCurveTo(-20,-32,-58,-12);c.quadraticCurveTo(-66,-4,-58,2);c.quadraticCurveTo(-24,0,18,18);c.closePath();c.fill();
+  c.save();c.translate(10,10);c.rotate(jo);c.beginPath();c.moveTo(0,0);c.quadraticCurveTo(-34,-2,-60,-4);c.quadraticCurveTo(-40,12,-4,14);c.closePath();c.fill();c.restore();
+  c.fillStyle='#fff';for(let i=0;i<5;i++){c.beginPath();c.moveTo(-48+i*9,1);c.lineTo(-45+i*9,8);c.lineTo(-42+i*9,1);c.fill();}
+  c.fillStyle=P[1];for(const k of[0,1]){c.beginPath();c.moveTo(6-k*10,-22);c.quadraticCurveTo(22-k*6,-48,38-k*4,-54);c.quadraticCurveTo(22-k*4,-38,16-k*10,-18);c.closePath();c.fill();}
+  eyeGlow(c,-24,-15,3,P[2]);c.restore();},
+ king(c,P,t){const y=-20+Math.sin(t)*8;c.save();c.translate(0,y);
+  c.save();c.globalCompositeOperation='lighter';c.fillStyle=RG(c,0,-180,30,250,[[0,'rgba(140,160,255,.32)'],[1,'rgba(60,40,160,0)']]);c.beginPath();c.arc(0,-180,250,0,TAU);c.fill();c.restore();
+  // cloak from shoulders to a ragged hem, filled with stars
+  c.fillStyle=LG(c,-110,0,110,0,[[0,'#04030c'],[.5,P[1]],[1,'#04030c']]);c.beginPath();c.moveTo(-40,-252);c.quadraticCurveTo(-100,-232,-112,-150);c.quadraticCurveTo(-122,-60,-132,10);for(let i=0;i<=10;i++)c.lineTo(-132+i*26.4,(i%2?-14:10)+Math.sin(t*1.5+i)*6);c.quadraticCurveTo(122,-60,112,-150);c.quadraticCurveTo(100,-232,40,-252);c.quadraticCurveTo(0,-264,-40,-252);c.fill();
+  c.save();c.clip();c.fillStyle='#fff';for(let i=0;i<46;i++){const sx=((i*73)%224)-112,sy=-244+((i*137)%254);c.globalAlpha=.25+.75*Math.abs(Math.sin(t*1.3+i));c.fillRect(sx,sy,2,2);}c.restore();c.globalAlpha=1;
+  c.strokeStyle='#c9a24a';c.lineWidth=3;c.beginPath();c.moveTo(-40,-252);c.quadraticCurveTo(-100,-232,-112,-150);c.quadraticCurveTo(-122,-60,-132,10);c.moveTo(40,-252);c.quadraticCurveTo(100,-232,112,-150);c.quadraticCurveTo(122,-60,132,10);c.stroke();
+  const arm=LG(c,0,-240,0,-120,[[0,'#2a2440'],[1,'#120e22']]);
+  limb(c,[[-56,-228],[-90,-182],[-78,-132]],[26,20,16],arm);c.fillStyle='#d8d0f0';c.beginPath();c.ellipse(-76,-126,9,11,.2,0,TAU);c.fill();
+  limb(c,[[56,-228],[92,-198],[106,-160]],[26,20,16],arm);c.fillStyle='#d8d0f0';c.beginPath();c.ellipse(106,-154,9,11,-.2,0,TAU);c.fill();
+  c.strokeStyle='#c9a24a';c.lineWidth=6;c.beginPath();c.moveTo(110,-40);c.lineTo(106,-292);c.stroke();
+  c.save();c.globalCompositeOperation='lighter';c.fillStyle=RG(c,106,-302,0,36,[[0,'#fff'],[.3,P[2]],[1,'rgba(0,0,0,0)']]);c.beginPath();c.arc(106,-302,36,0,TAU);c.fill();c.restore();c.fillStyle='#0a0418';c.beginPath();c.arc(106,-302,11,0,TAU);c.fill();c.strokeStyle='#ffe6a0';c.lineWidth=2;c.stroke();
+  c.fillStyle='#08061a';c.beginPath();c.moveTo(-36,-248);c.quadraticCurveTo(-46,-302,0,-318);c.quadraticCurveTo(46,-302,36,-248);c.quadraticCurveTo(0,-238,-36,-248);c.fill();
+  c.fillStyle='#000';c.beginPath();c.ellipse(0,-274,20,24,0,0,TAU);c.fill();eyeGlow(c,-8,-278,3.6,P[2]);eyeGlow(c,8,-278,3.6,P[2]);
+  c.fillStyle='#0a0614';c.strokeStyle='#e8c46a';c.lineWidth=2;c.beginPath();c.moveTo(-34,-302);for(let i=0;i<6;i++){const x=-34+i*11.33;c.lineTo(x+5.67,-338-(i===2||i===3?14:i%2?4:9));c.lineTo(x+11.33,-304);}c.closePath();c.fill();c.stroke();
+  c.restore();},
+});
 /* ---- heroes (seen from behind-left, facing right) ---- */
 /* tapered limb: one smooth outline through a list of joints, so arms and legs flow instead of stacking */
 function limb(c,pts,ws,fill){const n=pts.length,A=[],Q=[];for(let i=0;i<n;i++){const p=pts[Math.max(0,i-1)],q=pts[Math.min(n-1,i+1)],dx=q[0]-p[0],dy=q[1]-p[1],l=Math.hypot(dx,dy)||1,nx=-dy/l,ny=dx/l,w=ws[i]/2;A.push([pts[i][0]+nx*w,pts[i][1]+ny*w]);Q.unshift([pts[i][0]-nx*w,pts[i][1]-ny*w]);}
@@ -1405,8 +1620,8 @@ function gainPotion(R,id){const i=R.potions.indexOf(null);if(i<0)return false;R.
 function cardOpen(k){const u=CARDS[k].ul;return !u||META.stats.bosses>=u;}
 function cardPool(R,r){return Object.keys(CARDS).filter(k=>{const c=CARDS[k];return c.r===r&&cardOpen(k)&&(c.a||1)<=R.act&&(c.k===R.hero||(c.k==='n'&&R0()<.35));});}
 /* the higher you climb, the better the cards: about +0.5% rare and +0.25% uncommon per floor */
-function rareOdds(R,elite){return (elite?10:5)*(1+.25*sl('rarity'))+(R.floorsTotal||0)*.5;}
-function rollCard(R,force,elite){let r=force;if(!r){const x=R0()*100,rare=rareOdds(R,elite),unc=(elite?40:33)+(R.floorsTotal||0)*.25;r=x<rare?3:x<rare+unc?2:1;}
+function rareOdds(R,elite){return (elite?10:5)*(1+.25*sl('rarity'))+Math.min(R.floorsTotal||0,50)*.5;}
+function rollCard(R,force,elite){let r=force;if(!r){const x=R0()*100,rare=rareOdds(R,elite),unc=(elite?40:33)+Math.min(R.floorsTotal||0,50)*.25;r=x<rare?3:x<rare+unc?2:1;}
  let p=cardPool(R,r);if(!p.length)p=cardPool(R,1);return pick(p);}
 function rollCards(R,n,elite,boss){const out=[];let g=0;while(out.length<n&&g++<60){const c=rollCard(R,boss?3:0,elite);if(!out.includes(c))out.push(c);}return out;}
 /* ---- toast / tooltip ---- */
@@ -1465,8 +1680,8 @@ function usePotion(i){const id=R.potions[i],p=POTIONS[id];
  B.usePot(i,null);}
 /* ===== battle ===== */
 let B=null;
-const HT={slime:106,bat:150,rat:90,skel:176,robe:180,armor:236,hound:112,colossus:340,ghost:190,spider:112,toad:130,shroom:145,gargoyle:236,queen:320,eye:180,imp:180,lich:226,golem:250,dusk:330};
-const WD={slime:160,bat:190,rat:200,skel:150,robe:130,armor:190,hound:200,colossus:240,ghost:160,spider:220,toad:190,shroom:140,gargoyle:280,queen:230,eye:150,imp:150,lich:170,golem:250,dusk:330};
+const HT={slime:106,bat:150,rat:90,skel:176,robe:180,armor:236,hound:112,colossus:340,ghost:190,spider:112,toad:130,shroom:145,gargoyle:236,queen:320,eye:180,imp:180,lich:226,golem:250,dusk:330,vine:250,moth:190,clock:270,treant:350,seraph:250,wyrm:240,king:350};
+const WD={slime:160,bat:190,rat:200,skel:150,robe:130,armor:190,hound:200,colossus:240,ghost:160,spider:220,toad:190,shroom:140,gargoyle:280,queen:230,eye:150,imp:150,lich:170,golem:250,dusk:330,vine:200,moth:240,clock:190,treant:300,seraph:240,wyrm:290,king:290};
 const ESC=.8,HERO_X=250,BASE_Y=520;
 let ending=false;const handEls=new Map();
 const FX={floats:[],parts:[],slashes:[],shake:0,arrow:null,flashScreen:0};
@@ -1518,7 +1733,8 @@ function dmgFoe(f,x,kind){if(f.hp<=0)return;let a=x;if(kind!=='poison'&&kind!=='
  if(kind==='atk'||kind==='jugg'){slash(f.x,y,'#fff');sfx('hit');FX.shake=Math.min(14,4+a*.25);burst(f.x,y,f.d.pal[2],8);}
  if(kind==='burn'&&B.P.st.kindsoul&&a>0)B.block(B.P.st.kindsoul,1);
  if(f.hp<=0){f.hp=0;f.anim.dead=.001;burst(f.x,y,f.d.pal[0],34,260);sfx(f.d.boss?'gong':'crash');R.stats.kills++;META.stats.kills++;META.foes[f.id]=(META.foes[f.id]||0)+1;
-  if(hasR('chain')){B.energy++;renderEnergy();flashRelic('chain');}}
+  if(hasR('chain')){B.energy++;renderEnergy();flashRelic('chain');}
+  if(hasR('shears')){healR(R,4);renderTop();flashRelic('shears');}}
 }
 function dmgPlayer(x,kind,noBlock){let a=Math.max(0,Math.floor(x));if(!noBlock){const b=Math.min(B.P.block,a);B.P.block-=b;a-=b;if(b>0&&a===0)float(HERO_X,BASE_Y-150,'Blocked','#8cc8ff');}
  if(a>0&&hasR('rod')){a=Math.max(0,a-1);flashRelic('rod');}
@@ -1535,7 +1751,7 @@ async function startCombat(enc,kind){BT++;ending=false;$('hand').innerHTML='';ha
  const saved=R.cur&&R.cur.bs;
  B=makeBattle(enc,kind);$('battle').classList.remove('won');show('battle');renderTop();closeOvl();
  mus(kind==='boss'?'boss':ACTS[R.act].music);if(kind==='boss')sfx('gong');
- B.maxE=3+(hasR('sunshard')?1:0)+(hasR('voidlens')?1:0)+(hasR('duskcrown')?1:0);
+ B.maxE=3+(hasR('sunshard')?1:0)+(hasR('voidlens')?1:0)+(hasR('duskcrown')?1:0)+(hasR('thorncrown')?1:0);
  if(saved){resumeB(saved);banner('Your Turn');return;}
  renderHand();await wait(500);
  // combat start relics
@@ -1547,6 +1763,9 @@ async function startCombat(enc,kind){BT++;ending=false;$('hand').innerHTML='';ha
  if(hasR('vial')){B.heal(3);flashRelic('vial');}
  if(hasR('marbles')){B.foes2().forEach(f=>B.apply(f,'vul',1));flashRelic('marbles');}
  if(hasR('locket')){B.foes2().forEach(f=>B.apply(f,'burn',2,1));flashRelic('locket');}
+ if(hasR('ironbark')){B.apply(P,'ironskin',3);flashRelic('ironbark');}
+ if(hasR('nightbloom')){B.foes2().forEach(f=>B.apply(f,'poison',3,1));flashRelic('nightbloom');}
+ if(hasR('thorncrown')){B.addCard('wound','draw');flashRelic('thorncrown');}
  await startTurn();}
 async function startTurn(){const P=B.P;B.turn++;B.phase='start';B.busy=true;
  if(R.hero!=='w'&&!P.st.bastion&&!P.st.blur)P.block=0;if(P.st.blur){P.st.blur--;if(!P.st.blur)delete P.st.blur;}
@@ -1556,10 +1775,11 @@ async function startTurn(){const P=B.P;B.turn++;B.phase='start';B.busy=true;
  if(P.st.fumes)B.foes2().forEach(f=>B.apply(f,'poison',P.st.fumes));
  if(hasR('hourglass')){B.foes2().forEach(f=>dmgFoe(f,3,'jugg'));flashRelic('hourglass');}
  if(hasR('horn')&&B.turn===2){B.block(14,1);flashRelic('horn');}
+ if(hasR('eclipseorb')){B.foes2().forEach(f=>B.apply(f,'vul',1,1));flashRelic('eclipseorb');}
  if(checkEnd())return;
- const carry=hasR('urn')?B.energy:0;B.energy=B.maxE+carry+(P.st.innerflame||0)+(B.turn===1&&hasR('lantern')?1:0);
+ const carry=hasR('urn')?B.energy:0;B.energy=B.maxE+carry+(P.st.innerflame||0)+(B.turn===1&&hasR('lantern')?1:0)+(B.turn===3&&hasR('lunarbell')?2:0);
  B.atkTurn=0;B.sklTurn=0;
- const n=5+(P.st.study||0)+(hasR('ringx')?1:0)+(hasR('grandtome')?2:0)-(hasR('voidlens')?1:0);
+ const n=5+(P.st.study||0)+(hasR('ringx')?1:0)+(hasR('grandtome')?2:0)-(hasR('voidlens')?1:0)+(B.turn===1&&hasR('starmap')?2:0);
  B.draw(n);
  if(P.st.knives)for(let i=0;i<P.st.knives;i++)B.addCard('shiv','hand');
  if(B.turn===1&&hasR('viperfang')){B.addCard('shiv','hand');B.addCard('shiv','hand');flashRelic('viperfang');}
@@ -1580,6 +1800,7 @@ async function playCard(ci,T){if(!B||B.busy||B.phase!=='player')return;const d=C
  if(B.P.st.cuts)B.foes2().forEach(f=>dmgFoe(f,B.P.st.cuts,'jugg'));
  if(d.y==='a'&&B.atkTurn%3===0){if(hasR('starcharm')){B.apply(B.P,'str',1);flashRelic('starcharm');}if(hasR('twinfangs')){B.apply(B.P,'dex',1);flashRelic('twinfangs');}if(hasR('fan')){B.block(4,1);flashRelic('fan');}}
  if(d.y==='s'&&B.sklTurn%3===0&&hasR('knife')){B.foes2().forEach(f=>dmgFoe(f,5,'jugg'));flashRelic('knife');}
+ if(d.y==='s'&&B.sklTurn%3===0&&hasR('comet')){B.gainE(1);flashRelic('comet');}
  if(d.y==='p'){}else if(d.x&&d.x.ex)B.exh.push(ci);else B.disc.push(ci);
  if(d.y==='p')burst(HERO_X,BASE_Y-110,'#c8a0ff',20);
  if(el){setTimeout(()=>{if(el.parentNode)el.remove();handEls.delete(ci.u);},230);}
@@ -1624,6 +1845,7 @@ function checkEnd(){if(!B||ending)return false;if(R.hp<=0){lose();return true;}i
  const tk=BT;setTimeout(async()=>{if(tk!==BT)return;ending=false;await winCombat();},700);return true;}
 async function winCombat(){if(!B)return;__mgt('w',()=>B.foes.map(f=>f.d.n||f.d.name||f.id).join(' + '));const kind=B.kind;B.hand=[];$('hand').innerHTML='';handEls.clear();$('battle').classList.add('won');
  if(hasR('emberheart')){healR(R,6);flashRelic('emberheart');}
+ if(hasR('goldleaf')){R.gold+=8;R.stats.gold+=8;flashRelic('goldleaf');}
  R.deck.forEach(c=>{});// rampage bonus is per-combat only
  if(kind==='elite'){R.stats.elites++;}
  if(kind==='boss'){R.stats.bosses++;META.stats.bosses++;}
@@ -1739,7 +1961,7 @@ function enterNode(n){sfx('click');
  let t=n.t;if(t==='event'){const x=R0();t=x<.12?'fight':x<.18?'shop':x<.22?'chest':'event';}
  R.cur={t};if(t==='fight'){const pool=R.stats.kills<4&&R.act===1?ENC[R.act].easy:ENC[R.act].norm;R.cur.enc=pick(pool);}
  if(t==='elite')R.cur.enc=pick(ENC[R.act].elite);
- if(t==='event'){let pool=EVENTS.filter(e=>!R.seenEv.includes(e.id));if(!pool.length){R.seenEv=[];pool=EVENTS;}const e=pick(pool);R.seenEv.push(e.id);R.cur.ev=e.id;}
+ if(t==='event'){let pool=EVENTS.filter(e=>!R.seenEv.includes(e.id)&&(e.ma||1)<=R.act);if(!pool.length){R.seenEv=[];pool=EVENTS.filter(e=>(e.ma||1)<=R.act);}const e=pick(pool);R.seenEv.push(e.id);R.cur.ev=e.id;}
  if(t==='shop')R.cur.shop=genShop();
  saveRun();runNode();}
 function runNode(){const c=R.cur;if(!c){openMap();return;}
@@ -1864,7 +2086,7 @@ function afterEvent(txt){$('evT').innerHTML=txt;const c=$('evC');c.innerHTML='';
   if(R.pendingRemove){const n=R.pendingRemove;R.pendingRemove=0;const step=k=>deckGrid(R.deck,{title:'Remove a card'+(k>1?' ('+k+' left)':''),pick:ci=>{R.deck.splice(R.deck.indexOf(ci),1);sfx('buy');if(k>1)step(k-1);else nodeDone();},cancel:nodeDone});step(n);return;}
   if(R.pendingDup){R.pendingDup=0;deckGrid(R.deck,{title:'Duplicate a card',filter:c=>CARDS[c.id].y!=='c',pick:ci=>{addDeck(R,ci.id,ci.up);sfx('sparkle');nodeDone();},cancel:nodeDone});return;}
   if(R.pendingPick){R.pendingPick=0;cardPick(rollCards(R,3),nodeDone,nodeDone);return;}
-  if(R.pendingFight){R.pendingFight=0;R.cur={t:'fight',enc:R.act===1?['thrall','thrall']:R.act===2?['wraith','thrall']:['shadowknight','thrall']};saveRun();runNode();return;}
+  if(R.pendingFight){R.pendingFight=0;R.cur={t:'fight',enc:R.act===1?['thrall','thrall']:R.act===2?['wraith','thrall']:R.act===3?['shadowknight','thrall']:R.act===4?['rothound','thornsprite']:['seraph','wisp']};saveRun();runNode();return;}
   nodeDone();};}
 function paintEventArt(cv,E){const c=cv.getContext('2d');c.scale(2,2);const pal=ICC[E.p];
  c.fillStyle=RG(c,150,170,10,220,[[0,pal[1]],[.45,pal[2]],[1,'#05030a']]);c.fillRect(0,0,300,300);
@@ -1879,7 +2101,8 @@ function onBossDown(paid){const a=R.act;
  if(a===2&&!META.unl.s){META.unl.s=1;toastLater('New climber unlocked: The Shade');}
  saveMeta();checkRareUnlocks();
  const gold=paid||Math.round(ri(95,105)*(hasR('gskull')?1.25:1));if(!paid){R.gold+=gold;R.stats.gold+=gold;}renderTop();
- if(a===3){endRun(true);return;}
+ if(a===3&&!META.beyond){META.beyond=1;saveMeta();toastLater('The spire goes higher: Acts IV and V await');}
+ if(a===5){endRun(true);return;}
  R.cur={t:'bossdown',gold};saveRun();show('room');
  // boss relic choice
  const pool=shuf(Object.keys(RELICS).filter(k=>RELICS[k].r===4&&!R.relics.includes(k))).slice(0,3);
@@ -1887,7 +2110,7 @@ function onBossDown(paid){const a=R.act;
  pool.forEach(id=>{const r=RELICS[id];h+='<button class="panel bossR" data-id="'+id+'" style="position:relative;width:250px;padding:22px 16px;display:flex;flex-direction:column;align-items:center;gap:10px">'+ICX(r.i,r.p,'','style="width:90px;height:90px;filter:drop-shadow(0 0 18px rgba(255,200,120,.5))"')+'<h3 style="color:#e8c27a">'+r.n+'</h3><div style="font:15px system-ui;color:#c9bfae">'+r.d+'</div></button>';});
  h+='</div><button class="bt dk sm" id="brSkip">Skip</button>';ovl(h);
  const next=()=>{R.act++;R.map=genMap(R.act);R.pos=null;R.path=[];const heal=Math.ceil((R.maxhp-R.hp)*(R.dusk>=5?.5:.75));healR(R,heal);R.cur=null;saveRun();
-  ovl('<div class="sub" style="font-size:20px">'+ACTS[R.act].s+'</div><div class="ttl" style="font-size:54px">'+ACTS[R.act].n+'</div><svg class="orn" viewBox="0 0 260 14"><path d="M0 7h100M160 7h100" stroke="#b8893e" stroke-width="1.5"/><path d="M130 0l9 7-9 7-9-7z" fill="#e8c27a"/></svg><div class="sub">You climb higher and catch your breath. Healed '+heal+' HP.</div><div class="oddsL" style="margin:10px 0 0">'+Object.keys(CARDS).filter(k=>{const c=CARDS[k];return c.a===R.act&&(c.k===R.hero||c.k==='n');}).length+' new cards can now turn up as rewards.</div><button class="bt" id="actGo" style="margin-top:24px">Climb On</button>');sfx('chime');$('actGo').onclick=()=>openMap();};
+  ovl('<div class="sub" style="font-size:20px">'+ACTS[R.act].s+'</div><div class="ttl" style="font-size:54px">'+ACTS[R.act].n+'</div><svg class="orn" viewBox="0 0 260 14"><path d="M0 7h100M160 7h100" stroke="#b8893e" stroke-width="1.5"/><path d="M130 0l9 7-9 7-9-7z" fill="#e8c27a"/></svg><div class="sub">'+(R.act===4?'Beyond the Dusk the spire keeps rising, into gardens no one has tended in an age. ':R.act===5?'Above the gardens there is only night, and a throne. ':'')+'You climb higher and catch your breath. Healed '+heal+' HP.</div><div class="oddsL" style="margin:10px 0 0">'+Object.keys(CARDS).filter(k=>{const c=CARDS[k];return c.a===R.act&&(c.k===R.hero||c.k==='n');}).length+' new cards can now turn up as rewards.</div><button class="bt" id="actGo" style="margin-top:24px">Climb On</button>');sfx('chime');$('actGo').onclick=()=>openMap();};
  $('ovl').querySelectorAll('.bossR').forEach(b=>b.onclick=()=>{gainRelic(R,b.dataset.id);sfx('rare');next();});$('brSkip').onclick=next;}
 let laterQ=[];function toastLater(t){laterQ.push(t);setTimeout(()=>{const x=laterQ.shift();if(x)toast(x);},1500);}
 function endRun(win){if(!R)return;__mgt(win?'w':'l',()=>'Full run: '+R.hero);if(win)__mgt('m','run');BT++;const H=R.hero,L=R.dusk;const fl=R.floorsTotal;
@@ -1895,7 +2118,7 @@ function endRun(win){if(!R)return;__mgt(win?'w':'l',()=>'Full run: '+R.hero);if(
  if(win){META.stats.wins++;META.best[H]=Math.max(META.best[H],L);if(L>=META.dusk[H]&&L<10){META.dusk[H]=L+1;}}
  saveMeta();const st=R.stats,deckN=R.deck.length,rel=R.relics.length;clearRun();B=null;show('none');
  mus(win?'adventure':'night');sfx(win?'fanfare':'gong');
- ovl('<div class="ttl" style="font-size:60px">'+(win?'Dawn Returns':'The Dusk Claims You')+'</div><div class="sub">'+(win?'The Dusk is broken. Light spills down the spire for the first time in a hundred years.':'Your light fades on floor '+fl+'. The tower will be waiting.')+'</div>'+
+ ovl('<div class="ttl" style="font-size:60px">'+(win?'Dawn Returns':'The Dusk Claims You')+'</div><div class="sub">'+(win?'The Starless King falls and the Dusk is broken. Light spills down the spire for the first time in a hundred years.':'Your light fades on floor '+fl+'. The tower will be waiting.')+'</div>'+
   '<div class="panel" style="position:relative;margin-top:22px;padding:20px 40px"><div class="statl">Floors climbed: <b>'+fl+'</b><br>Enemies slain: <b>'+st.kills+'</b><br>Elites slain: <b>'+st.elites+'</b><br>Bosses slain: <b>'+st.bosses+'</b><br>Gold found: <b>'+st.gold+'</b><br>Deck size: <b>'+deckN+'</b><br>Relics: <b>'+rel+'</b><br>Dusk level: <b>'+L+'</b></div></div>'+
   '<div class="chip" style="font-size:28px;margin:18px">'+ICX('ember','fire')+'+'+emb+' Embers</div>'+(win&&L<10?'<div class="sub">Dusk level '+(L+1)+' unlocked for '+HEROES[H].n+'.</div>':'')+
   '<div style="display:flex;gap:16px;margin-top:14px"><button class="bt" id="enSan">Sanctum</button><button class="bt dk" id="enTi">Title</button><button class="bt dk" id="enHub">Go back to games</button></div>');
@@ -1986,7 +2209,7 @@ function paintTitle(c,L,T,W,H){c.fillStyle=LG(c,0,T,0,T+H,[[0,'#05030c'],[.38,'#
  // valley mist
  c.fillStyle=LG(c,0,590,0,820,[[0,'rgba(90,60,90,0)'],[.5,'rgba(70,44,76,.5)'],[1,'rgba(16,10,22,.96)']]);c.fillRect(L,590,W,T+H-590);
  vign(c,L,T,W,H,.72);}
-function paintMapBg(c,L,T,W,H,act){const a=R?R.act:1,tint=[0,'#2b1d12','#10222a','#27122e'][a],edge=[0,'#0a0604','#03090c','#0a040e'][a];
+function paintMapBg(c,L,T,W,H,act){const a=R?R.act:1,tint=[0,'#2b1d12','#10222a','#27122e','#1c2a12','#14123a'][a],edge=[0,'#0a0604','#03090c','#0a040e','#050803','#030208'][a];
  c.fillStyle=LG(c,0,T,0,T+H,[[0,tint],[1,edge]]);c.fillRect(L,T,W,H);
  // an old chart of the tower: stains, contour rings and a compass
  let sd=a*97;const rn=()=>(sd=(sd*9301+49297)%233280)/233280;
@@ -2047,7 +2270,35 @@ function hallCrown(c,L,T,W,H,act){const[b0,b1,acc]=act.bg;
  flagFloor(c,L,W,T,H,shade2(b0),470);
  c.save();c.globalCompositeOperation='lighter';c.fillStyle=RG(c,650,500,0,520,[[0,'rgba(255,120,90,.2)'],[1,'rgba(200,60,130,0)']]);c.save();c.translate(650,500);c.scale(1,.3);c.translate(-650,-500);c.beginPath();c.arc(650,500,520,0,TAU);c.fill();c.restore();c.restore();}
 function shade2(h){return h;}
-function paintHall(c,L,T,W,H,act,room){const a=R?R.act:1;(a===2?hallFlood:a===3?hallCrown:hallCrypt)(c,L,T,W,H,act);
+function hallGarden(c,L,T,W,H,act){const[b0,b1,acc]=act.bg;
+ c.fillStyle=LG(c,0,T,0,470,[[0,'#081006'],[.55,'#26381a'],[1,'#7a8a3a']]);c.fillRect(L,T,W,470-T);
+ c.fillStyle=RG(c,830,150,10,130,[[0,'#f6ffd8'],[.45,'rgba(220,255,170,.32)'],[1,'rgba(180,220,120,0)']]);c.beginPath();c.arc(830,150,130,0,TAU);c.fill();c.fillStyle='#eef8cc';c.beginPath();c.arc(830,150,46,0,TAU);c.fill();
+ c.fillStyle='rgba(200,220,160,.25)';for(const[x,y,r]of[[815,138,9],[846,162,6],[830,176,4]]){c.beginPath();c.arc(x,y,r,0,TAU);c.fill();}
+ for(const x of[110,350,590,830,1070]){const h=(x*7)%50;c.fillStyle=LG(c,x-26,0,x+26,0,[[0,'#0a1006'],[.4,shade(b0,.28)],[1,'#0a1006']]);c.fillRect(x-26,150+h,52,320-h);c.fillStyle=shade(b0,.2);c.fillRect(x-34,140+h,68,14);c.fillRect(x-32,452,64,18);}
+ c.strokeStyle='#0a1006';c.lineWidth=18;for(const[a,b]of[[110,350],[830,1070]]){c.beginPath();c.moveTo(a,152);c.quadraticCurveTo((a+b)/2,64,b,152);c.stroke();}
+ let sd=17;const rn=()=>(sd=(sd*9301+49297)%233280)/233280;c.lineCap='round';
+ for(let i=0;i<24;i++){const x=L+rn()*W,l=60+rn()*260;c.strokeStyle='#142410';c.lineWidth=3+rn()*3;c.beginPath();c.moveTo(x,T);c.bezierCurveTo(x+16,T+l*.3,x-16,T+l*.7,x+4,T+l);c.stroke();for(let k=0;k<7;k++){const yy=T+l*k/7+10,xx=x+Math.sin(k*1.7)*9;c.fillStyle=k%2?'#2e4a18':'#3a5a20';c.beginPath();c.ellipse(xx+6,yy,8,4,.6,0,TAU);c.fill();}if(rn()<.5){c.fillStyle='#ff9ac8';c.beginPath();c.arc(x+4,T+l,4,0,TAU);c.fill();}}
+ c.fillStyle='#0e1c08';for(let x=L;x<L+W;x+=44){c.beginPath();c.arc(x,456,32+((x*13)%14),Math.PI,0);c.fill();}
+ for(let i=0;i<46;i++){const x=L+rn()*W,y=424+rn()*40;c.fillStyle=rn()<.5?'#ff9ac8':'#ffe08a';c.globalAlpha=.8;c.beginPath();c.arc(x,y,2.6,0,TAU);c.fill();}c.globalAlpha=1;
+ flagFloor(c,L,W,T,H,b0,470);
+ c.fillStyle='rgba(70,120,40,.35)';for(let i=0;i<34;i++){const x=L+rn()*W,y=480+rn()*300;c.beginPath();c.ellipse(x,y,18+rn()*40,4+rn()*5,0,0,TAU);c.fill();}
+ c.save();c.globalCompositeOperation='lighter';c.fillStyle=RG(c,590,520,0,520,[[0,'rgba(200,255,140,.12)'],[1,'rgba(120,200,80,0)']]);c.save();c.translate(590,520);c.scale(1,.3);c.translate(-590,-520);c.beginPath();c.arc(590,520,520,0,TAU);c.fill();c.restore();c.restore();}
+function hallSummit(c,L,T,W,H,act){const[b0,b1,acc]=act.bg;
+ c.fillStyle=LG(c,0,T,0,520,[[0,'#02010a'],[.6,'#0e0c2e'],[1,'#2a2058']]);c.fillRect(L,T,W,520-T);
+ c.save();c.globalCompositeOperation='lighter';for(const[x,y,r,col]of[[300,160,270,'rgba(120,80,200,.2)'],[870,240,300,'rgba(60,120,220,.17)'],[600,90,210,'rgba(200,90,160,.11)']]){c.fillStyle=RG(c,x,y,0,r,[[0,col],[1,'rgba(0,0,0,0)']]);c.beginPath();c.arc(x,y,r,0,TAU);c.fill();}c.restore();
+ let sd=23;const rn=()=>(sd=(sd*9301+49297)%233280)/233280;c.fillStyle='#fff';for(let i=0;i<230;i++){c.globalAlpha=.2+rn()*.8;const r=rn()*1.8+.3;c.fillRect(L+rn()*W,T+rn()*(500-T),r,r);}c.globalAlpha=1;
+ for(const[x,y,w]of[[160,250,90],[1020,200,110],[700,330,60],[420,180,46]]){c.fillStyle='#0a0818';c.beginPath();c.moveTo(x-w,y);c.quadraticCurveTo(x,y-w*.3,x+w,y);c.quadraticCurveTo(x+w*.4,y+w*.5,x,y+w*.9);c.quadraticCurveTo(x-w*.4,y+w*.5,x-w,y);c.fill();c.strokeStyle='rgba(160,180,255,.28)';c.lineWidth=2;c.beginPath();c.moveTo(x-w,y);c.quadraticCurveTo(x,y-w*.3,x+w,y);c.stroke();}
+ c.fillStyle='#16123a';for(let i=0;i<10;i++){const x=860+i*24,y=462-i*28;c.fillRect(x,y,44,10);c.fillStyle='rgba(160,180,255,.25)';c.fillRect(x,y,44,1.5);c.fillStyle='#16123a';}
+ c.fillStyle=LG(c,0,470,0,820,[[0,'#1a1640'],[.3,'#0a0820'],[1,'#020108']]);c.fillRect(L,470,W,T+H-470);
+ c.strokeStyle='rgba(140,160,255,.15)';c.lineWidth=1.5;for(let i=0;i<9;i++){const y=470+Math.pow(i/8,1.7)*360;c.beginPath();c.moveTo(L,y);c.lineTo(L+W,y);c.stroke();}
+ for(let i=-6;i<=6;i++){c.beginPath();c.moveTo(590+i*60,470);c.lineTo(590+i*240,830);c.stroke();}
+ c.fillStyle='#cfd8ff';for(let i=0;i<70;i++){c.globalAlpha=.1+rn()*.35;c.fillRect(L+rn()*W,480+rn()*320,1.5,1.5);}c.globalAlpha=1;
+ c.fillStyle='rgba(180,200,255,.3)';c.fillRect(L,469,W,2);}
+function petalFx(c,t){c.save();for(let i=0;i<14;i++){const k=(t*.06+i*.071)%1,x=((i*97)%1180)+Math.sin(t*.8+i)*40,y=-20+k*860;c.fillStyle=i%3?'rgba(255,170,210,.75)':'rgba(255,230,150,.7)';c.save();c.translate(x,y);c.rotate(t*1.5+i);c.beginPath();c.ellipse(0,0,5,2.5,0,0,TAU);c.fill();c.restore();}
+ c.globalCompositeOperation='lighter';for(let i=0;i<10;i++){const x=100+((i*131)%1000)+Math.sin(t*.7+i*2)*30,y=300+((i*71)%300)+Math.cos(t*.9+i)*20;c.fillStyle=RG(c,x,y,0,10,[[0,'rgba(220,255,120,'+(.45+.45*Math.sin(t*3+i)).toFixed(2)+')'],[1,'rgba(200,255,100,0)']]);c.beginPath();c.arc(x,y,10,0,TAU);c.fill();}c.restore();}
+function starFx(c,t){c.save();c.globalCompositeOperation='lighter';for(let i=0;i<3;i++){const k=(t*.12+i*.37)%1;if(k>.25)continue;const q=k/.25,x=200+i*330+q*300,y=40+i*40+q*140;c.strokeStyle='rgba(220,230,255,'+((1-q)*.8).toFixed(2)+')';c.lineWidth=2;c.beginPath();c.moveTo(x,y);c.lineTo(x-50,y-24);c.stroke();}c.restore();}
+
+function paintHall(c,L,T,W,H,act,room){const a=R?R.act:1;(a===2?hallFlood:a===3?hallCrown:a===4?hallGarden:a===5?hallSummit:hallCrypt)(c,L,T,W,H,act);
  if(room&&!(R&&R.cur&&R.cur.t==='rest')){c.fillStyle='rgba(4,2,8,.55)';c.fillRect(L,T,W,H);}
  vign(c,L,T,W,H,.68);}
 function vign(c,L,T,W,H,a){c.fillStyle=RG(c,590,420,250,820,[[0,'rgba(0,0,0,0)'],[1,'rgba(0,0,0,'+a+')']]);c.fillRect(L,T,W,H);}
@@ -2077,7 +2328,7 @@ function frame(ts){const t=ts/1000,dt=Math.min(.05,t-lastT||.016);lastT=t;
   c.save();c.globalCompositeOperation='lighter';for(let i=0;i<3;i++){const x=((t*14+i*420)%1600)-200;c.fillStyle=RG(c,x,700-i*30,0,260,[[0,'rgba(120,100,150,.12)'],[1,'rgba(120,100,150,0)']]);c.fillRect(x-260,440,520,400);}c.restore();}
  if(scene==='title'||scene==='heroSel')titleBats(c,t);
  if(scene==='battle'||scene==='room'){const an=R?R.act:1;if(scene==='battle'&&an===1){torch(c,410,270,t,act.bg[2]);torch(c,770,270,t,act.bg[2]);}else if(scene==='battle'&&an===3){torch(c,170,340,t,act.bg[2]);torch(c,1010,340,t,act.bg[2]);}else if(an===2)floodFx(c,t);
-  if(an===3)windFx(c,t);
+  if(an===3||an===5)windFx(c,t);if(an===4)petalFx(c,t);if(an===5)starFx(c,t);
   if(scene==='room'&&R&&R.cur&&R.cur.t==='rest')campfire(c,590,776,t);
   else if(scene==='room'){c.save();c.globalCompositeOperation='lighter';c.fillStyle=RG(c,590,560,0,420,[[0,'rgba(255,150,70,.16)'],[1,'rgba(255,100,40,0)']]);c.fillRect(0,0,1180,820);c.restore();}}
  // dust motes
