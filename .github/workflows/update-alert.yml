@@ -16,9 +16,9 @@ jobs:
         run: |
           V=$(grep -o "mygames-v[0-9]*" sw.js | head -1)
           echo "Waiting for $V"
-          for i in $(seq 1 90); do
+          for i in $(seq 1 300); do
             if curl -fsS "https://waugusta1.github.io/my-games/sw.js?t=$(date +%s)" | grep -q "$V"; then echo "Live"; exit 0; fi
-            sleep 10
+            sleep 3
           done
           echo "Site did not update in time"; exit 1
       - run: npm install --no-save web-push@3
