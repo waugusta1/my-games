@@ -2134,6 +2134,8 @@ function drawEnergy(t){const c=$('energyCv').getContext('2d');c.setTransform(2,0
 loadMeta();
 /* one-time heal asked for on 2026-11-06: fills HP in the saved climb, including a fight in progress */
 if(!META.gift1){try{const r=loadRun();if(r){r.hp=r.maxhp;if(r.cur&&r.cur.bs)r.cur.bs.hp=r.maxhp;__store.set(RK,JSON.stringify(r));}}catch(_){}META.gift1=1;saveMeta();}
+/* second one-time gift asked for on 2026-11-06: full HP again and 100 block in the fight in progress */
+if(!META.gift2){try{const r=loadRun();if(r){r.hp=r.maxhp;if(r.cur&&r.cur.bs){r.cur.bs.hp=r.maxhp;r.cur.bs.block=(r.cur.bs.block||0)+100;}__store.set(RK,JSON.stringify(r));}}catch(_){}META.gift2=1;saveMeta();}
 try{SND.set('music',META.opt.music);SND.set('sfx',META.opt.sfx);}catch(_){}
 fit();openTitle();requestAnimationFrame(frame);
 addEventListener('pagehide',()=>{saveMeta();saveRun();});
