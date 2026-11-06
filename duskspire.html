@@ -497,6 +497,7 @@ h1,h2,h3{margin:0;font-weight:700;letter-spacing:.04em}
   <div style="position:absolute;left:0;right:0;top:400px;display:flex;flex-direction:column;align-items:center;gap:14px">
    <button class="bt" id="bCont" style="width:320px">Continue Climb</button>
    <button class="bt" id="bNew" style="width:320px">New Climb</button>
+   <button class="bt dk" id="bBeyond" style="width:320px" hidden>Start at Act IV</button>
    <div style="display:flex;gap:12px"><button class="bt dk sm" id="bSanct">Sanctum</button><button class="bt dk sm" id="bCodex">Codex</button><button class="bt dk sm" id="bOpt">Settings</button></div>
    <div class="chip" id="tEmb" style="margin-top:6px"></div>
    <div id="tRec" class="sub" style="font-size:15px;margin-top:-6px"></div>
@@ -2131,13 +2132,13 @@ function endRun(win){if(!R)return;__mgt(win?'w':'l',()=>'Full run: '+R.hero);if(
   '<div style="display:flex;gap:16px;margin-top:14px"><button class="bt" id="enSan">Sanctum</button><button class="bt dk" id="enTi">Title</button><button class="bt dk" id="enHub">Go back to games</button></div>');
  $('enHub').onclick=goHub;$('enSan').onclick=()=>{closeOvl();openSanctum();};$('enTi').onclick=()=>{closeOvl();openTitle();};}
 /* ---- title, heroes, sanctum, codex, settings ---- */
-function openTitle(){closeOvl();R=loadRun();show('title');mus('calm');$('bCont').hidden=!R;$('tEmb').innerHTML=ICX('ember','fire')+META.embers+' Embers';const S=META.stats;$('tRec').textContent=S.runs?S.runs+(S.runs===1?' climb':' climbs')+' started, '+S.wins+' won, highest floor '+S.best:'';checkRareUnlocks();}
+function openTitle(){closeOvl();R=loadRun();show('title');mus('calm');$('bCont').hidden=!R;$('bBeyond').hidden=!(META.stats.wins>0);$('tEmb').innerHTML=ICX('ember','fire')+META.embers+' Embers';const S=META.stats;$('tRec').textContent=S.runs?S.runs+(S.runs===1?' climb':' climbs')+' started, '+S.wins+' won, highest floor '+S.best:'';checkRareUnlocks();}
 function goHub(){sfx('click');try{if(B)snapB();saveMeta();saveRun();}catch(_){}$('pause').hidden=true;if(window.__goHub)window.__goHub();else location.href='index.html';}
 $('bHub').onclick=goHub;$('pHub').onclick=goHub;
 $('bCont').onclick=()=>{sfx('click');R=loadRun();if(!R)return;UID=1+Math.max(0,...R.deck.map(c=>c.u||0));if(R.cur)runNode();else openMap();};
-$('bNew').onclick=()=>{sfx('click');if(loadRun()){ovl('<div class="ttl">Start a new climb?</div><div class="sub">Your current climb will be lost.</div><div style="display:flex;gap:16px;margin-top:20px"><button class="bt" id="nyY">Start New</button><button class="bt dk" id="nyN">Cancel</button></div>'+backBtn('nyB'));$('nyB').onclick=closeOvl;$('nyY').onclick=()=>{closeOvl();clearRun();openHeroes();};$('nyN').onclick=closeOvl;return;}openHeroes();};
+$('bNew').onclick=(ev)=>{if(ev)window.__beyondPick=0;sfx('click');if(loadRun()){ovl('<div class="ttl">Start a new climb?</div><div class="sub">Your current climb will be lost.</div><div style="display:flex;gap:16px;margin-top:20px"><button class="bt" id="nyY">Start New</button><button class="bt dk" id="nyN">Cancel</button></div>'+backBtn('nyB'));$('nyB').onclick=closeOvl;$('nyY').onclick=()=>{closeOvl();clearRun();openHeroes();};$('nyN').onclick=closeOvl;return;}openHeroes();};
 let pickH='w',pickD=0;
-function openHeroes(){show('heroSel');$('hsBeyond').hidden=!(META.stats.wins>0);pickH=META.unl[META.last]?META.last:'w';renderHeroes();}
+function openHeroes(){show('heroSel');$('hsBeyond').hidden=!(META.stats.wins>0);$('hsGo').hidden=!!window.__beyondPick;pickH=META.unl[META.last]?META.last:'w';renderHeroes();}
 function renderHeroes(){const box=$('heroes');box.innerHTML='';
  Object.values(HEROES).forEach(H=>{const lock=!META.unl[H.id];const d=document.createElement('div');d.className='heroC panel'+(lock?' lock':'')+(pickH===H.id?' on':'');d.style.borderColor=pickH===H.id?'#ffd27a':'';
   const c=document.createElement('canvas');c.width=600;c.height=980;c.style.cssText='width:300px;height:490px';d.appendChild(c);heroPortrait(c,H,lock);
@@ -2147,7 +2148,7 @@ function renderHeroes(){const box=$('heroes');box.innerHTML='';
  $('duskSel').innerHTML=mx?'<button class="bt dk sm" id="dsM">&minus;</button><div style="min-width:170px;text-align:center"><b style="color:#e8c27a">Dusk '+pickD+'</b><div style="font:12px system-ui;color:#a99f92">'+duskDesc(pickD)+'</div></div><button class="bt dk sm" id="dsP">+</button>':'<div class="sub" style="font-size:15px">Win a climb to unlock harder Dusk levels</div>';
  if(mx){$('dsM').onclick=()=>{pickD=Math.max(0,pickD-1);renderHeroes();};$('dsP').onclick=()=>{pickD=Math.min(mx,pickD+1);renderHeroes();};}}
 function duskDesc(l){if(!l)return 'The normal climb';const a=['Enemies are tougher','Start with less gold','','Elites and bosses start stronger','Heal less between acts','Start with less Max HP','','Start with the curse Doubt','',''];let s=[];for(let i=0;i<l;i++)if(a[i])s.push(a[i]);return '+'+(l*6)+'% enemy HP. '+s.slice(-2).join(', ');}
-$('hsBack').onclick=()=>{sfx('click');openTitle();};$('hsGo').onclick=()=>{sfx('levelup');newRun(pickH,pickD);};$('hsBeyond').onclick=()=>{sfx('levelup');newRun(pickH,pickD,1);toastLater('A veteran climber: upgraded deck, 8 new cards and 5 relics. Act IV awaits.');};
+$('bBeyond').onclick=()=>{window.__beyondPick=1;$('bNew').onclick();};$('hsBack').onclick=()=>{window.__beyondPick=0;sfx('click');openTitle();};$('hsGo').onclick=()=>{sfx('levelup');newRun(pickH,pickD);};$('hsBeyond').onclick=()=>{sfx('levelup');newRun(pickH,pickD,1);toastLater('A veteran climber: upgraded deck, 8 new cards and 5 relics. Act IV awaits.');};
 function heroPortrait(cv,H,lock){const c=cv.getContext('2d');c.scale(2,2);const col=H.col;
  c.fillStyle=RG(c,150,180,10,320,[[0,shade(col,-.45)],[.6,'#120c18'],[1,'#050308']]);c.fillRect(0,0,300,470);
  c.save();c.globalAlpha=.25;c.fillStyle=col;c.beginPath();c.arc(150,150,90,0,TAU);c.fill();c.restore();
