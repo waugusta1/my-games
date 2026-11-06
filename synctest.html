@@ -1,0 +1,17 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Send Test</title>
+<style>body{margin:0;background:#191436;color:#f4f0ff;font:17px/1.4 system-ui,sans-serif;padding:24px 16px}main{max-width:620px;margin:0 auto}h1{margin:0 0 16px;font-size:30px}h2{font-size:20px;margin:24px 0 6px}button,a.b{display:block;width:100%;box-sizing:border-box;min-height:52px;border:0;border-radius:10px;background:#ffcf33;color:#2a1d00;font:700 18px system-ui;text-align:center;text-decoration:none;padding:15px;cursor:pointer}a.b{background:#3a3560;color:#fff;margin-top:32px}#r{margin-top:12px;padding:12px;border-radius:8px;background:#0f0b26;font-family:ui-monospace,Menlo,monospace;font-size:15px;white-space:pre-wrap;word-break:break-word;min-height:24px}</style></head><body><main>
+<h1>Send test</h1>
+<h2>Test 1: send in the background</h2>
+<button id="a">Run test 1</button><div id="r">Not run yet</div>
+<h2>Test 2: send directly</h2>
+<p>This opens a new page. Tell me exactly what it shows.</p>
+<form id="f" method="post" enctype="text/plain" target="_blank"><input type="hidden" id="i"><button type="submit">Run test 2</button></form>
+<a class="b" href="index.html">Back to games</a>
+</main><script>
+const U='https://script.google.com/macros/s/AKfycbypREg86YVtRoIjwc5CZPLXtLnox1A6XwTAnnUAZ-Krxpru-KIkyN8iIm1yyDcb03F-HQ/exec';
+const R=document.getElementById('r'),F=document.getElementById('f'),I=document.getElementById('i');F.action=U;
+I.name='{"v":1,"at":"'+new Date().toISOString()+'","from":"test-direct","hub":{},"stats":{},"x":"';I.value='"}';
+document.getElementById('a').onclick=async()=>{R.textContent='Sending...';const b=JSON.stringify({v:1,at:new Date().toISOString(),from:'test-background',hub:{},stats:{}});const L=['online: '+navigator.onLine];
+try{const x=await fetch(U,{method:'POST',mode:'no-cors',credentials:'omit',headers:{'Content-Type':'text/plain'},body:b});L.push('background: went through ('+x.type+')');}catch(e){L.push('background failed: '+e.name+': '+e.message);}
+let bytes=0;try{bytes=(localStorage.getItem('mg_hub')||'').length+(localStorage.getItem('mg_stats')||'').length;}catch(e){}L.push('data size: '+bytes+' bytes');try{L.push('link saved: '+(localStorage.getItem('mg_sync')===U));}catch(e){}R.textContent=L.join('\n');};
+</script></body></html>
