@@ -2,7 +2,7 @@
 const wp=require('web-push'),fs=require('fs');
 const cfg=JSON.parse(fs.readFileSync('push.json','utf8'));
 const key=process.env.VAPID_PRIVATE;
-if(!key){console.log('No VAPID_PRIVATE secret yet, skipping.');process.exit(0);}
+if(!key||!cfg.publicKey){console.log('No VAPID_PRIVATE secret yet, skipping.');process.exit(0);}
 if(!cfg.subs.length){console.log('No devices signed up yet, skipping.');process.exit(0);}
 wp.setVapidDetails('https://waugusta1.github.io/my-games/',cfg.publicKey,key.trim());
 const line=(process.env.MSG||'').split('\n')[0].trim()||'Something new is ready to play.';
