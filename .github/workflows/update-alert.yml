@@ -1,0 +1,29 @@
+name: Update alert
+on:
+  push:
+    branches: [main]
+    paths: ['sw.js']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  alert:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - name: Wait until the new version is live on the site
+        run: |
+          V=$(grep -o "mygames-v[0-9]*" sw.js | head -1)
+          echo "Waiting for $V"
+          for i in $(seq 1 90); do
+            if curl -fsS "https://waugusta1.github.io/my-games/sw.js?t=$(date +%s)" | grep -q "$V"; then echo "Live"; exit 0; fi
+            sleep 10
+          done
+          echo "Site did not update in time"; exit 1
+      - run: npm install --no-save web-push@3
+      - name: Send the alert
+        run: node .github/notify.js
+        env:
+          VAPID_PRIVATE: ${{ secrets.VAPID_PRIVATE }}
+          MSG: ${{ github.event.head_commit.message }}
