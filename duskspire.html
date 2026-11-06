@@ -2131,7 +2131,10 @@ function drawEnergy(t){const c=$('energyCv').getContext('2d');c.setTransform(2,0
  c.rotate(t*.6);c.strokeStyle=on?'#ffe6a8':'#666';c.lineWidth=2;for(let i=0;i<8;i++){c.rotate(TAU/8);c.beginPath();c.moveTo(38,0);c.lineTo(46,-4);c.lineTo(46,4);c.closePath();c.stroke();}
  c.beginPath();c.arc(0,0,40,0,TAU);c.setLineDash([3,5]);c.stroke();c.restore();}
 /* ===== boot ===== */
-loadMeta();try{SND.set('music',META.opt.music);SND.set('sfx',META.opt.sfx);}catch(_){}
+loadMeta();
+/* one-time heal asked for on 2026-11-06: fills HP in the saved climb, including a fight in progress */
+if(!META.gift1){try{const r=loadRun();if(r){r.hp=r.maxhp;if(r.cur&&r.cur.bs)r.cur.bs.hp=r.maxhp;__store.set(RK,JSON.stringify(r));}}catch(_){}META.gift1=1;saveMeta();}
+try{SND.set('music',META.opt.music);SND.set('sfx',META.opt.sfx);}catch(_){}
 fit();openTitle();requestAnimationFrame(frame);
 addEventListener('pagehide',()=>{saveMeta();saveRun();});
 document.addEventListener('visibilitychange',()=>{if(document.hidden){saveMeta();saveRun();}});
