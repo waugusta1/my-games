@@ -2340,8 +2340,8 @@ function newRun(hero,dusk,beyond){const H=HEROES[hero];
  if(beyond){const six=beyond===6;R.act=six?6:4;R.map=genMap(R.act);R.floorsTotal=six?75:45;R.beyond=1;R.maxhp+=six?45:25;
   for(let k=0;k<(six?3:2);k++){const i=R.deck.findIndex(c=>c.id==='slash'||c.id==='spark'||c.id==='scythe'||/^(Strike|Defend)$/.test(CARDS[c.id].n));if(i>=0)R.deck.splice(i,1);}
   R.deck.forEach(c=>{if(CARDS[c.id].y!=='c')c.up=1;});
-  (six?[3,3,3,3,2,2,2,2,2,1,1,1]:[3,3,2,2,2,2,1,1]).forEach((r,i)=>addDeck(R,rollCard(R,r),i%2===0));
-  (six?[1,1,2,2,3,3]:[1,2,3]).forEach(r=>gainRelic(R,pickRelic(R,r)));if(six){R.gold+=150;R.potions=R.potions.map(()=>pick(Object.keys(POTIONS)));}shuf(['sunshard','voidlens','duskcrown','thorncrown']).slice(0,2).forEach(id=>gainRelic(R,id));
+  (six?[3,3,3,3,3,3,2,2,2,2,2,2,2,2,1,1,1,1,1,1]:[3,3,2,2,2,2,1,1]).forEach((r,i)=>addDeck(R,rollCard(R,r),i%2===0));
+  (six?[1,1,2,2,3,3]:[1,2,3]).forEach(r=>gainRelic(R,pickRelic(R,r)));if(six){R.gift6=1;R.gold+=150;R.potions=R.potions.map(()=>pick(Object.keys(POTIONS)));}shuf(['sunshard','voidlens','duskcrown','thorncrown']).slice(0,2).forEach(id=>gainRelic(R,id));
   R.gold+=120;gainPotion(R);gainPotion(R);R.hp=R.maxhp;}
  META.stats.runs++;META.last=hero;saveMeta();saveRun();openMap();}
 function availNodes(){const m=R.map;if(!R.pos)return m.rows[0];if(R.pos.r===14)return['boss'];const cur=m.rows[R.pos.r].find(n=>n.c===R.pos.c);return m.rows[R.pos.r+1].filter(n=>cur.nx.includes(n.c));}
@@ -2548,7 +2548,7 @@ function endRun(win){if(!R)return;if(win)recordWin();else if(!R.winRec)__mgt('l'
 function openTitle(){closeOvl();R=loadRun();show('title');mus('calm');$('bCont').hidden=!R;$('bBeyond').hidden=!(META.stats.wins>0);$('tEmb').innerHTML=ICX('ember','fire')+META.embers+' Embers';const S=META.stats;$('tRec').textContent=S.runs?S.runs+(S.runs===1?' climb':' climbs')+' started, '+S.wins+' won, highest floor '+S.best:'';checkRareUnlocks();}
 function goHub(){sfx('click');try{if(B)snapB();saveMeta();saveRun();}catch(_){}$('pause').hidden=true;if(window.__goHub)window.__goHub();else location.href='index.html';}
 $('bHub').onclick=goHub;$('pHub').onclick=goHub;
-$('bCont').onclick=()=>{sfx('click');R=loadRun();if(!R)return;UID=1+Math.max(0,...R.deck.map(c=>c.u||0));if(R.cur)runNode();else openMap();};
+$('bCont').onclick=()=>{sfx('click');R=loadRun();if(!R)return;if(R.beyond&&R.act>=6&&!R.gift6){R.gift6=1;[3,3,3,2,2,2,1,1].forEach((r,i)=>addDeck(R,rollCard(R,r),i%2===0));saveRun();setTimeout(()=>toast('A gift for the Ember Throne: 8 new cards added to your deck'),900);}UID=1+Math.max(0,...R.deck.map(c=>c.u||0));if(R.cur)runNode();else openMap();};
 $('bNew').onclick=(ev)=>{if(ev)window.__beyondPick=0;sfx('click');if(loadRun()){ovl('<div class="ttl">Start a new climb?</div><div class="sub">Your current climb will be lost.</div><div style="display:flex;gap:16px;margin-top:20px"><button class="bt" id="nyY">Start New</button><button class="bt dk" id="nyN">Cancel</button></div>'+backBtn('nyB'));$('nyB').onclick=closeOvl;$('nyY').onclick=()=>{closeOvl();clearRun();openHeroes();};$('nyN').onclick=closeOvl;return;}openHeroes();};
 let pickH='w',pickD=0;
 function openHeroes(){if((META.beyond||META.stats.wins>0)&&!META.unl.g){META.unl.g=1;saveMeta();setTimeout(()=>toast('New climber unlocked: The Gravebinder'),600);}if(META.stats.wins>0&&!META.unl.t){META.unl.t=1;saveMeta();setTimeout(()=>toast('New climber unlocked: The Stormcaller'),400);}show('heroSel');$('hsBeyond').hidden=!(META.stats.wins>0);$('hsGo').hidden=!!window.__beyondPick;pickH=META.unl[META.last]?META.last:'w';renderHeroes();}
@@ -2561,7 +2561,7 @@ function renderHeroes(){const box=$('heroes');box.innerHTML='';
  $('duskSel').innerHTML=mx?'<button class="bt dk sm" id="dsM">&minus;</button><div style="min-width:170px;text-align:center"><b style="color:#e8c27a">Dusk '+pickD+'</b><div style="font:12px system-ui;color:#a99f92">'+duskDesc(pickD)+'</div></div><button class="bt dk sm" id="dsP">+</button>':'<div class="sub" style="font-size:15px">Win a climb to unlock harder Dusk levels</div>';
  if(mx){$('dsM').onclick=()=>{pickD=Math.max(0,pickD-1);renderHeroes();};$('dsP').onclick=()=>{pickD=Math.min(mx,pickD+1);renderHeroes();};}}
 function duskDesc(l){if(!l)return 'The normal climb';const a=['Enemies are tougher','Start with less gold','','Elites and bosses start stronger','Heal less between acts','Start with less Max HP','','Start with the curse Doubt','',''];let s=[];for(let i=0;i<l;i++)if(a[i])s.push(a[i]);return '+'+(l*6)+'% enemy HP. '+s.slice(-2).join(', ');}
-$('bBeyond').onclick=()=>{window.__beyondPick=1;$('bNew').onclick();};$('hsBack').onclick=()=>{window.__beyondPick=0;sfx('click');openTitle();};$('hsGo').onclick=()=>{sfx('levelup');newRun(pickH,pickD);};$('hsBeyond').onclick=()=>{sfx('levelup');newRun(pickH,pickD,6);toastLater('A seasoned climber: 5 energy, upgraded deck, 12 new cards, 8 relics and full potions. The Ember Throne awaits.');};
+$('bBeyond').onclick=()=>{window.__beyondPick=1;$('bNew').onclick();};$('hsBack').onclick=()=>{window.__beyondPick=0;sfx('click');openTitle();};$('hsGo').onclick=()=>{sfx('levelup');newRun(pickH,pickD);};$('hsBeyond').onclick=()=>{sfx('levelup');newRun(pickH,pickD,6);toastLater('A seasoned climber: 5 energy, upgraded deck, 20 new cards, 8 relics and full potions. The Ember Throne awaits.');};
 function heroPortrait(cv,H,lock){const c=cv.getContext('2d');c.scale(2,2);const col=H.col;
  c.fillStyle=RG(c,150,180,10,320,[[0,shade(col,-.45)],[.6,'#120c18'],[1,'#050308']]);c.fillRect(0,0,300,470);
  c.save();c.globalAlpha=.25;c.fillStyle=col;c.beginPath();c.arc(150,150,90,0,TAU);c.fill();c.restore();
