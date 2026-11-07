@@ -497,7 +497,7 @@ h1,h2,h3{margin:0;font-weight:700;letter-spacing:.04em}
   <div style="position:absolute;left:0;right:0;top:400px;display:flex;flex-direction:column;align-items:center;gap:14px">
    <button class="bt" id="bCont" style="width:320px">Continue Climb</button>
    <button class="bt" id="bNew" style="width:320px">New Climb</button>
-   <button class="bt dk" id="bBeyond" style="width:320px" hidden>Start at Act IV</button>
+   <button class="bt dk" id="bBeyond" style="width:320px" hidden>Start at Act VI</button>
    <div style="display:flex;gap:12px"><button class="bt dk sm" id="bSanct">Sanctum</button><button class="bt dk sm" id="bCodex">Codex</button><button class="bt dk sm" id="bOpt">Settings</button></div>
    <div class="chip" id="tEmb" style="margin-top:6px"></div>
    <div id="tRec" class="sub" style="font-size:15px;margin-top:-6px"></div>
@@ -511,7 +511,7 @@ h1,h2,h3{margin:0;font-weight:700;letter-spacing:.04em}
   <div style="position:absolute;bottom:30px;left:0;right:0;display:flex;justify-content:center;align-items:center;gap:22px">
       <div id="duskSel" style="display:flex;align-items:center;gap:10px;font-size:19px"></div>
    <button class="bt" id="hsGo">Begin</button>
-   <button class="bt dk" id="hsBeyond" hidden>Start at Act IV</button>
+   <button class="bt dk" id="hsBeyond" hidden>Start at Act VI</button>
   </div>
  </div>
  <div id="top" hidden>
@@ -2337,11 +2337,11 @@ function newRun(hero,dusk,beyond){const H=HEROES[hero];
  gainRelic(R,H.relic);upRandom(R,sl('honed'));if(sl('relic'))gainRelic(R,pickRelic(R,1));for(let i=0;i<sl('potion');i++)gainPotion(R);
  if(dusk>=2)R.gold-=30;if(dusk>=6){R.maxhp-=6;R.hp=R.maxhp;}if(dusk>=8)addDeck(R,'doubt');
  R.hp=Math.min(R.hp,R.maxhp);
- if(beyond){R.act=4;R.map=genMap(4);R.floorsTotal=45;R.beyond=1;R.maxhp+=25;
-  for(let k=0;k<2;k++){const i=R.deck.findIndex(c=>c.id==='slash'||c.id==='spark'||c.id==='scythe'||/^(Strike|Defend)$/.test(CARDS[c.id].n));if(i>=0)R.deck.splice(i,1);}
+ if(beyond){const six=beyond===6;R.act=six?6:4;R.map=genMap(R.act);R.floorsTotal=six?75:45;R.beyond=1;R.maxhp+=six?45:25;
+  for(let k=0;k<(six?3:2);k++){const i=R.deck.findIndex(c=>c.id==='slash'||c.id==='spark'||c.id==='scythe'||/^(Strike|Defend)$/.test(CARDS[c.id].n));if(i>=0)R.deck.splice(i,1);}
   R.deck.forEach(c=>{if(CARDS[c.id].y!=='c')c.up=1;});
-  [3,3,2,2,2,2,1,1].forEach((r,i)=>addDeck(R,rollCard(R,r),i%2===0));
-  [1,2,3].forEach(r=>gainRelic(R,pickRelic(R,r)));shuf(['sunshard','voidlens','duskcrown','thorncrown']).slice(0,2).forEach(id=>gainRelic(R,id));
+  (six?[3,3,3,3,2,2,2,2,2,1,1,1]:[3,3,2,2,2,2,1,1]).forEach((r,i)=>addDeck(R,rollCard(R,r),i%2===0));
+  (six?[1,1,2,2,3,3]:[1,2,3]).forEach(r=>gainRelic(R,pickRelic(R,r)));if(six){R.gold+=150;R.potions=R.potions.map(()=>pick(Object.keys(POTIONS)));}shuf(['sunshard','voidlens','duskcrown','thorncrown']).slice(0,2).forEach(id=>gainRelic(R,id));
   R.gold+=120;gainPotion(R);gainPotion(R);R.hp=R.maxhp;}
  META.stats.runs++;META.last=hero;saveMeta();saveRun();openMap();}
 function availNodes(){const m=R.map;if(!R.pos)return m.rows[0];if(R.pos.r===14)return['boss'];const cur=m.rows[R.pos.r].find(n=>n.c===R.pos.c);return m.rows[R.pos.r+1].filter(n=>cur.nx.includes(n.c));}
@@ -2561,7 +2561,7 @@ function renderHeroes(){const box=$('heroes');box.innerHTML='';
  $('duskSel').innerHTML=mx?'<button class="bt dk sm" id="dsM">&minus;</button><div style="min-width:170px;text-align:center"><b style="color:#e8c27a">Dusk '+pickD+'</b><div style="font:12px system-ui;color:#a99f92">'+duskDesc(pickD)+'</div></div><button class="bt dk sm" id="dsP">+</button>':'<div class="sub" style="font-size:15px">Win a climb to unlock harder Dusk levels</div>';
  if(mx){$('dsM').onclick=()=>{pickD=Math.max(0,pickD-1);renderHeroes();};$('dsP').onclick=()=>{pickD=Math.min(mx,pickD+1);renderHeroes();};}}
 function duskDesc(l){if(!l)return 'The normal climb';const a=['Enemies are tougher','Start with less gold','','Elites and bosses start stronger','Heal less between acts','Start with less Max HP','','Start with the curse Doubt','',''];let s=[];for(let i=0;i<l;i++)if(a[i])s.push(a[i]);return '+'+(l*6)+'% enemy HP. '+s.slice(-2).join(', ');}
-$('bBeyond').onclick=()=>{window.__beyondPick=1;$('bNew').onclick();};$('hsBack').onclick=()=>{window.__beyondPick=0;sfx('click');openTitle();};$('hsGo').onclick=()=>{sfx('levelup');newRun(pickH,pickD);};$('hsBeyond').onclick=()=>{sfx('levelup');newRun(pickH,pickD,1);toastLater('A veteran climber: 5 energy, upgraded deck, 8 new cards and 5 relics. Act IV awaits.');};
+$('bBeyond').onclick=()=>{window.__beyondPick=1;$('bNew').onclick();};$('hsBack').onclick=()=>{window.__beyondPick=0;sfx('click');openTitle();};$('hsGo').onclick=()=>{sfx('levelup');newRun(pickH,pickD);};$('hsBeyond').onclick=()=>{sfx('levelup');newRun(pickH,pickD,6);toastLater('A seasoned climber: 5 energy, upgraded deck, 12 new cards, 8 relics and full potions. The Ember Throne awaits.');};
 function heroPortrait(cv,H,lock){const c=cv.getContext('2d');c.scale(2,2);const col=H.col;
  c.fillStyle=RG(c,150,180,10,320,[[0,shade(col,-.45)],[.6,'#120c18'],[1,'#050308']]);c.fillRect(0,0,300,470);
  c.save();c.globalAlpha=.25;c.fillStyle=col;c.beginPath();c.arc(150,150,90,0,TAU);c.fill();c.restore();
