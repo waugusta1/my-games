@@ -6084,7 +6084,61 @@ const Q=[
 {id:'s5',side:1,ch:2,req:['q4'],n:'Starlite',d:'Eli swears there\'s a generator in the Starlite Motel.',steps:[{t:'go',at:[640,-90],r:30,txt:'Search the Starlite Motel'},{t:'kill',group:'motel',txt:'Clear the motel'},{t:'pickup',pts:[[648,-96]],item:'Generator shed',loot:[{parts:6,elec:3}],txt:'Strip the generator'}],rew:{xp:250}},
 {id:'s6',side:1,ch:2,req:['q4'],n:'Holloway Farm',d:'A farm in the north-west still has seed stock, if the stories are true.',steps:[{t:'go',at:[-640,-480],r:35,txt:'Find Holloway Farm'},{t:'pickup',pts:[[-646,-486]],item:'Root cellar',loot:[{cans:4,water:3,chems:2}],txt:'Open the root cellar'},{t:'talk',npc:'marta',txt:'Tell Mateo about the seeds',dlg:[['marta','Seed stock. Real seeds. If we ever see the sun again, those are worth more than the convoy.']]}],rew:{xp:250,give:{medkit:1}}},
 {id:'s7',side:1,ch:2,req:['q3'],n:'Bounty',d:'The Lantern pays for every raider camp you clear.',steps:[{t:'stat',k:'camps',n:4,txt:'Clear raider camps'}],rew:{xp:400,give:{ammo:120}}},
-{id:'s8',side:1,ch:3,req:['q6'],n:'Sable',d:'Sable is not like the other Kings.',steps:[{t:'talk',npc:'sable2',txt:'Find Sable at the overpass',dlg:[['sable','Courier. I\'m done with Dutch. He\'s going to burn the Lantern for a radio. Kids live there.'],['sable','When he comes, I won\'t be with him. Maybe I\'ll be with you. If you\'ll have me.']]}],rew:{xp:200}}];
+{id:'s8',side:1,ch:3,req:['q6'],n:'Sable',d:'Sable is not like the other Kings.',steps:[{t:'talk',npc:'sable2',txt:'Find Sable at the overpass',dlg:[['sable','Courier. I\'m done with Dutch. He\'s going to burn the Lantern for a radio. Kids live there.'],['sable','When he comes, I won\'t be with him. Maybe I\'ll be with you. If you\'ll have me.']]}],rew:{xp:200}},
+/* ---------- MORE SIDE JOBS ---------- */
+{id:'s9',side:1,ch:2,req:['q3'],n:'Dust Devils',d:'Ramon\'s trader didn\'t make it through Coyote Arroyo. Something in the wash is picking off travellers.',steps:[
+ {t:'go',at:[-120,260],r:45,txt:'Ride down into Coyote Arroyo'},
+ {t:'kill',group:'arroyo',txt:'Deal with the ambushers',hint:'They hide along the banks. Stay low and use the rocks.'},
+ {t:'pickup',pts:[[-112,252]],item:'Overturned cart',loot:[{copper:3,cloth:2,cans:2}],txt:'Search the trader\'s cart',dlg:[['you','His ledger is still here. Copper, cloth, two tins of peaches. Ramon will want to know he tried.']]}],rew:{xp:300,give:{ammo:60}}},
+{id:'s10',side:1,ch:1,req:['q2'],n:'Spare Parts',d:'Eli\'s bench is empty. He needs scrap before he can fix anything else.',steps:[
+ {t:'talk',npc:'eli',txt:'Ask Eli what he needs',dlg:[['eli','Look at this bench. Nothing. I can\'t even patch a bucket.'],['eli','Bring me eight pieces of scrap metal. Car doors, signs, roofing, anything. Mercy is full of it.']]},
+ {t:'have',item:'scrap',n:8,take:1,txt:'Bring Eli scrap metal'},
+ {t:'talk',npc:'eli',txt:'Hand it over',dlg:[['eli','Now that\'s a pile. Here, I made these from the last batch. Don\'t tell Mateo I gave you the good ones.']]}],rew:{xp:200,give:{ammo:60,bandage:2}}},
+{id:'s11',side:1,ch:2,req:['q3'],n:'Water Run',d:'The pump works, but someone has to carry the water home.',steps:[
+ {t:'talk',npc:'rosa',txt:'Talk to Ramon',dlg:[['rosa','The pump is running, God bless you. But the barrels at the Lantern are dry and the kids are thirsty now.'],['rosa','There are clean drums by the pump house. Fill them and bring them back in the jeep.']]},
+ {t:'pickup',pts:[[384,162],[400,182]],item:'Water drum',give:{water:2},loot:[{water:1},{water:1}],txt:'Fill the water drums at the pump'},
+ {t:'go',at:[150,36],r:30,drive:1,txt:'Drive the water back to the Lantern'},
+ {t:'talk',npc:'rosa',txt:'Tell Ramon it\'s here',dlg:[['rosa','Listen to them. Laughing. I haven\'t heard that in a long time.'],['rosa','Take the medkits. We have water now. We can boil bandages again.']]}],rew:{xp:260,give:{medkit:2}}},
+{id:'s12',side:1,ch:3,req:['q4'],n:'Smoke on the Pass',d:'Pike spotted smoke at East Pass. Kings are setting up a toll on the only road out.',steps:[
+ {t:'talk',npc:'pike',txt:'Talk to Pike on the mesa',dlg:[['pike','See that smoke past the overpass? Kings. They\'re charging a toll on East Pass. Water, fuel, people.'],['pike','Vale won\'t send anyone down. I\'m asking you. Clear the pass and I\'ll owe you.']]},
+ {t:'go',at:[700,10],r:60,txt:'Drive to East Pass'},
+ {t:'kill',group:'eastpass',txt:'Break the toll camp'},
+ {t:'talk',npc:'pike',txt:'Tell Pike the pass is open',dlg:[['pike','The road is open. First time in two years.'],['pike','Here. Vale doesn\'t count the ammo. I do. You earned it.']]}],rew:{xp:380,give:{ammo:90,stims:1}}},
+{id:'s13',side:1,ch:3,req:['q5'],n:'Night Shift',d:'Scavengers moved back into Mercy Works. The foreman\'s safe is still locked.',steps:[
+ {t:'go',at:[-470,-250],r:50,txt:'Return to Mercy Works'},
+ {t:'kill',group:'works2',txt:'Clear out the new crew'},
+ {t:'pickup',pts:[[-458,-240]],item:'Foreman\'s safe',loot:[{elec:3,copper:3,parts:2}],txt:'Crack the foreman\'s safe',dlg:[['narr','The safe door groans open. Paycheques nobody cashed, a wedding ring, and a box of circuit boards wrapped in oilcloth.']]}],rew:{xp:320}},
+{id:'s14',side:1,ch:3,req:['q7'],n:'Salvage Rights',d:'The convoy wreck isn\'t the only thing on Dry Lake. Three more trucks lie half-buried in the dust.',steps:[
+ {t:'pickup',pts:[[196,428],[244,468],[262,424]],item:'Buried truck',loot:[{parts:2,rubber:2},{fuel:1,scrap:2},{ammo:30,elec:1}],txt:'Dig out the buried trucks'},
+ {t:'kill',group:'lake2',txt:'Fight off the salvagers',hint:'They come in from the shore. Use the trucks as cover.'}],rew:{xp:320,give:{fuel:1}}},
+{id:'s15',side:1,ch:3,req:['s6'],n:'Holloway\'s Return',d:'Someone has moved into Holloway Farm, and they aren\'t farmers.',steps:[
+ {t:'go',at:[-640,-480],r:40,txt:'Go back to Holloway Farm'},
+ {t:'kill',group:'farm',txt:'Drive off the squatters'},
+ {t:'pickup',pts:[[-632,-470]],item:'Farmhouse pantry',loot:[{cans:3,water:2,cloth:2}],txt:'Search the farmhouse'},
+ {t:'talk',npc:'marta',txt:'Tell Mateo the farm is clear',dlg:[['marta','Clear? Then we could plant there. In spring. If spring ever comes.'],['marta','I\'ll send Ramon\'s cousins. Holloway Farm, alive again. Imagine that.']]}],rew:{xp:340,give:{medkit:1}}},
+/* ---------- AFTER THE SIGNAL ---------- */
+{id:'s16',side:1,ch:4,req:['q9'],n:'Rebuilding',d:'Dutch\'s raid tore the Lantern apart. Eli has a list.',steps:[
+ {t:'talk',npc:'eli',txt:'Talk to Eli',dlg:[['eli','The canopy\'s half down and the north wall is gone. Whatever happens with Haven, people still sleep here tonight.'],['eli','Ten scrap for the wall. Six parts for the generator. You know where to find them.']]},
+ {t:'have',item:'scrap',n:10,take:1,txt:'Bring scrap metal for the wall'},
+ {t:'have',item:'parts',n:6,take:1,txt:'Bring mechanical parts for the generator'},
+ {t:'talk',npc:'eli',txt:'Help Eli finish the repairs',dlg:[['narr','You spend the afternoon holding sheet metal while Eli welds. By sunset the wall stands and the generator hums.'],['eli','Good work, courier. That\'s the first thing I\'ve built that wasn\'t for a fight.']]}],rew:{xp:500,give:{medkit:2,ammo:60}}},
+{id:'s17',side:1,ch:4,req:['q9'],n:'Kings Without a King',d:'With Dutch gone, his worst lieutenants are fighting over the Rail Yard.',steps:[
+ {t:'talk',npc:'marta',txt:'Talk to Mateo',dlg:[['marta','Word from the yard. Dutch is dead and his lieutenants are tearing the place apart for his stash.'],['marta','Whoever wins will come here next. End it before it starts.']]},
+ {t:'go',at:[470,-330],r:70,txt:'Drive to the Rail Yard'},
+ {t:'kill',group:'yardfinal',txt:'Break the last of the Kings',hint:'There are a lot of them. Use the train cars as cover and keep moving.'},
+ {t:'pickup',pts:[[462,-322]],item:'Dutch\'s strongbox',loot:[{ammo:90,fuel:2,elec:2}],txt:'Open Dutch\'s strongbox',dlg:[['narr','Inside: fuel coupons, a pistol with no firing pin, and a photograph of a young man in an orange vest, smiling by a locomotive.']]},
+ {t:'talk',npc:'marta',txt:'Report back to Mateo',dlg:[['marta','It\'s over, then. Really over.'],['marta','The Basin owes you more than it can pay. But we\'ll try.']]}],rew:{xp:700,give:{medkit:2}}},
+{id:'s18',side:1,ch:4,req:['q9'],n:'Vacancy',d:'Travellers on the road say the Starlite has new owners, and they rob everyone who stops.',steps:[
+ {t:'go',at:[640,-90],r:40,txt:'Drive to the Starlite Motel'},
+ {t:'kill',group:'motel2',txt:'Clear out the robbers'},
+ {t:'pickup',pts:[[634,-84]],item:'Motel office',loot:[{cans:3,medkit:1,cloth:2}],txt:'Search the motel office',dlg:[['you','Somebody even fixed the neon sign. VACANCY. Not any more.']]}],rew:{xp:420,give:{ammo:60}}},
+{id:'s19',side:1,ch:4,req:['q9'],n:'Signal Keeper',d:'Relay 7 needs looking after now that the Basin depends on it.',steps:[
+ {t:'talk',npc:'vale',txt:'Talk to Ira Vale',dlg:[['vale','The relay works. Keeping it working is another job. The wind out here eats wire.'],['vale','Three junction boxes around the tower. Check each one and patch what you can. Take copper.']]},
+ {t:'have',item:'copper',n:3,take:1,txt:'Bring copper wire for the repairs'},
+ {t:'pickup',pts:[[-478,428],[-462,412],[-482,412]],item:'Junction box',txt:'Patch the junction boxes'},
+ {t:'talk',npc:'vale',txt:'Tell Vale it\'s done',dlg:[['vale','Signal is clean. Listen: somebody in Salt Flats is asking about the weather. The light reaches further than we thought.']]}],rew:{xp:450,give:{elec:2,stims:2}}},
+{id:'s20',side:1,ch:4,req:['s16','s17','s19'],n:'The Long Road',d:'Mateo wants to talk, now that the dust has settled.',steps:[
+ {t:'talk',npc:'marta',txt:'Talk to Mateo',dlg:[['marta','Sit down, courier. You\'ve been running since the day your jeep died out on 40.'],['marta','The wall is up. The water runs. The Kings are gone. The relay talks to people we never knew were alive.'],['marta','When you came here you were carrying someone else\'s message. I think you wrote a new one.'],['narr','For the first time since Salt Flats, you sleep without your boots on.']]}],rew:{xp:1200,give:{medkit:3}}}];
 const QBYID={};Q.forEach(q=>QBYID[q.id]=q);
 /* ================= PEOPLE ================= */
 const NPCS={marta:{n:'Mateo Ruiz',tint:0x6a3a2e,pants:0x5a5650,hair:1,site:'lantern',at:[146,22],ry:0},eli:{n:'Eli',tint:0x3e4a3a,pants:0x6a5a48,site:'lantern',at:[168,48],ry:-1.6},rosa:{n:'Ramon',tint:0xb8b0a0,pants:0x4a4038,site:'lantern',at:[128,44],ry:1.2},
@@ -6095,7 +6149,8 @@ const SPEAK={you:'You',narr:'',marta:'Mateo',eli:'Eli',rosa:'Ramon',tomas:'Tomas
 const GROUPS={
  pump:{at:[390,170],n:5,kind:'scav',r:22},works:{at:[-470,-250],n:7,kind:'scav',r:20},lake:{at:[226,452],n:6,kind:'king',r:40,arrive:1},
  tomas:{at:[-200,-120],n:3,kind:'scav',r:12},motel:{at:[640,-90],n:5,kind:'scav',r:22},yard:{at:[470,-330],n:9,kind:'king',r:35},
- siege:{at:[150,36],n:12,kind:'king',r:60,arrive:1,waves:3},dutch:{at:[-470,420],n:6,kind:'king',r:30,arrive:1}};
+ siege:{at:[150,36],n:12,kind:'king',r:60,arrive:1,waves:3},
+ arroyo:{at:[-120,260],n:5,kind:'scav',r:22},eastpass:{at:[700,10],n:6,kind:'king',r:26},works2:{at:[-470,-250],n:8,kind:'scav',r:20},lake2:{at:[226,452],n:6,kind:'king',r:40,arrive:1},farm:{at:[-640,-480],n:5,kind:'scav',r:20},yardfinal:{at:[470,-330],n:9,kind:'king',r:36},motel2:{at:[640,-90],n:6,kind:'king',r:22},dutch:{at:[-470,420],n:6,kind:'king',r:30,arrive:1}};
 const CAMPS=[{id:'c1',at:[-60,180],n:4},{id:'c2',at:[300,-160],n:4},{id:'c3',at:[-640,120],n:4},{id:'c4',at:[620,320],n:5},{id:'c5',at:[-120,-420],n:4},{id:'c6',at:[-360,200],n:4}];
 
 /* ================= CORE ================= */

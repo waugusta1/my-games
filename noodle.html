@@ -218,7 +218,7 @@ html,body{height:100%;margin:0;background:#2a1a12;overflow:hidden;font-family:va
 .btn:active{transform:translateY(3px);box-shadow:0 1px 0 #8a2a18}.btn.s{font-size:14px;padding:8px 14px;background:#b89a7a;box-shadow:0 3px 0 #7a5a3a}.btn.g{background:#3a9a5a;box-shadow:0 4px 0 #1a5a2a}
 .btn[disabled]{opacity:.45}
 .tabs{display:flex;gap:6px;justify-content:center;margin:10px 0 4px}.tab{font:700 15px var(--f);border:0;border-radius:12px;padding:8px 14px;background:#e8d4b0;color:#6a4a2a}.tab.on{background:#d8452a;color:#fff}
-.shop{display:grid;gap:8px;text-align:left;margin:10px 0}
+.shop{display:grid;gap:8px;text-align:left;margin:10px 0;max-height:46vh;overflow-y:auto;touch-action:pan-y;align-content:start}
 .it{display:flex;align-items:center;gap:10px;background:#f4e2c4;border-radius:14px;padding:8px 10px}.it .ic{width:42px;height:42px;flex:none}.it div{flex:1}.it small{display:block;opacity:.7;font-size:12px}
 .how{text-align:left;font-size:14px;background:#f4e2c4;border-radius:14px;padding:10px 14px;margin:10px 0;line-height:1.5}
 .how b.n{display:inline-block;width:20px;height:20px;border-radius:50%;background:#d8452a;color:#fff;text-align:center;line-height:20px;font-size:12px;margin-right:6px}
@@ -467,7 +467,7 @@ return{
 <div class="stat" id="mStats"></div>
 <button class="btn" id="playB">Open the shop</button><button class="btn s" id="sndB"></button></div></div>
 <div class="scr" id="end" hidden><div class="card"><p class="big" id="endT" style="font-size:36px"></p><div class="stars" id="endStars"></div><div class="stat" id="endS"></div><div class="rev" id="endRev"></div>
-<div class="tabs"><button class="tab on" data-t="up">Upgrades</button><button class="tab" data-t="decor">Decor</button><button class="tab" data-t="book">Recipe book</button></div><div class="shop" id="shop"></div>
+<div class="tabs"><button class="tab on" data-t="up">Upgrades</button><button class="tab" data-t="decor">Decor</button><button class="tab" data-t="book">Recipe book</button><button class="tab" data-t="sig">Signatures</button></div><div class="shop" id="shop"></div>
 <div id="wallet" style="font-weight:700;margin:6px 0"></div><button class="btn" id="nextB">Next day</button><button class="btn s" id="homeB">Menu</button></div></div>
 <div class="scr" id="pause" hidden><div class="card"><p class="big" style="font-size:38px">Paused</p><p>The customers will wait.</p><button class="btn" id="resB">Resume</button><button class="btn s" id="quitB">Close shop for today</button></div></div>
 <script>
@@ -504,7 +504,7 @@ let toastT=0;function toast(m,d=1.8){const t=$('toast');t.textContent=m;t.hidden
 
 /* ---------- save (migrates the old save) ---------- */
 const KEY='noodlerush-v2';let save=null;try{save=JSON.parse(__store.get(KEY)||'null');}catch(_){}
-const fresh=()=>({day:1,top:1,coins:0,total:0,pots:2,bowls:2,stove:0,lantern:0,tipjar:0,chop:0,bell:0,pan:0,sign:0,vips:0,served:0,perfect:0,stars:{},decor:{},theme:'wood',days:0});
+const fresh=()=>({day:1,top:1,coins:0,total:0,pots:2,bowls:2,stove:0,lantern:0,tipjar:0,chop:0,bell:0,pan:0,sign:0,vips:0,served:0,perfect:0,stars:{},decor:{},theme:'wood',days:0,sig:{}});
 if(!save){save=fresh();try{const o=JSON.parse(__store.get('noodlerush-v1')||'null');if(o){for(const k of['day','coins','total','pots','bowls','stove','lantern','tipjar','chop','bell','vips'])if(o[k]!=null)save[k]=o[k];save.top=save.day;}}catch(_){}}
 save=Object.assign(fresh(),save);const persist=()=>{try{__store.set(KEY,JSON.stringify(save));}catch(_){}};
 
@@ -520,6 +520,31 @@ const ANIM=[{k:'cat',c:'#f0a85a'},{k:'fox',c:'#e8743a'},{k:'panda',c:'#f4f4f4'},
 const SHIRT={cat:'#5a8ad8',fox:'#3a6a4a',panda:'#d84a6a',bear:'#e8b04a',bunny:'#8a5ad8',frog:'#f0d050',owl:'#4a5a8a',pig:'#4ab8a8',penguin:'#e84a4a',raccoon:'#5aa86a',tiger:'#2a2a3a',koala:'#e87ab0'};
 const NAMES=['Mochi','Biscuit','Pepper','Hana','Kenji','Toast','Pudding','Sora','Taro','Momo','Waffles','Yuki'];
 const EVENTS={normal:{n:'A quiet day'},rain:{n:'Rainy day',d:'Customers are cozy and patient. Warm broths are popular.'},festival:{n:'Lantern festival',d:'Crowds all day and bigger tips!'},critics:{n:'Critic week',d:'Food critics are in town. Impress them!'}};
+const SIGS=[
+ {id:'tokyo',n:'Tokyo Classic',d:'The bowl that started it all',no:'ramen',b:'shoyu',t:['chashu','egg','scallion'],s:[]},
+ {id:'hakata',n:'Hakata Gold',d:'Creamy pork broth, thin noodles',no:'ramen',b:'tonkotsu',t:['chashu','nori'],s:[]},
+ {id:'teatime',n:'Tea House Udon',d:'Simple and soothing',no:'udon',b:'shoyu',t:['scallion'],s:['tea']},
+ {id:'sweetcorn',n:'Sapporo Sunrise',d:'Miso, corn and a golden egg',no:'ramen',b:'miso',t:['corn','egg'],s:[]},
+ {id:'swirl',n:'Fishcake Swirl',d:'A kid favorite',no:'udon',b:'miso',t:['naruto'],s:['mochi']},
+ {id:'garden',n:'Garden Bowl',d:'Crunchy, green and fresh',no:'ramen',b:'shio',t:['sprouts','scallion','corn'],s:[]},
+ {id:'dumpling',n:'Dumpling Deal',d:'Bowl plus a side of gyoza',no:'ramen',b:'shoyu',t:['egg'],s:['gyoza']},
+ {id:'bamboo',n:'Bamboo Grove',d:'Menma and nori on miso',no:'soba',b:'miso',t:['bamboo','nori'],s:[]},
+ {id:'inferno',n:'Dragon Breath',d:'Tantan broth, chili oil, no mercy',no:'ramen',b:'spicy',t:['chili','chashu','scallion'],s:['tea']},
+ {id:'forest',n:'Forest Floor',d:'Shiitake, soba and dark broth',no:'soba',b:'shoyu',t:['shiitake','scallion'],s:[]},
+ {id:'zen',n:'Zen Garden',d:'Light shio with tofu',no:'udon',b:'shio',t:['tofu','sprouts'],s:['tea']},
+ {id:'sakura',n:'Cherry Blossom Set',d:'A pretty bowl and pink mochi',no:'rice',b:'shio',t:['naruto','egg'],s:['mochi']},
+ {id:'crunch',n:'Golden Crunch',d:'Shrimp tempura on udon',no:'udon',b:'shoyu',t:['tempura','scallion'],s:[]},
+ {id:'curryup',n:'Curry Up',d:'Thick curry broth, fried tofu',no:'udon',b:'curry',t:['tofu','corn'],s:[]},
+ {id:'midnight',n:'Midnight Rider',d:'What the night shift orders',no:'ramen',b:'tonkotsu',t:['chashu','egg','chili'],s:['gyoza']},
+ {id:'mountain',n:'Mountain Path',d:'Soba, menma, shiitake',no:'soba',b:'miso',t:['bamboo','shiitake','nori'],s:[]},
+ {id:'saigon',n:'Saigon Steam',d:'Rice noodles, sprouts and chili',no:'rice',b:'spicy',t:['sprouts','chili'],s:['tea']},
+ {id:'feast',n:'Festival Feast',d:'Everything and a side of everything',no:'ramen',b:'miso',t:['chashu','tempura','egg'],s:['gyoza','mochi']},
+ {id:'goldcurry',n:'Golden Curry Soba',d:'Soba in curry with tempura',no:'soba',b:'curry',t:['tempura','scallion'],s:['tea']},
+ {id:'legend',n:'The Legend',d:'The bowl critics write poems about',no:'ramen',b:'tonkotsu',t:['chashu','shiitake','egg'],s:['gyoza','tea']}];
+const sigOpen=g=>has(g.no)&&has(g.b)&&g.t.every(has)&&g.s.every(has);
+const sigDay=g=>Math.max(1,...[g.no,g.b,...g.t,...g.s].map(k=>UNL[k]||1));
+const RANKS=[[0,'Street Cart'],[1500,'Corner Stall'],[5000,'Ramen Bar'],[12000,'Local Favorite'],[25000,'City Hotspot'],[50000,'Ramen Legend']];
+const rankI=()=>{let i=0;RANKS.forEach((r,j)=>{if(save.total>=r[0])i=j;});return i;};
 const goal=()=>70+save.day*50;
 const DAYLEN=150;
 
@@ -544,6 +569,7 @@ const emptyBowl=()=>({n:null,b:null,t:[],s:[],q:1});
 function makeOrder(kind){const a=avail();let n=pick(a.n),b=pick(a.b);if(evId==='rain'&&R()<.5){const w=a.b.filter(x=>x==='spicy'||x==='miso'||x==='curry'||x==='tonkotsu');if(w.length)b=pick(w);}
   const maxT=kind==='kid'?1:clamp(1+Math.floor(save.day/2),1,3);const nt=1+((R()*maxT)|0),pool=[...a.t],t=[];for(let i=0;i<nt&&pool.length;i++)t.push(pool.splice((R()*pool.length)|0,1)[0]);
   const s=[];if(kind!=='kid'){if(a.s.includes('gyoza')&&R()<.3)s.push('gyoza');if(a.s.includes('tea')&&R()<.3)s.push('tea');}if(a.s.includes('mochi')&&R()<(kind==='kid'?.5:.15)&&s.length<2)s.push('mochi');
+  if(kind!=='kid'&&save.day>=3&&R()<.22){const sg=SIGS.filter(sigOpen);if(sg.length){const g=pick(sg);return{n:g.no,b:g.b,t:g.t.slice(),s:g.s.slice(),name:g.n,sig:g.id};}}
   return{n,b,t,s,name:BROTH[b].n+' '+NOOD[n].n};}
 function spawn(){const free=cust.map((c,i)=>c?-1:i).filter(i=>i>=0);if(!free.length)return;const i=pick(free);let kind='normal';const r=R();
   if(save.day>=3&&r<(evId==='critics'?.3:.1))kind='critic';else if(r<.25)kind='kid';else if(save.day>=2&&r<.35)kind='tourist';else if(r<.5)kind='regular';
@@ -569,9 +595,9 @@ const sameSet=(a,b)=>a.length===b.length&&a.every(x=>b.includes(x));
 function serve(i){const c=cust[i],b=bowls[sel];if(!b.n&&!b.b){toast('Pick a finished bowl first');SND.play('error');return;}const o=c.o;
   if(!(b.n===o.n&&b.b===o.b&&sameSet(b.t,o.t)&&sameSet(b.s,o.s))){c.p-=6;c.mood=.2;D.wrong++;const miss=!b.n?'noodles':b.n!==o.n?NOOD[o.n].n:!b.b?'broth':b.b!==o.b?BROTH[o.b].n+' broth':!sameSet(b.t,o.t)?'toppings':'sides';toast((c.a.k==='frog'?'Ribbit! ':'Hmm... ')+'wrong '+miss+'!');SND.play('error');return;}
   const base=10+o.t.length*3+o.s.length*4+(o.n!=='ramen'?3:0);const pf=c.p/c.pm;let tip=Math.round(pf*(6+save.tipjar*4)*(1+repBonus())*(save.decor.maneki?1.1:1)*(evId==='festival'?1.3:1));
-  if(c.kind==='tourist'){tip*=2;flashT=.25;}if(c.kind==='regular')tip+=5;let pay=base*(1+save.chop*.15)*(b.q===1?1.2:1);if(c.kind==='kid')pay*=.6;if(c.kind==='critic'){pay*=3;D.critic++;}
+  if(c.kind==='tourist'){tip*=2;flashT=.25;}if(c.kind==='regular')tip+=5;let pay=base*(1+save.chop*.15)*(b.q===1?1.2:1);if(c.kind==='kid')pay*=.6;pay*=1+rankI()*.04;let sigNew=0;if(o.sig){pay*=1.3;save.sig=save.sig||{};sigNew=!save.sig[o.sig];save.sig[o.sig]=(save.sig[o.sig]||0)+1;if(sigNew){__mgt('m','sig');setTimeout(()=>toast('New signature bowl: '+o.name+'!\nSee it in the Signatures book.'),400);}}if(c.kind==='critic'){pay*=3;D.critic++;}
   streak++;const sb=save.bell?Math.min(streak,10)*save.bell:0;const tot=Math.round(pay+tip)+sb;D.earn+=tot;D.tips+=tip;D.served++;if(b.q===1)D.perfect++;if(c.kind==='critic')save.vips=(save.vips||0)+1;
-  floats.push({x:L.seats[i].x,y:L.cy-L.sz*2.2,t:'+'+tot+(c.kind==='critic'?' CRITIC!':b.q===1?' Perfect!':'')+(sb?' · streak '+streak:''),l:1.5,coin:1});SND.play('cash');if(tip>=6)SND.play('sparkle');
+  floats.push({x:L.seats[i].x,y:L.cy-L.sz*2.2,t:'+'+tot+(c.kind==='critic'?' CRITIC!':o.sig?' Signature!':b.q===1?' Perfect!':'')+(sb?' · streak '+streak:''),l:1.5,coin:1});SND.play('cash');if(tip>=6)SND.play('sparkle');
   for(let k=0;k<16;k++)parts.push({x:L.seats[i].x,y:L.cy-L.sz,vx:(R()-.5)*280,vy:-R()*280,l:.9,c:pick(['#ffd36a','#ff7a5a','#7ad87a','#7ab8ff'])});
   c.leave=1;c.happy=1;bowls[sel]=emptyBowl();const nx=bowls.findIndex(b=>b.n||b.b);if(nx>=0)sel=nx;spawnT=Math.min(spawnT,1.4);}
 const repBonus=()=>Math.min(.5,Object.values(save.stars).reduce((a,b)=>a+b,0)*.01);
@@ -588,7 +614,7 @@ function update(dt){tm+=dt;for(let i=parts.length-1;i>=0;i--){const p=parts[i];p
   if(dayT<=0&&!cust.some(c=>c&&!c.leave)||dayT<-30)endDay();}
 const REV={3:['"The best bowl I have had all year. Five stars!"','"Silky noodles, perfect broth. I will be back tomorrow."','"This little shop is a hidden gem."'],2:['"Good food, a bit of a wait. Still worth it."','"Tasty! The chashu melted in my mouth."'],1:['"Decent ramen, busy kitchen."','"The broth was nice. Service was slow."'],0:['"Long lines and grumpy customers. Try again tomorrow."']};
 function endDay(){state='end';$('pauseB').hidden=true;SND.music('calm');const ok=D.earn>=goal();__mgt(ok?'w':'l',()=>'Day '+save.day);const st=(ok?1:0)+(ok&&D.lost<=1?1:0)+(ok&&D.perfect>=Math.min(8,3+Math.floor(save.day/2))?1:0);
-  save.coins+=D.earn;save.total+=D.earn;save.served+=D.served;save.perfect+=D.perfect;save.days++;const dk=save.day;save.stars[dk]=Math.max(save.stars[dk]||0,st);const before=avail();
+  const rk0=rankI();save.coins+=D.earn;save.total+=D.earn;if(rankI()>rk0){setTimeout(()=>toast('Your shop is now a '+RANKS[rankI()][1]+'!\nEvery bowl pays '+rankI()*4+'% more.',3.4),600);__mgt('m','rank');}save.served+=D.served;save.perfect+=D.perfect;save.days++;const dk=save.day;save.stars[dk]=Math.max(save.stars[dk]||0,st);const before=avail();
   if(ok){save.day++;save.top=Math.max(save.top,save.day);}persist();const after=avail();const newU=[...after.n.filter(k=>!before.n.includes(k)).map(k=>NOOD[k].n),...after.b.filter(k=>!before.b.includes(k)).map(k=>BROTH[k].n+' broth'),...after.t.filter(k=>!before.t.includes(k)).map(k=>TOP[k]),...after.s.filter(k=>!before.s.includes(k)).map(k=>SIDE[k])];
   $('endT').textContent=ok?'Day '+dk+' complete!':'Not quite...';$('endStars').innerHTML=[0,1,2].map(i=>'<i class="st'+(i<st?' on':'')+'"></i>').join('');
   $('endS').innerHTML=`<span>Earned <b>${D.earn}</b> / ${goal()-(ok?50:0)}</span><span>Tips ${D.tips}</span><span>Served ${D.served}</span><span>Perfect ${D.perfect}</span><span>Walked out ${D.lost}</span>`+(newU.length?`<span style="background:#d8f4c8">New: ${newU.join(', ')}</span>`:'');
@@ -608,6 +634,9 @@ function renderShop(){document.querySelectorAll('.tab').forEach(b=>b.classList.t
   if(tab==='book'){const a=avail();const row=(t,arr,map)=>`<div class="it"><div><b>${t}</b><small>${arr.map(k=>map[k]).join(' · ')}</small></div></div>`;h=row('Noodles',a.n,Object.fromEntries(Object.entries(NOOD).map(([k,v])=>[k,v.n])))+row('Broths',a.b,Object.fromEntries(Object.entries(BROTH).map(([k,v])=>[k,v.n])))+row('Toppings',a.t,TOP)+(a.s.length?row('Sides',a.s,SIDE):'');
     const nxt=Object.entries(UNL).filter(([k,d])=>d>save.top).sort((x,y)=>x[1]-y[1])[0];if(nxt){const k=nxt[0];h+=`<div class="it" style="background:#e8f4d8"><div><b>Next unlock: ${(NOOD[k]&&NOOD[k].n)||(BROTH[k]&&BROTH[k].n+' broth')||TOP[k]||SIDE[k]}</b><small>Reach day ${nxt[1]}</small></div></div>`;}
     h+=`<div class="it"><div><b>Shop stats</b><small>Bowls served ${save.served} · Perfect bowls ${save.perfect} · Critics served ${save.vips||0} · Total earned ${save.total} · Stars ${Object.values(save.stars).reduce((a,b)=>a+b,0)}</small></div></div>`;}
+  if(tab==='sig'){const ri=rankI(),nx=RANKS[ri+1];const got=SIGS.filter(g=>save.sig&&save.sig[g.id]).length;
+    h=`<div class="it" style="background:#fff0c8"><div><b>${RANKS[ri][1]}</b><small>Shop rank ${ri+1} of ${RANKS.length} · every bowl pays ${ri*4}% more${nx?` · ${nx[0]-save.total} more coins earned to become a ${nx[1]}`:' · the top rank!'}</small></div></div><div class="it"><div><b>Signature bowls: ${got} of ${SIGS.length}</b><small>Regulars sometimes order a famous bowl by name. Signatures pay 30% more. Serve each one to fill the book.</small></div></div>`;
+    h+=SIGS.map(g=>{const n=(save.sig||{})[g.id]||0,op=sigOpen(g),ing=[NOOD[g.no].n,BROTH[g.b].n+' broth',...g.t.map(k=>TOP[k]),...g.s.map(k=>SIDE[k])].join(' · ');return`<div class="it" style="${n?'background:#e8f4d8':op?'':'opacity:.6'}"><div><b>${op||n?g.n:'Locked recipe'}${n?' · served '+n:''}</b><small>${op||n?g.d+'. '+ing:'Reach day '+sigDay(g)+' to learn it'}</small></div></div>`;}).join('');}
   $('shop').innerHTML=h;$('wallet').textContent='Wallet: '+save.coins+' coins';drawIcons();
   document.querySelectorAll('[data-u]').forEach(b=>b.onclick=()=>{const s=UPG[+b.dataset.u],lv=save[s.k]-(s.base||0),cost=s.c(lv+1);if(save.coins<cost)return;save.coins-=cost;save[s.k]++;persist();SND.play('buy');renderShop();});
   document.querySelectorAll('[data-d]').forEach(b=>b.onclick=()=>{const d=DECOR[+b.dataset.d];if(save.coins<d.c)return;save.coins-=d.c;save.decor[d.k]=1;if(d.theme)save.theme=d.k;persist();SND.play('buy');renderShop();});
@@ -760,7 +789,7 @@ let last=performance.now();function loop(n){requestAnimationFrame(loop);const dt
 $('playB').onclick=()=>newDay();$('nextB').onclick=()=>newDay();$('homeB').onclick=()=>{$('end').hidden=true;showMenu();};
 $('pauseB').onclick=()=>{if(state!=='play')return;state='pause';$('pause').hidden=false;SND.play('tap');};$('resB').onclick=()=>{state='play';$('pause').hidden=true;};$('quitB').onclick=()=>{$('pause').hidden=true;state='play';dayT=Math.min(dayT,0);cust=cust.map(c=>c&&(c.leave=1,c));endDay();};
 const sndTxt=()=>$('sndB').textContent='Music '+(SND.get('music')?'on':'off')+' · Sound '+(SND.get('sfx')?'on':'off');$('sndB').onclick=()=>{const m=SND.get('music'),s=SND.get('sfx');if(m&&s)SND.set('music',false);else if(!m&&s)SND.set('sfx',false);else{SND.set('music',true);SND.set('sfx',true);}sndTxt();};sndTxt();
-function showMenu(){state='menu';$('menu').hidden=false;$('pauseB').hidden=true;const stars=Object.values(save.stars).reduce((a,b)=>a+b,0);$('mStats').innerHTML=save.days?`<span>Day ${save.day}</span><span>Wallet ${save.coins}</span><span>Stars ${stars}</span><span>Bowls served ${save.served}</span>`:'';$('playB').textContent=save.days?'Open the shop (day '+save.day+')':'Open the shop';}
+function showMenu(){state='menu';$('menu').hidden=false;$('pauseB').hidden=true;const stars=Object.values(save.stars).reduce((a,b)=>a+b,0);$('mStats').innerHTML=save.days?`<span>Day ${save.day}</span><span>Wallet ${save.coins}</span><span>Stars ${stars}</span><span>Bowls served ${save.served}</span><span>${RANKS[rankI()][1]}</span><span>Signatures ${SIGS.filter(g=>(save.sig||{})[g.id]).length}/${SIGS.length}</span>`:'';$('playB').textContent=save.days?'Open the shop (day '+save.day+')':'Open the shop';}
 addEventListener('pointerdown',()=>{if(state==='menu')SND.music(save.decor.radio?'groove':'kitchen');},{once:true});
 window.__nr={get cust(){return cust;},get pots(){return pots;},get bowls(){return bowls;},L:()=>L,save,get D(){return D;},newDay,set dayT(v){dayT=v;},endDay,get state(){return state;},serve,sel:i=>{sel=i;}};
 resize();showMenu();requestAnimationFrame(loop);

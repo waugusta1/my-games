@@ -407,7 +407,7 @@ h1,h2,h3{margin:0;font-weight:700;letter-spacing:.04em}
 .price{display:flex;align-items:center;gap:4px;font:700 18px system-ui;color:var(--gold)}
 .price.no{color:#a55}
 .shopIt.sold{opacity:.2;pointer-events:none}
-.heroC{width:300px;height:470px;position:relative;cursor:pointer;transition:transform .2s}
+.heroC{width:262px;height:430px;overflow:hidden;position:relative;cursor:pointer;transition:transform .2s}
 .heroC canvas{position:absolute;left:0;top:0}
 .heroC.lock{filter:grayscale(1) brightness(.4)}
 .heroC.on{transform:translateY(-10px)}
@@ -507,7 +507,7 @@ h1,h2,h3{margin:0;font-weight:700;letter-spacing:.04em}
  <div id="heroSel" class="scr" hidden>
   <button class="back" id="hsBack"><svg viewBox="0 0 24 24" width="24" height="24"><path d="M15 4L6 12l9 8" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Back</span></button>
   <div class="ttl" style="position:absolute;top:30px;left:0;right:0">Choose Your Climber</div>
-  <div id="heroes" style="position:absolute;top:96px;left:0;right:0;display:flex;justify-content:center;gap:34px"></div>
+  <div id="heroes" style="position:absolute;top:96px;left:0;right:0;display:flex;justify-content:center;gap:20px"></div>
   <div style="position:absolute;bottom:30px;left:0;right:0;display:flex;justify-content:center;align-items:center;gap:22px">
       <div id="duskSel" style="display:flex;align-items:center;gap:10px;font-size:19px"></div>
    <button class="bt" id="hsGo">Begin</button>
@@ -647,6 +647,13 @@ const STAT={
  fumes:{n:'Noxious Fumes',i:'drop',p:'green',d:'At the start of your turn, apply {n} Poison to all enemies.',buff:1},
  accuracy:{n:'Accuracy',i:'dagger',p:'steel',d:'Shivs deal {n} more damage.',buff:1},
  knives:{n:'Cloak of Knives',i:'dagger',p:'dark',d:'Add {n} Shiv to your hand at the start of your turn.',buff:1},
+ static:{n:'Static',i:'bolt',p:'blue',d:'Takes {n} extra damage from each of your Attacks.'},
+ overload:{n:'Overload',i:'bolt',p:'gold',d:'Gain {n} energy at the start of your next turn.',buff:1},
+ conduit:{n:'Conduit',i:'spiral',p:'blue',d:'Whenever you play an Attack, apply {n} Static to a random enemy.',buff:1},
+ stormfront:{n:'Storm Front',i:'moon',p:'dark',d:'At the start of your turn, deal {n} damage to every enemy with Static.',buff:1},
+ capacitor:{n:'Capacitor',i:'urn',p:'teal',d:'Whenever you apply Static, gain {n} block.',buff:1},
+ tempest:{n:'Tempest',i:'spiral',p:'purple',d:'At the end of your turn, strike a random enemy {n} times for 5.',buff:1},
+ supercon:{n:'Superconductor',i:'ring',p:'gold',d:'Static adds double damage to your Attacks.',buff:1,flag:1},
  cuts:{n:'Thousand Cuts',i:'dagger',p:'purple',d:'Whenever you play a card, deal {n} damage to all enemies.',buff:1},
 };
 
@@ -800,6 +807,32 @@ assassinate:{n:'Assassinate',c:2,y:'a',r:1,k:'s',a:3,t:'e',i:'skull',p:'purple',
 pandemic:{n:'Pandemic',c:2,y:'s',r:2,k:'s',a:3,t:'e',i:'ritual',p:'green',v:{n:3},u:{n:5},x:{ex:1},ds:'Apply {n} <em>Poison</em>. Other enemies gain the same Poison it has. Exhaust.',f:(B,v,T)=>{B.apply(T,'poison',v.n);const x=T.st.poison||0;B.foes2().filter(f=>f!==T).forEach(f=>B.apply(f,'poison',x));}},
 bleedout:{n:'Bleed Out',c:1,y:'a',r:2,k:'s',a:3,t:'e',i:'wound',p:'red',v:{d:5,n:4},u:{d:7,n:6},ds:'Deal {d} damage. Apply {n} <em>Poison</em> and 1 <em>Vulnerable</em>.',f:(B,v,T)=>{B.hit(T,v.d);if(T.hp>0){B.apply(T,'poison',v.n);B.apply(T,'vul',1);}}},
 knifecloak:{n:'Cloak of Knives',c:2,y:'p',r:2,k:'s',a:3,i:'dagger',p:'dark',v:{n:1},u:{n:2},ds:'At the start of your turn, add {n} <em>Shiv</em> to your hand.',f:(B,v)=>B.apply(B.P,'knives',v.n)},
+// ---- Stormcaller
+zap:{n:'Zap',c:1,y:'a',r:0,k:'t',t:'e',i:'bolt',p:'blue',v:{d:5,n:1},u:{d:7,n:2},ds:'Deal {d} damage. Apply {n} <em>Static</em>.',f:(B,v,T)=>{B.hit(T,v.d);B.apply(T,'static',v.n);}},
+ground:{n:'Ground',c:1,y:'s',r:0,k:'t',i:'shield',p:'steel',v:{b:5},u:{b:8},ds:'Gain {b} block.',f:(B,v)=>B.block(v.b)},
+thunderclap:{n:'Thunderclap',c:2,y:'a',r:0,k:'t',i:'spiral',p:'blue',v:{d:5,n:1},u:{d:7,n:2},ds:'Deal {d} damage to ALL enemies. Apply {n} <em>Static</em> to ALL enemies.',f:(B,v)=>{B.hitAll(v.d);B.foes2().forEach(f=>B.apply(f,'static',v.n));}},
+arclash:{n:'Arc Lash',c:1,y:'a',r:1,k:'t',t:'e',i:'chain',p:'blue',v:{d:7,n:1},u:{d:10,n:1},ds:'Deal {d} damage. If the target has <em>Static</em>, draw {n} card.',f:(B,v,T)=>{const s=T.st.static;B.hit(T,v.d);if(s)B.draw(v.n);}},
+sparkstorm:{n:'Spark Storm',c:1,y:'a',r:1,k:'t',i:'star',p:'teal',v:{d:3},u:{d:4},ds:'Deal {d} damage to ALL enemies twice.',f:(B,v)=>{B.hitAll(v.d);B.hitAll(v.d);}},
+galvanize:{n:'Galvanize',c:1,y:'s',r:1,k:'t',i:'plate',p:'blue',v:{b:7,n:1},u:{b:10,n:1},ds:'Gain {b} block. Apply {n} <em>Static</em> to ALL enemies.',f:(B,v)=>{B.block(v.b);B.foes2().forEach(f=>B.apply(f,'static',v.n));}},
+lightrod:{n:'Lightning Rod',c:0,y:'s',r:1,k:'t',t:'e',i:'up',p:'gold',v:{n:2},u:{n:3},ds:'Apply {n} <em>Static</em>.',f:(B,v,T)=>B.apply(T,'static',v.n)},
+crackle:{n:'Crackle',c:1,y:'a',r:1,k:'t',t:'e',i:'bolt',p:'teal',v:{d:4},u:{d:6},ds:'Deal {d} damage twice.',f:(B,v,T)=>{B.hit(T,v.d);B.hit(T,v.d);}},
+insulate:{n:'Insulate',c:1,y:'s',r:1,k:'t',i:'shield',p:'blue',v:{b:6,n:1},u:{b:9,n:1},ds:'Gain {b} block. Gain {n} <em>Overload</em>.',f:(B,v)=>{B.block(v.b);B.apply(B.P,'overload',v.n);}},
+stormward:{n:'Storm Ward',c:2,y:'s',r:1,k:'t',i:'shield',p:'teal',v:{b:12,n:1},u:{b:16,n:1},ds:'Gain {b} block. Apply {n} <em>Weak</em> to every enemy with <em>Static</em>.',f:(B,v)=>{B.block(v.b);B.foes2().filter(f=>f.st.static).forEach(f=>B.apply(f,'weak',v.n));}},
+surge:{n:'Surge',c:1,y:'a',r:1,k:'t',t:'e',i:'up',p:'blue',v:{d:5,n:2},u:{d:7,n:3},ds:'Deal {d} damage, plus {n} for each <em>Static</em> on the target.',f:(B,v,T)=>B.hit(T,v.d+v.n*(T.st.static||0))},
+chainlight:{n:'Chain Lightning',c:2,y:'a',r:2,k:'t',a:2,t:'e',i:'chain',p:'gold',v:{d:9},u:{d:12},ds:'Deal {d} damage. Then deal it to every other enemy with <em>Static</em>.',f:(B,v,T)=>{B.hit(T,v.d);B.foes2().filter(f=>f!==T&&f.st.static).forEach(f=>B.hit(f,v.d));}},
+overcharge:{n:'Overcharge',c:0,y:'s',r:2,k:'t',a:2,i:'bolt',p:'red',v:{n:2,d:3},u:{n:2,d:1},x:{ex:1},ds:'Lose {d} HP. Gain {n} energy. Exhaust.',f:(B,v)=>{B.loseHP(v.d);B.gainE(v.n);}},
+conduit:{n:'Conduit',c:1,y:'p',r:2,k:'t',a:2,i:'spiral',p:'blue',v:{n:1},u:{c:0},ds:'Whenever you play an Attack, apply {n} <em>Static</em> to a random enemy.',f:(B,v)=>B.apply(B.P,'conduit',v.n)},
+stormfront:{n:'Storm Front',c:2,y:'p',r:2,k:'t',a:2,i:'moon',p:'dark',v:{n:4},u:{n:6},ds:'At the start of your turn, deal {n} damage to every enemy with <em>Static</em>.',f:(B,v)=>B.apply(B.P,'stormfront',v.n)},
+capacitor:{n:'Capacitor',c:1,y:'p',r:2,k:'t',a:2,i:'urn',p:'teal',v:{n:2},u:{n:3},ds:'Whenever you apply <em>Static</em>, gain {n} block.',f:(B,v)=>B.apply(B.P,'capacitor',v.n)},
+discharge:{n:'Discharge',c:2,y:'a',r:2,k:'t',a:2,t:'e',i:'sun',p:'gold',v:{d:5},u:{d:7},ds:'Deal {d} damage for each <em>Static</em> on the target, then remove its <em>Static</em>.',f:(B,v,T)=>{const s=T.st.static||0;delete T.st.static;if(s)B.hit(T,v.d*s);else B.toast('No Static to discharge');}},
+reroute:{n:'Reroute',c:1,y:'s',r:2,k:'t',a:2,i:'cards',p:'blue',v:{n:2,o:1},u:{n:3,o:1},ds:'Draw {n} cards. Gain {o} <em>Overload</em>.',f:(B,v)=>{B.draw(v.n);B.apply(B.P,'overload',v.o);}},
+ionize:{n:'Ionize',c:1,y:'s',r:2,k:'t',a:2,t:'e',i:'eye',p:'purple',v:{n:3,o:2},u:{n:4,o:2},x:{ex:1},ds:'Apply {n} <em>Static</em> and {o} <em>Vulnerable</em>. Exhaust.',f:(B,v,T)=>{B.apply(T,'static',v.n);B.apply(T,'vul',v.o);}},
+thunderhead:{n:'Thunderhead',c:2,y:'a',r:2,k:'t',a:2,i:'spiral',p:'steel',v:{d:10},u:{d:14},ds:'Deal {d} damage to ALL enemies.',f:(B,v)=>B.hitAll(v.d)},
+staticfield:{n:'Static Field',c:1,y:'s',r:2,k:'t',a:2,i:'star',p:'blue',v:{n:2},u:{n:3},ds:'Apply {n} <em>Static</em> to ALL enemies.',f:(B,v)=>B.foes2().forEach(f=>B.apply(f,'static',v.n))},
+tempest:{n:'Tempest',c:3,y:'p',r:3,k:'t',a:3,i:'spiral',p:'purple',v:{n:2},u:{n:3},ds:'At the end of your turn, lightning strikes a random enemy {n} times for 5 damage.',f:(B,v)=>B.apply(B.P,'tempest',v.n)},
+eyestorm:{n:'Eye of the Storm',c:1,y:'s',r:3,k:'t',a:3,i:'eye',p:'teal',v:{b:12,n:2},u:{b:16,n:2},ds:'Gain {b} block. Gain {n} <em>Overload</em>.',f:(B,v)=>{B.block(v.b);B.apply(B.P,'overload',v.n);}},
+skybreaker:{n:'Skybreaker',c:3,y:'a',r:3,k:'t',a:3,t:'e',i:'bolt',p:'gold',v:{d:26,n:2},u:{d:34,n:2},ds:'Deal {d} damage. If this kills, gain {n} energy.',f:(B,v,T)=>{B.hit(T,v.d);if(T.hp<=0)B.gainE(v.n);}},
+superconductor:{n:'Superconductor',c:2,y:'p',r:3,k:'t',a:3,i:'ring',p:'gold',v:{n:1},u:{c:1},ds:'<em>Static</em> on enemies adds double damage to your Attacks.',f:(B,v)=>B.apply(B.P,'supercon',v.n)},
 // Any climber
 reshuffle:{n:'Fresh Start',c:0,y:'s',r:2,k:'n',a:2,i:'cards',p:'blue',v:{n:1},u:{n:2},x:{ex:1},ds:'Shuffle your discard pile into your draw pile. Draw {n} card. Exhaust.',f:(B,v)=>{B.dp=shuf(B.dp.concat(B.disc));B.disc=[];B.draw(v.n);}},
 blindswing:{n:'Blind Swing',c:1,y:'a',r:2,k:'n',a:2,i:'chain',p:'bone',v:{d:11},u:{d:15},ds:'Deal {d} damage to a random enemy.',f:(B,v)=>{const e=B.rndFoe();if(e)B.hit(e,v.d);}},
@@ -863,6 +896,8 @@ const HEROES={
    blurb:'Heavy armor, block that carries over between turns, and Strength that keeps growing. The steadiest climber.'},
  m:{id:'m',n:'The Ember Witch',t:'Last keeper of the dawn-flame',hp:70,deck:['spark','spark','spark','spark','ward','ward','ward','ward','kindle','ember'],relic:'locket',col:'#ff7a3c',
    blurb:'Set enemies on fire and watch Burn stack up. Extra energy and card draw.',unlock:'Defeat the first boss with any climber.'},
+ t:{id:'t',n:'The Stormcaller',t:'She bottled a thunderstorm and kept it',hp:74,deck:['zap','zap','zap','zap','zap','ground','ground','ground','ground','thunderclap'],relic:'stormglass',col:'#7ab8ff',
+   blurb:'Charge enemies with Static so every hit lands harder, then Discharge it all at once. Overload banks energy for next turn.',unlock:'Win a full climb with any climber.'},
  s:{id:'s',n:'The Shade',t:'A thief who stole her own shadow',hp:72,deck:['slash','slash','slash','slash','slash','evade','evade','evade','evade','venomdart','sidestep'],relic:'viperfang',col:'#6fd6a8',
    blurb:'Poison, Shivs and Dexterity. Fragile but deadly once the venom spreads.',unlock:'Defeat the second boss with any climber.'},
 };
@@ -871,6 +906,7 @@ const HEROES={
 const RELICS={
  emberheart:{n:'Ember Heart',r:0,i:'heart',p:'fire',d:'At the end of combat, heal 6 HP.'},
  locket:{n:'Cinder Locket',r:0,i:'flame',p:'fire',d:'At the start of combat, apply 2 Burn to ALL enemies.'},
+ stormglass:{n:'Storm Glass',r:0,i:'bolt',p:'blue',d:'At the start of combat, apply 2 Static to ALL enemies.'},
  viperfang:{n:'Viper Fang',r:0,i:'fang',p:'green',d:'At the start of combat, add 2 Shivs to your hand.'},
  whetstone:{n:'Whetstone',r:1,i:'stone',p:'steel',d:'On pickup, upgrade 2 random Attacks.'},
  anchor:{n:'Rusted Anchor',r:1,i:'anchor',p:'steel',d:'Start each combat with 10 block.'},
@@ -1534,6 +1570,45 @@ const HART={
   const fx=sx+7,fy=-214+b;c.save();c.globalCompositeOperation='lighter';c.fillStyle=RG(c,fx,fy,0,46+f*3,[[0,'rgba(255,220,130,.9)'],[.25,'rgba(255,130,40,.65)'],[1,'rgba(255,70,10,0)']]);c.beginPath();c.arc(fx,fy,50,0,TAU);c.fill();c.restore();
   c.fillStyle=LG(c,fx,fy-22,fx,fy+10,[[0,'#ffb040'],[.6,'#fff0b0'],[1,'#ffffff']]);c.beginPath();c.moveTo(fx,fy-24-f*3);c.bezierCurveTo(fx+10,fy-10,fx+10,fy+8,fx,fy+10);c.bezierCurveTo(fx-10,fy+8,fx-10,fy-10,fx,fy-24-f*3);c.fill();
   c.restore();},
+ /* The Stormcaller: a long storm coat from collar to hem, wind-blown hair, a forked copper rod full of lightning */
+ t(c,t,s=1){const b=Math.sin(t*2.2)*1.5,w=Math.sin(t*1.7),fl=Math.sin(t*11),fl2=Math.sin(t*17+1);c.save();c.scale(s,s);shadowE(c,72);
+  // storm wisps curling round the boots
+  c.save();c.globalAlpha=.55;for(let i=0;i<3;i++){const o=Math.sin(t*1.2+i*2.1);c.fillStyle=RG(c,-40+i*40+o*8,-10,0,46,[[0,'rgba(150,175,215,.55)'],[1,'rgba(90,110,150,0)']]);c.beginPath();c.ellipse(-40+i*40+o*8,-8,48,16,0,0,TAU);c.fill();}c.restore();
+  // hair streaming behind, one swept mass
+  c.fillStyle=LG(c,-70,-200,0,-150,[[0,'#7d8aa0'],[.5,'#dfe7f2'],[1,'#a9b6c8']]);c.beginPath();c.moveTo(4,-206+b);c.bezierCurveTo(-22,-212,-48,-200,-74+w*6,-186+b);c.bezierCurveTo(-58,-184,-50,-178,-62+w*5,-166+b);c.bezierCurveTo(-42,-168,-30,-166,-22,-158+b);c.bezierCurveTo(-14,-170,-6,-186,4,-206+b);c.closePath();c.fill();
+  // the rod, behind the forward hand: copper shaft forking at the top
+  const rx=58,ry=-30;c.fillStyle=LG(c,rx-5,0,rx+5,0,[[0,'#4a2410'],[.5,'#e09a5a'],[1,'#4a2410']]);c.beginPath();c.moveTo(rx-4,ry+28);c.lineTo(rx-2,-222+b);c.quadraticCurveTo(rx-16,-236+b,rx-14,-256+b);c.lineTo(rx-9,-255+b);c.quadraticCurveTo(rx-8,-238+b,rx+1,-230+b);c.quadraticCurveTo(rx+9,-240+b,rx+12,-258+b);c.lineTo(rx+17,-256+b);c.quadraticCurveTo(rx+16,-232+b,rx+4,-220+b);c.lineTo(rx+5,ry+28);c.closePath();c.fill();
+  c.strokeStyle='#ffd6a0';c.lineWidth=1.2;c.beginPath();c.moveTo(rx,-60);c.lineTo(rx+1,-210+b);c.stroke();
+  // long coat: high collar, fitted waist, split hem flaring in the wind
+  c.fillStyle=LG(c,-60,-160,60,0,[[0,'#151b2a'],[.4,'#3a4a66'],[.62,'#26324a'],[1,'#0c111c']]);c.beginPath();c.moveTo(-16,-164+b);c.bezierCurveTo(-32,-158,-36,-134,-26,-104+b);c.bezierCurveTo(-34,-72,-48,-34,-62+w*4,-2);c.quadraticCurveTo(-40,4,-18,-4);c.lineTo(-4,-40);c.lineTo(6,-4);c.quadraticCurveTo(30,4,52-w*3,-2);c.bezierCurveTo(42,-36,30,-74,24,-104+b);c.bezierCurveTo(34,-134,30,-158,16,-164+b);c.closePath();c.fill();
+  c.strokeStyle='rgba(4,6,12,.6)';c.lineWidth=2.5;c.lineCap='round';c.beginPath();c.moveTo(-12,-100+b);c.bezierCurveTo(-20,-66,-34,-30,-44+w*3,-4);c.moveTo(10,-100+b);c.bezierCurveTo(16,-64,26,-30,34,-4);c.stroke();
+  c.strokeStyle='rgba(140,190,255,.35)';c.lineWidth=2;c.beginPath();c.moveTo(18,-104+b);c.bezierCurveTo(26,-70,38,-34,48,-6);c.stroke();
+  // boots peeking out beneath the split
+  c.fillStyle='#120c0a';c.beginPath();c.moveTo(-16,-6);c.quadraticCurveTo(-14,-30,-6,-36);c.lineTo(-2,-6);c.quadraticCurveTo(-8,0,-20,0);c.closePath();c.fill();c.beginPath();c.moveTo(2,-6);c.lineTo(6,-34);c.quadraticCurveTo(12,-28,12,-6);c.quadraticCurveTo(22,-2,22,0);c.lineTo(2,0);c.closePath();c.fill();
+  // brass buttons and a belt
+  c.fillStyle=LG(c,-24,0,24,0,[[0,'#2a1a0a'],[.5,'#7a5a2a'],[1,'#2a1a0a']]);c.beginPath();c.moveTo(-25,-112+b);c.quadraticCurveTo(0,-104+b,24,-112+b);c.lineTo(24,-104+b);c.quadraticCurveTo(0,-96+b,-25,-104+b);c.closePath();c.fill();
+  c.fillStyle='#e8c27a';[-142,-128,-90,-74].forEach(y=>{c.beginPath();c.arc(3,y+b*(y<-100?1:0),2.6,0,TAU);c.fill();});c.fillRect(-3,-111+b,7,6);
+  // back arm, open hand raised with sparks dancing over it
+  limb(c,[[-20,-150+b],[-44,-126+b],[-64,-146+b+w]],[17,14,13],'#26324a');limb(c,[[-63,-146+b+w],[-70,-160+b+w]],[9,10],'#d9c2aa');
+  c.fillStyle='#d9c2aa';c.beginPath();c.moveTo(-74,-160+b+w);c.lineTo(-78,-172+b+w);c.lineTo(-73,-170+b+w);c.lineTo(-70,-178+b+w);c.lineTo(-66,-168+b+w);c.lineTo(-64,-158+b+w);c.closePath();c.fill();
+  const hy=-188+b+w;c.save();c.globalCompositeOperation='lighter';c.fillStyle=RG(c,-71,hy,0,28,[[0,'rgba(200,230,255,.85)'],[.4,'rgba(90,150,255,.45)'],[1,'rgba(40,80,255,0)']]);c.beginPath();c.arc(-71,hy,28,0,TAU);c.fill();
+  c.strokeStyle='#eaf6ff';c.lineWidth=1.8;c.lineJoin='round';for(let k=0;k<3;k++){const a=t*3+k*2.1;c.beginPath();c.moveTo(-71,hy);c.lineTo(-71+Math.cos(a)*9+fl*3,hy+Math.sin(a)*9);c.lineTo(-71+Math.cos(a+.4)*17,hy+Math.sin(a+.4)*17+fl2*3);c.stroke();}c.restore();
+  // neck and face, one profile shape, eyes lit blue
+  c.fillStyle=LG(c,-8,-200,20,-160,[[0,'#ecd3bb'],[1,'#b48a6c']]);c.beginPath();c.moveTo(-6,-162+b);c.lineTo(-6,-176+b);c.bezierCurveTo(-14,-190,-6,-208,8,-208+b);c.bezierCurveTo(16,-208,21,-202,22,-196+b);c.lineTo(27,-187+b);c.lineTo(22,-184+b);c.lineTo(23,-178+b);c.quadraticCurveTo(22,-172,15,-171+b);c.lineTo(9,-170+b);c.lineTo(9,-162+b);c.closePath();c.fill();
+  c.save();c.globalCompositeOperation='lighter';c.fillStyle=RG(c,16,-192+b,0,9,[[0,'rgba(170,220,255,.9)'],[1,'rgba(60,140,255,0)']]);c.beginPath();c.arc(16,-192+b,9,0,TAU);c.fill();c.restore();
+  c.fillStyle='#e8f6ff';c.beginPath();c.ellipse(16,-192+b,3,1.7,0,0,TAU);c.fill();c.strokeStyle='#4a3a30';c.lineWidth=1.4;c.beginPath();c.moveTo(12,-197+b);c.quadraticCurveTo(17,-199,21,-196+b);c.moveTo(14,-176+b);c.lineTo(20,-176+b);c.stroke();
+  // fringe over the brow
+  c.fillStyle='#dfe7f2';c.beginPath();c.moveTo(-10,-204+b);c.bezierCurveTo(0,-214,14,-214,22,-202+b);c.bezierCurveTo(12,-206,6,-202,2,-196+b);c.bezierCurveTo(-2,-200,-6,-200,-10,-196+b);c.closePath();c.fill();
+  // high collar framing the jaw
+  c.fillStyle=LG(c,-30,0,30,0,[[0,'#0e1420'],[.5,'#43557a'],[1,'#0e1420']]);c.beginPath();c.moveTo(-12,-150+b);c.bezierCurveTo(-24,-162,-22,-182,-14,-188+b);c.quadraticCurveTo(-8,-170,0,-164+b);c.quadraticCurveTo(10,-168,14,-176+b);c.bezierCurveTo(20,-164,18,-154,12,-150+b);c.quadraticCurveTo(0,-144,-12,-150+b);c.closePath();c.fill();c.strokeStyle='#7ab8ff';c.lineWidth=1.4;c.stroke();
+  // forward arm: sleeve tapering to the hand gripping the rod
+  c.fillStyle=LG(c,18,-150,64,-110,[[0,'#3a4a66'],[1,'#1a2234']]);c.beginPath();c.moveTo(16,-154+b);c.bezierCurveTo(32,-150,44,-140,50,-126+b);c.lineTo(58,-110+b);c.bezierCurveTo(52,-102,42,-102,36,-108+b);c.bezierCurveTo(30,-118,24,-126,16,-130+b);c.closePath();c.fill();c.strokeStyle='#e8c27a';c.lineWidth=1.6;c.beginPath();c.moveTo(58,-110+b);c.bezierCurveTo(52,-102,42,-102,36,-108+b);c.stroke();
+  c.fillStyle='#d9c2aa';c.beginPath();c.ellipse(rx,-112+b,6.5,8,.2,0,TAU);c.fill();
+  // lightning held in the fork
+  const fx=rx+1,fy=-250+b;c.save();c.globalCompositeOperation='lighter';c.fillStyle=RG(c,fx,fy,0,52,[[0,'rgba(220,240,255,.95)'],[.3,'rgba(110,170,255,.6)'],[1,'rgba(40,80,255,0)']]);c.beginPath();c.arc(fx,fy,52,0,TAU);c.fill();
+  c.strokeStyle='#ffffff';c.lineWidth=2.2;c.lineJoin='round';c.beginPath();c.moveTo(fx-12,fy-6);c.lineTo(fx-3+fl*3,fy+2);c.lineTo(fx-6,fy+8);c.lineTo(fx+6+fl2*2,fy+2);c.lineTo(fx+2,fy-4);c.lineTo(fx+12,fy-8);c.stroke();
+  c.strokeStyle='rgba(150,200,255,.8)';c.lineWidth=1.3;c.beginPath();c.moveTo(fx,fy);c.lineTo(fx+14+fl*4,fy-18);c.lineTo(fx+10,fy-28);c.lineTo(fx+22,fy-40+fl2*4);c.stroke();c.restore();
+  c.restore();},
  /* The Shade: a lean crouching thief, hood into cloak, with her stolen shadow behind her */
  s(c,t,s=1){const b=Math.sin(t*2.4)*1.6,w=Math.sin(t*1.8);c.save();c.scale(s,s);shadowE(c,64);
   const body=(ghost)=>{const ink=ghost?'rgba(40,220,160,.13)':null;
@@ -1594,7 +1669,7 @@ const sfx=(n,...a)=>{try{SND.play(n,...a);}catch(_){}};
 const mus=n=>{try{SND.music(n);}catch(_){}};
 /* ---- save data ---- */
 const MK='duskspire-meta',RK='duskspire-run';
-const META={embers:0,total:0,sanct:{},unl:{w:1},dusk:{w:0,m:0,s:0},best:{w:-1,m:-1,s:-1},seen:{},relSeen:{},foes:{},stats:{runs:0,wins:0,kills:0,floors:0,bosses:0,best:0,dmg:0},opt:{music:true,sfx:true,fast:false},tut:0,last:'w',rareT:0};
+const META={embers:0,total:0,sanct:{},unl:{w:1},dusk:{w:0,m:0,s:0,t:0},best:{w:-1,m:-1,s:-1,t:-1},seen:{},relSeen:{},foes:{},stats:{runs:0,wins:0,kills:0,floors:0,bosses:0,best:0,dmg:0},opt:{music:true,sfx:true,fast:false},tut:0,last:'w',rareT:0};
 function loadMeta(){try{const s=JSON.parse(__store.get(MK));if(s){for(const k in s){if(META[k]&&typeof META[k]==='object'&&!Array.isArray(META[k]))Object.assign(META[k],s[k]);else META[k]=s[k];}}}catch(_){}}
 function saveMeta(){try{__store.set(MK,JSON.stringify(META));}catch(_){}}
 let R=null;
@@ -1706,13 +1781,13 @@ function makeBattle(enc,kind){
   foes2(){return this.foes.filter(f=>f.hp>0);},
   rndFoe(){const a=this.foes2();return a.length?pick(a):null;},
   toast,
-  hit(T,base,_a,flat){if(!T||T.hp<=0)return;let x=base+(flat?0:(this.P.st.str||0));if(!flat&&this.P.st.weak)x=Math.floor(x*.75);if(T.st.vul)x=Math.floor(x*1.5);x=Math.max(0,Math.floor(x));
+  hit(T,base,_a,flat){if(!T||T.hp<=0)return;let x=base+(flat?0:(this.P.st.str||0));if(!flat&&this.P.st.weak)x=Math.floor(x*.75);if(T.st.static)x+=T.st.static*(this.P.st.supercon?2:1);if(T.st.vul)x=Math.floor(x*1.5);x=Math.max(0,Math.floor(x));
    dmgFoe(T,x,'atk');if(T.st.thorns&&T.hp>=0)dmgPlayer(T.st.thorns,'thorns');},
   hitAll(base){this.foes2().forEach(f=>this.hit(f,base));},
   block(n,raw){let x=n;if(!raw){x+=this.P.st.dex||0;if(this.P.st.frail)x=Math.floor(x*.75);}x=Math.max(0,x);if(!x)return;this.P.block+=x;float(HERO_X,BASE_Y-150,'+'+x,'#8cc8ff');sfx('tap');
    if(this.P.st.jugg){const e=this.rndFoe();if(e)dmgFoe(e,this.P.st.jugg,'jugg');}},
   apply(T,k,n,raw){if(!T||n===0)return;if(T!==this.P&&T.hp<=0)return;if(k==='burn'&&T!==this.P&&!raw&&this.P.st.wildfire)n+=this.P.st.wildfire;
-   T.st[k]=(T.st[k]||0)+n;if(T.st[k]===0)delete T.st[k];const isP=T===this.P;const x=isP?HERO_X:T.x,y=isP?BASE_Y-120:BASE_Y-HT[T.d.art]*T.d.sz*ESC*.6;
+   T.st[k]=(T.st[k]||0)+n;if(T.st[k]===0)delete T.st[k];if(k==='static'&&n>0&&T!==this.P&&this.P.st.capacitor)this.block(this.P.st.capacitor,1);const isP=T===this.P;const x=isP?HERO_X:T.x,y=isP?BASE_Y-120:BASE_Y-HT[T.d.art]*T.d.sz*ESC*.6;
    const s=STAT[k];if(s&&!['tempstr','bastion'].includes(k))float(x,y-20,s.n+(n>0&&!s.flag?' '+(n>0?'+':'')+n:''),s.buff?'#ffd27a':'#d8a0ff');
    if(k==='burn')burst(x,y,'#ff8a20',10);if(k==='poison')burst(x,y,'#7aff5a',10);},
   draw(n){for(let i=0;i<n;i++){if(this.hand.length>=10)break;if(!this.dp.length){if(!this.disc.length)break;this.dp=shuf(this.disc);this.disc=[];sfx('swish');}this.hand.push(this.dp.pop());}renderHand();},
@@ -1766,6 +1841,7 @@ async function startCombat(enc,kind){BT++;ending=false;$('hand').innerHTML='';ha
  if(hasR('marbles')){B.foes2().forEach(f=>B.apply(f,'vul',1));flashRelic('marbles');}
  if(hasR('locket')){B.foes2().forEach(f=>B.apply(f,'burn',2,1));flashRelic('locket');}
  if(hasR('ironbark')){B.apply(P,'ironskin',3);flashRelic('ironbark');}
+ if(hasR('stormglass')){B.foes2().forEach(f=>B.apply(f,'static',2));flashRelic('stormglass');}
  if(hasR('nightbloom')){B.foes2().forEach(f=>B.apply(f,'poison',3,1));flashRelic('nightbloom');}
  if(hasR('thorncrown')){B.addCard('wound','draw');flashRelic('thorncrown');}
  await startTurn();}
@@ -1774,12 +1850,13 @@ async function startTurn(){const P=B.P;B.turn++;B.phase='start';B.busy=true;
  banner(B.turn===1?'Battle':'Your Turn');
  if(P.st.poison){dmgPlayer(P.st.poison,'poison',1);P.st.poison--;if(!P.st.poison)delete P.st.poison;if(R.hp<=0)return lose();}
  if(P.st.oath)B.apply(P,'str',P.st.oath);
+ if(P.st.stormfront)B.foes2().filter(f=>f.st.static).forEach(f=>dmgFoe(f,P.st.stormfront,'jugg'));
  if(P.st.fumes)B.foes2().forEach(f=>B.apply(f,'poison',P.st.fumes));
  if(hasR('hourglass')){B.foes2().forEach(f=>dmgFoe(f,3,'jugg'));flashRelic('hourglass');}
  if(hasR('horn')&&B.turn===2){B.block(14,1);flashRelic('horn');}
  if(hasR('eclipseorb')){B.foes2().forEach(f=>B.apply(f,'vul',1,1));flashRelic('eclipseorb');}
  if(checkEnd())return;
- const carry=hasR('urn')?B.energy:0;B.energy=B.maxE+carry+(P.st.innerflame||0)+(B.turn===1&&hasR('lantern')?1:0)+(B.turn===3&&hasR('lunarbell')?2:0);
+ const carry=hasR('urn')?B.energy:0;B.energy=B.maxE+carry+(P.st.innerflame||0)+(B.turn===1&&hasR('lantern')?1:0)+(B.turn===3&&hasR('lunarbell')?2:0)+(P.st.overload||0);delete P.st.overload;
  B.atkTurn=0;B.sklTurn=0;
  const n=5+(P.st.study||0)+(hasR('ringx')?1:0)+(hasR('grandtome')?2:0)-(hasR('voidlens')?1:0)+(B.turn===1&&hasR('starmap')?2:0);
  B.draw(n);
@@ -1799,6 +1876,7 @@ async function playCard(ci,T){if(!B||B.busy||B.phase!=='player')return;const d=C
  try{d.f(B,cv(ci),T,ci);}catch(err){console.error(err);}
  // card-played triggers
  if(d.y==='s')B.foes2().forEach(f=>{if(f.st.enrage)B.apply(f,'str',f.st.enrage);});
+ if(d.y==='a'&&B.P.st.conduit){const e=B.rndFoe();if(e)B.apply(e,'static',B.P.st.conduit);}
  if(B.P.st.cuts)B.foes2().forEach(f=>dmgFoe(f,B.P.st.cuts,'jugg'));
  if(d.y==='a'&&B.atkTurn%3===0){if(hasR('starcharm')){B.apply(B.P,'str',1);flashRelic('starcharm');}if(hasR('twinfangs')){B.apply(B.P,'dex',1);flashRelic('twinfangs');}if(hasR('fan')){B.block(4,1);flashRelic('fan');}}
  if(d.y==='s'&&B.sklTurn%3===0&&hasR('knife')){B.foes2().forEach(f=>dmgFoe(f,5,'jugg'));flashRelic('knife');}
@@ -1810,6 +1888,7 @@ async function playCard(ci,T){if(!B||B.busy||B.phase!=='player')return;const d=C
  await wait(120);B.busy=false;renderHand();snapB();}
 async function endTurn(){if(!B||B.busy||B.phase!=='player')return;B.busy=true;B.phase='enemy';B.sel=null;sfx('click');const P=B.P;
  if(P.st.ironskin)B.block(P.st.ironskin,1);
+ if(P.st.tempest)for(let i=0;i<P.st.tempest*1;i++){const e=B.rndFoe();if(e)dmgFoe(e,5+(e.st.static||0),'jugg');}
  if(P.st.eternal)B.foes2().forEach(f=>B.apply(f,'burn',P.st.eternal));
  // curses in hand
  B.hand.forEach(c=>{if(c.id==='regret')dmgPlayer(B.hand.length,'self',1);if(c.id==='doubt')B.apply(P,'weak',1);});
@@ -2123,7 +2202,7 @@ function onBossDown(paid){const a=R.act;
 let laterQ=[];function toastLater(t){laterQ.push(t);setTimeout(()=>{const x=laterQ.shift();if(x)toast(x);},1500);}
 function endRun(win){if(!R)return;__mgt(win?'w':'l',()=>'Full run: '+R.hero);if(win)__mgt('m','run');BT++;const H=R.hero,L=R.dusk;const fl=R.floorsTotal;
  let emb=Math.round((fl*2+R.stats.elites*10+R.stats.bosses*25+(win?60:0))*(1+L*.1));META.embers+=emb;META.total+=emb;META.stats.best=Math.max(META.stats.best,fl);
- if(win){META.stats.wins++;META.best[H]=Math.max(META.best[H],L);if(L>=META.dusk[H]&&L<10){META.dusk[H]=L+1;}}
+ if(win){META.stats.wins++;if(!META.unl.t){META.unl.t=1;toastLater('New climber unlocked: The Stormcaller');}META.best[H]=Math.max(META.best[H],L);if(L>=META.dusk[H]&&L<10){META.dusk[H]=L+1;}}
  saveMeta();const st=R.stats,deckN=R.deck.length,rel=R.relics.length;clearRun();B=null;show('none');
  mus(win?'adventure':'night');sfx(win?'fanfare':'gong');
  ovl('<div class="ttl" style="font-size:60px">'+(win?'Dawn Returns':'The Dusk Claims You')+'</div><div class="sub">'+(win?'The Starless King falls and the Dusk is broken. Light spills down the spire for the first time in a hundred years.':'Your light fades on floor '+fl+'. The tower will be waiting.')+'</div>'+
@@ -2138,10 +2217,10 @@ $('bHub').onclick=goHub;$('pHub').onclick=goHub;
 $('bCont').onclick=()=>{sfx('click');R=loadRun();if(!R)return;UID=1+Math.max(0,...R.deck.map(c=>c.u||0));if(R.cur)runNode();else openMap();};
 $('bNew').onclick=(ev)=>{if(ev)window.__beyondPick=0;sfx('click');if(loadRun()){ovl('<div class="ttl">Start a new climb?</div><div class="sub">Your current climb will be lost.</div><div style="display:flex;gap:16px;margin-top:20px"><button class="bt" id="nyY">Start New</button><button class="bt dk" id="nyN">Cancel</button></div>'+backBtn('nyB'));$('nyB').onclick=closeOvl;$('nyY').onclick=()=>{closeOvl();clearRun();openHeroes();};$('nyN').onclick=closeOvl;return;}openHeroes();};
 let pickH='w',pickD=0;
-function openHeroes(){show('heroSel');$('hsBeyond').hidden=!(META.stats.wins>0);$('hsGo').hidden=!!window.__beyondPick;pickH=META.unl[META.last]?META.last:'w';renderHeroes();}
+function openHeroes(){if(META.stats.wins>0&&!META.unl.t){META.unl.t=1;saveMeta();setTimeout(()=>toast('New climber unlocked: The Stormcaller'),400);}show('heroSel');$('hsBeyond').hidden=!(META.stats.wins>0);$('hsGo').hidden=!!window.__beyondPick;pickH=META.unl[META.last]?META.last:'w';renderHeroes();}
 function renderHeroes(){const box=$('heroes');box.innerHTML='';
  Object.values(HEROES).forEach(H=>{const lock=!META.unl[H.id];const d=document.createElement('div');d.className='heroC panel'+(lock?' lock':'')+(pickH===H.id?' on':'');d.style.borderColor=pickH===H.id?'#ffd27a':'';
-  const c=document.createElement('canvas');c.width=600;c.height=980;c.style.cssText='width:300px;height:490px';d.appendChild(c);heroPortrait(c,H,lock);
+  const c=document.createElement('canvas');c.width=600;c.height=980;c.style.cssText='width:262px;height:428px';d.appendChild(c);heroPortrait(c,H,lock);
   d.insertAdjacentHTML('beforeend','<div style="position:absolute;left:0;right:0;bottom:0;padding:16px;background:linear-gradient(0deg,rgba(6,4,10,.95) 60%,transparent);text-align:center"><h2 style="color:'+H.col+'">'+H.n+'</h2><div class="sub" style="font-size:14px">'+H.t+'</div><div style="font:14px/1.35 system-ui;color:#d6ccbc;margin-top:8px">'+(lock?H.unlock:H.blurb)+'</div>'+(lock?'':'<div style="font:13px system-ui;color:#a99f92;margin-top:6px">'+H.hp+' HP &middot; starts with '+RELICS[H.relic].n+'<br>Best: '+(META.best[H.id]>=0?'won at Dusk '+META.best[H.id]:'not yet won')+'</div>')+'</div>');
   d.onclick=()=>{if(lock){sfx('error');toast(H.unlock);return;}pickH=H.id;pickD=Math.min(pickD,META.dusk[H.id]);sfx('click');renderHeroes();};box.appendChild(d);});
  const mx=META.dusk[pickH]||0;pickD=Math.min(pickD,mx);
@@ -2384,7 +2463,7 @@ function drawBattle(c,t,dt){const H=R.hero;
  if(FX.arrow){const a=FX.arrow;c.save();c.strokeStyle=B.hover?'#ffd27a':'rgba(255,230,190,.7)';c.lineWidth=6;c.setLineDash([14,10]);c.lineDashOffset=-t*60;c.beginPath();const mx=(a.x0+a.x1)/2,my=Math.min(a.y0,a.y1)-120;c.moveTo(a.x0,a.y0);c.quadraticCurveTo(mx,my,a.x1,a.y1);c.stroke();c.setLineDash([]);
   const ang=Math.atan2(a.y1-my,a.x1-mx);c.translate(a.x1,a.y1);c.rotate(ang);c.fillStyle=c.strokeStyle;c.beginPath();c.moveTo(14,0);c.lineTo(-12,-13);c.lineTo(-6,0);c.lineTo(-12,13);c.fill();c.restore();}
  drawEnergy(t);}
-function drawEnergy(t){const c=$('energyCv').getContext('2d');c.setTransform(2,0,0,2,0,0);c.clearRect(0,0,104,104);const on=B.energy>0,col=R.hero==='m'?'#ff7a3c':R.hero==='s'?'#4affb8':'#ffc860';
+function drawEnergy(t){const c=$('energyCv').getContext('2d');c.setTransform(2,0,0,2,0,0);c.clearRect(0,0,104,104);const on=B.energy>0,col=R.hero==='m'?'#ff7a3c':R.hero==='s'?'#4affb8':R.hero==='t'?'#8cc8ff':'#ffc860';
  c.save();c.translate(52,52);c.fillStyle=RG(c,0,0,10,52,[[0,on?col+'99':'#33333399'],[1,'rgba(0,0,0,0)']]);c.beginPath();c.arc(0,0,52,0,TAU);c.fill();
  c.fillStyle=RG(c,-8,-10,3,36,on?[[0,'#fffbe8'],[.35,col],[1,shade(col,-.7)]]:[[0,'#888'],[1,'#222']]);c.beginPath();c.arc(0,0,33,0,TAU);c.fill();
  c.rotate(t*.6);c.strokeStyle=on?'#ffe6a8':'#666';c.lineWidth=2;for(let i=0;i<8;i++){c.rotate(TAU/8);c.beginPath();c.moveTo(38,0);c.lineTo(46,-4);c.lineTo(46,4);c.closePath();c.stroke();}
