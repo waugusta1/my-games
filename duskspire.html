@@ -507,7 +507,7 @@ h1,h2,h3{margin:0;font-weight:700;letter-spacing:.04em}
  <div id="heroSel" class="scr" hidden>
   <button class="back" id="hsBack"><svg viewBox="0 0 24 24" width="24" height="24"><path d="M15 4L6 12l9 8" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Back</span></button>
   <div class="ttl" style="position:absolute;top:30px;left:0;right:0">Choose Your Climber</div>
-  <div id="heroes" style="position:absolute;top:96px;left:0;right:0;display:flex;justify-content:center;gap:20px"></div>
+  <div id="heroes" style="position:absolute;top:96px;left:0;right:0;display:flex;justify-content:center;gap:16px"></div>
   <div style="position:absolute;bottom:30px;left:0;right:0;display:flex;justify-content:center;align-items:center;gap:22px">
       <div id="duskSel" style="display:flex;align-items:center;gap:10px;font-size:19px"></div>
    <button class="bt" id="hsGo">Begin</button>
@@ -1109,6 +1109,201 @@ const EVENTS=[
 
 ];
 
+/* ===== Expansion: The Gravebinder, Act VI, and more of everything ===== */
+Object.assign(ICP,{
+scythe:'<path d="M14 60L44 8" stroke-width="6" stroke-linecap="round" class="ds"/><path d="M14 60L44 8" stroke-width="3" stroke-linecap="round" class="ms"/><path d="M44 9C31 1 13 3 3 17c11-7 24-7 37-1z" class="m"/><path d="M41 11C30 5 17 6 7 14c9-4 20-4 29 0z" class="l"/><circle cx="44" cy="8" r="3.5" class="d"/>',
+soul:'<path d="M32 4c6 10 18 16 18 32a18 18 0 0 1-36 0c0-8 4-12 8-16 0 4 2 7 4 8-2-8 0-16 6-24z" class="m"/><path d="M32 22c4 6 10 9 10 17a10 10 0 0 1-20 0c0-6 5-10 10-17z" class="l"/><ellipse cx="27" cy="40" rx="2.6" ry="3.4" class="d"/><ellipse cx="37" cy="40" rx="2.6" ry="3.4" class="d"/>',
+bone:'<path d="M15 12a6 6 0 0 1 10 2l25 25a6 6 0 1 1-5 9l-1-1-1 1a6 6 0 1 1-9-5L11 18a6 6 0 0 1 4-6z" class="m"/><path d="M49 12a6 6 0 0 0-10 2L14 39a6 6 0 1 0 5 9l1-1 1 1a6 6 0 1 0 9-5l23-25a6 6 0 0 0-4-6z" class="l"/>',
+});
+Object.assign(STAT,{
+ soul:{n:'Souls',rx:'Souls?',i:'soul',p:'teal',d:'Spent by Gravebinder cards. You have {n}.',buff:1},
+ doom:{n:'Doom',i:'scythe',p:'purple',d:'At the start of its turn, if Doom is at least its HP, it is reaped. Doom never fades.'},
+ soulguard:{n:'Soul Guard',i:'shield',p:'teal',d:'Whenever you gain a Soul, gain {n} block.',buff:1},
+ creep:{n:'Creeping Dark',i:'moon',p:'purple',d:'At the start of your turn, apply {n} Doom to ALL enemies.',buff:1},
+ lich:{n:'Lich Form',i:'skull',p:'teal',d:'At the start of your turn, gain {n} Soul and apply 4 Doom to ALL enemies.',buff:1},
+ rites:{n:'Final Rites',i:'bone',p:'bone',d:'Whenever an enemy dies, deal {n} damage to ALL enemies.',buff:1},
+ necro:{n:'Necropolis',i:'scythe',p:'teal',d:'Whenever you play an Attack, apply {n} Doom to its target.',buff:1},
+ ashguard:{n:'Ash Lord',i:'flame',p:'ash',d:'At the end of your turn, gain block equal to the total Burn on all enemies.',buff:1,flag:1},
+ venomshiv:{n:'Night Stalker',i:'dagger',p:'green',d:'Your Shivs apply {n} Poison.',buff:1},
+ stormlord:{n:'Storm Lord',i:'bolt',p:'purple',d:'At the start of your turn, apply {n} Static to ALL enemies.',buff:1},
+});
+HEROES.g={id:'g',n:'The Gravebinder',t:'He keeps the dead, and the dead keep him',hp:72,deck:['scythe','scythe','scythe','scythe','bonewall','bonewall','bonewall','bonewall','markdoom','harvest'],relic:'gravelantern',col:'#6affc8',
+ blurb:'Gather Souls and mark foes with Doom. When Doom reaches an enemy\'s HP, it is reaped.',unlock:'Defeat the Dusk, the third boss, with any climber.'};
+Object.assign(CARDS,{
+// ---- Gravebinder
+scythe:{n:'Scythe',c:1,y:'a',r:0,k:'g',t:'e',i:'scythe',p:'steel',v:{d:6},u:{d:9},ds:'Deal {d} damage.',f:(B,v,T)=>B.hit(T,v.d)},
+bonewall:{n:'Bone Wall',c:1,y:'s',r:0,k:'g',i:'bone',p:'bone',v:{b:5},u:{b:8},ds:'Gain {b} block.',f:(B,v)=>B.block(v.b)},
+markdoom:{n:'Mark of Doom',c:1,y:'s',r:0,k:'g',t:'e',i:'scythe',p:'purple',v:{n:7},u:{n:10},ds:'Apply {n} <em>Doom</em>.',f:(B,v,T)=>B.doom(T,v.n)},
+harvest:{n:'Harvest',c:1,y:'a',r:0,k:'g',t:'e',i:'soul',p:'teal',v:{d:5,n:1},u:{d:7,n:2},ds:'Deal {d} damage. Gain 1 <em>Soul</em>.',dsu:'Deal {d} damage. Gain {n} <em>Souls</em>.',f:(B,v,T)=>{B.hit(T,v.d);B.gainSoul(v.n);}},
+soullance:{n:'Soul Lance',c:1,y:'a',r:1,k:'g',t:'e',i:'soul',p:'teal',v:{d:5,n:3},u:{d:7,n:4},ds:'Deal {d} damage, plus {n} for each <em>Soul</em> you have.',dyn:B=>{const n=B.P.st.soul||0;return n+(n===1?' Soul':' Souls');},f:(B,v,T)=>B.hit(T,v.d+v.n*(B.P.st.soul||0))},
+wither:{n:'Wither',c:1,y:'a',r:1,k:'g',t:'e',i:'claw',p:'purple',v:{d:7,n:4},u:{d:9,n:6},ds:'Deal {d} damage. Apply {n} <em>Doom</em>.',f:(B,v,T)=>{B.hit(T,v.d);B.doom(T,v.n);}},
+knell:{n:'Toll the Bell',c:1,y:'s',r:1,k:'g',i:'horn',p:'dark',v:{n:4},u:{n:6},ds:'Apply {n} <em>Doom</em> to ALL enemies.',f:(B,v)=>B.foes2().forEach(f=>B.doom(f,v.n))},
+gravechill:{n:'Grave Chill',c:1,y:'s',r:1,k:'g',i:'moon',p:'blue',v:{b:7,n:4},u:{b:10,n:5},ds:'Gain {b} block. Apply {n} <em>Doom</em> to a random enemy.',f:(B,v)=>{B.block(v.b);B.doom(B.rndFoe(),v.n);}},
+consume:{n:'Consume',c:1,y:'a',r:1,k:'g',t:'e',i:'skull',p:'teal',v:{d:18},u:{d:24},ds:'Spend 2 <em>Souls</em> to deal {d} damage. Without them, deal 6.',f:(B,v,T)=>{if(B.spendSoul(2))B.hit(T,v.d);else B.hit(T,6);}},
+ossuary:{n:'Ossuary',c:1,y:'s',r:1,k:'g',i:'urn',p:'bone',v:{b:13},u:{b:17},ds:'Spend 1 <em>Soul</em> to gain {b} block. Without one, gain 5.',f:(B,v)=>{if(B.spendSoul(1))B.block(v.b);else B.block(5);}},
+pallbearer:{n:'Pallbearer',c:2,y:'s',r:1,k:'g',i:'shield',p:'dark',v:{b:13},u:{b:17},ds:'Gain {b} block. Gain 1 <em>Soul</em>.',f:(B,v)=>{B.block(v.b);B.gainSoul(1);}},
+rattle:{n:'Rattling Bones',c:0,y:'a',r:1,k:'g',t:'e',i:'bone',p:'bone',v:{d:3,b:3},u:{d:5,b:4},ds:'Deal {d} damage. Gain {b} block.',f:(B,v,T)=>{B.hit(T,v.d);B.block(v.b);}},
+gravedig:{n:'Grave Digging',c:1,y:'s',r:1,k:'g',i:'cards',p:'ash',v:{n:1},u:{n:2},ds:'Gain 1 <em>Soul</em>. Draw {n} card.',dsu:'Gain 1 <em>Soul</em>. Draw {n} cards.',f:(B,v)=>{B.gainSoul(1);B.draw(v.n);}},
+soulfeast:{n:'Soul Feast',c:0,y:'s',r:2,k:'g',i:'soul',p:'green',v:{n:2},u:{n:3},x:{ex:1},ds:'Gain {n} <em>Souls</em>. Exhaust.',f:(B,v)=>B.gainSoul(v.n)},
+deathwave:{n:'Wave of Death',c:2,y:'a',r:2,k:'g',i:'spiral',p:'purple',v:{d:8,n:3},u:{d:11,n:4},ds:'Deal {d} damage to ALL enemies. Apply {n} <em>Doom</em> to ALL enemies.',f:(B,v)=>{B.hitAll(v.d);B.foes2().forEach(f=>B.doom(f,v.n));}},
+haunt:{n:'Haunt',c:1,y:'s',r:2,k:'g',t:'e',i:'eye',p:'teal',v:{n:3},u:{n:4},ds:'Apply {n} <em>Doom</em> for each <em>Soul</em> you have.',dyn:B=>{const n=B.P.st.soul||0;return n+(n===1?' Soul':' Souls');},f:(B,v,T)=>{const s=B.P.st.soul||0;if(s)B.doom(T,v.n*s);else B.toast('You have no Souls');}},
+soulguard:{n:'Soul Guard',c:1,y:'p',r:2,k:'g',i:'shield',p:'teal',v:{n:4},u:{n:6},ds:'Whenever you gain a <em>Soul</em>, gain {n} block.',f:(B,v)=>B.apply(B.P,'soulguard',v.n)},
+creep:{n:'Creeping Dark',c:2,y:'p',r:2,k:'g',i:'moon',p:'purple',v:{n:3},u:{n:5},ds:'At the start of your turn, apply {n} <em>Doom</em> to ALL enemies.',f:(B,v)=>B.apply(B.P,'creep',v.n)},
+bonespear:{n:'Bone Spear',c:2,y:'a',r:2,k:'g',t:'e',i:'bone',p:'bone',v:{d:11},u:{d:14},ds:'Deal {d} damage. If the target has <em>Doom</em>, deal it again.',f:(B,v,T)=>{const d=T.st.doom;B.hit(T,v.d);if(d&&T.hp>0)B.hit(T,v.d);}},
+offering:{n:'Blood Offering',c:0,y:'s',r:2,k:'g',i:'heart',p:'red',v:{n:2,d:4},u:{n:3,d:4},ds:'Lose {d} HP. Gain {n} <em>Souls</em>.',f:(B,v)=>{B.loseHP(v.d);B.gainSoul(v.n);}},
+finalharvest:{n:'Final Harvest',c:1,y:'s',r:2,k:'g',i:'scythe',p:'gold',v:{},u:{c:0},ds:'Reap every enemy whose <em>Doom</em> is at least its HP right now. Gain 1 <em>Soul</em> for each.',f:B=>{const n=B.reapCheck();if(n)B.gainSoul(n);else B.toast('No enemy is ready to reap');}},
+gravepact:{n:'Grave Pact',c:1,y:'s',r:2,k:'g',i:'chain',p:'dark',v:{},u:{c:0},x:{ex:1},ds:'Spend all your <em>Souls</em>. Gain 1 energy and draw 1 card for each. Exhaust.',f:B=>{const s=Math.min(5,B.P.st.soul||0);if(!s){B.toast('You have no Souls');return;}B.spendSoul(B.P.st.soul);B.gainE(s);B.draw(s);}},
+shroud:{n:'Grave Shroud',c:1,y:'s',r:2,k:'g',i:'moon',p:'dark',v:{b:4},u:{b:6},ds:'Gain {b} block for each <em>Soul</em> you have (at least once).',dyn:B=>{const n=B.P.st.soul||0;return n+(n===1?' Soul':' Souls');},f:(B,v)=>B.block(v.b*Math.max(1,B.P.st.soul||0))},
+soulsiphon:{n:'Soul Siphon',c:1,y:'a',r:2,k:'g',t:'e',i:'heart',p:'teal',v:{d:8,n:3},u:{d:11,n:4},ds:'Deal {d} damage. Spend 1 <em>Soul</em> to heal {n} HP.',f:(B,v,T)=>{B.hit(T,v.d);if(B.spendSoul(1))B.heal(v.n);}},
+reaper:{n:'Reaper\'s Sweep',c:3,y:'a',r:3,k:'g',i:'scythe',p:'red',v:{d:18},u:{d:24},ds:'Deal {d} damage to ALL enemies. Gain 2 <em>Souls</em> for each enemy it kills.',f:(B,v)=>{const a=B.foes2();B.hitAll(v.d);const k=a.filter(f=>f.hp<=0).length;if(k)B.gainSoul(2*k);}},
+doomsday:{n:'Doomsday',c:2,y:'s',r:3,k:'g',i:'skull',p:'purple',v:{},u:{c:1},x:{ex:1},ds:'Double the <em>Doom</em> on ALL enemies. Exhaust.',f:B=>B.foes2().forEach(f=>{if(f.st.doom)B.doom(f,f.st.doom);})},
+lichform:{n:'Lich Form',c:3,y:'p',r:3,k:'g',i:'skull',p:'teal',v:{n:1},u:{n:2},ds:'At the start of your turn, gain 1 <em>Soul</em> and apply 4 <em>Doom</em> to ALL enemies.',dsu:'At the start of your turn, gain {n} <em>Souls</em> and apply 4 <em>Doom</em> to ALL enemies.',f:(B,v)=>B.apply(B.P,'lich',v.n)},
+soulstorm:{n:'Soul Storm',c:2,y:'a',r:3,k:'g',i:'soul',p:'blue',v:{d:7},u:{d:9},ds:'Spend all your <em>Souls</em>. Deal {d} damage to a random enemy for each.',dyn:B=>{const n=B.P.st.soul||0;return n+(n===1?' Soul':' Souls');},f:(B,v)=>{const s=B.P.st.soul||0;if(!s){B.toast('You have no Souls');return;}B.spendSoul(s);for(let i=0;i<s;i++){const e=B.rndFoe();if(!e)break;B.hit(e,v.d);}}},
+rites:{n:'Final Rites',c:2,y:'p',r:3,k:'g',i:'bone',p:'bone',v:{n:8},u:{n:12},ds:'Whenever an enemy dies, deal {n} damage to ALL enemies.',f:(B,v)=>B.apply(B.P,'rites',v.n)},
+bonethrone:{n:'Bone Throne',c:2,y:'s',r:3,k:'g',ul:1,i:'crown',p:'bone',v:{b:14,n:3},u:{b:18,n:4},ds:'Gain {b} block. Gain {n} <em>Souls</em>.',f:(B,v)=>{B.block(v.b);B.gainSoul(v.n);}},
+necropolis:{n:'Necropolis',c:2,y:'p',r:3,k:'g',ul:3,i:'scythe',p:'teal',v:{n:3},u:{n:5},ds:'Whenever you play an Attack, apply {n} <em>Doom</em> to its target.',f:(B,v)=>B.apply(B.P,'necro',v.n)},
+grimreap:{n:'Grim Reckoning',c:2,y:'a',r:3,k:'g',ul:6,t:'e',i:'skull',p:'red',v:{d:12},u:{d:16},ds:'Deal {d} damage. Apply <em>Doom</em> equal to the target\'s missing HP.',f:(B,v,T)=>{B.hit(T,v.d);if(T.hp>0)B.doom(T,T.maxhp-T.hp);}},
+armydead:{n:'Army of the Dead',c:3,y:'s',r:3,k:'g',ul:10,i:'skull',p:'green',v:{n:5},u:{n:7},x:{ex:1},ds:'Gain 5 <em>Souls</em>. Then apply {n} <em>Doom</em> for each of your <em>Souls</em> to ALL enemies. Exhaust.',f:(B,v)=>{B.gainSoul(5);const s=B.P.st.soul||0;B.foes2().forEach(f=>B.doom(f,v.n*s));}},
+starreaper:{n:'Star Reaper',c:2,y:'a',r:2,k:'g',a:4,t:'e',i:'star',p:'purple',v:{d:16,n:8},u:{d:22,n:10},ds:'Deal {d} damage. Apply {n} <em>Doom</em>.',f:(B,v,T)=>{B.hit(T,v.d);B.doom(T,v.n);}},
+soulcandle:{n:'Soul Candle',c:1,y:'s',r:1,k:'g',a:4,i:'lantern',p:'teal',v:{b:9},u:{b:12},ds:'Gain {b} block. Gain 1 <em>Soul</em>.',f:(B,v)=>{B.block(v.b);B.gainSoul(1);}},
+endless:{n:'Endless Night',c:2,y:'s',r:3,k:'g',a:6,i:'moon',p:'dark',v:{b:20},u:{b:26},x:{ex:1},ds:'Gain {b} block. Then apply <em>Doom</em> equal to your block to ALL enemies. Exhaust.',f:(B,v)=>{B.block(v.b);const b=B.P.block;B.foes2().forEach(f=>B.doom(f,b));}},
+// ---- more for the Warden
+riposte:{n:'Riposte',c:1,y:'s',r:1,k:'w',i:'shield',p:'red',v:{b:7,d:5},u:{b:9,d:7},ds:'Gain {b} block. Deal {d} damage to a random enemy.',f:(B,v)=>{B.block(v.b);const e=B.rndFoe();if(e)B.hit(e,v.d);}},
+shieldcharge:{n:'Shield Charge',c:1,y:'a',r:1,k:'w',t:'e',i:'shield',p:'steel',v:{d:6},u:{d:9},ds:'Deal {d} damage, plus 1 for every 2 block you have.',dyn:B=>'+'+Math.floor(B.P.block/2),f:(B,v,T)=>B.hit(T,v.d+Math.floor(B.P.block/2))},
+warhammer:{n:'War Hammer',c:2,y:'a',r:2,k:'w',a:2,t:'e',i:'horns',p:'ash',v:{d:16,n:2},u:{d:20,n:3},ds:'Deal {d} damage. If the enemy is <em>Vulnerable</em>, gain {n} <em>Strength</em>.',f:(B,v,T)=>{const vu=T.st.vul;B.hit(T,v.d);if(vu)B.apply(B.P,'str',v.n);}},
+rally:{n:'Rally',c:1,y:'s',r:2,k:'w',i:'horn',p:'gold',v:{n:3,b:6},u:{n:4,b:9},ds:'Gain {b} block. Gain {n} <em>Strength</em> this turn.',f:(B,v)=>{B.block(v.b);B.apply(B.P,'str',v.n);B.apply(B.P,'tempstr',v.n);}},
+ironresolve:{n:'Iron Resolve',c:3,y:'p',r:3,k:'w',a:3,i:'crown',p:'steel',v:{n:2},u:{n:3},ds:'Gain {n} <em>Strength</em> and {n} <em>Dexterity</em>.',f:(B,v)=>{B.apply(B.P,'str',v.n);B.apply(B.P,'dex',v.n);}},
+avalanche:{n:'Avalanche',c:3,y:'a',r:3,k:'w',a:6,i:'stone',p:'ash',v:{},u:{c:2},ds:'Deal damage equal to your block to ALL enemies.',dyn:B=>B.P.block,f:B=>{const b=B.P.block;B.foes2().forEach(f=>B.hit(f,b,1,1));}},
+// ---- more for the Ember Witch
+cinderspark:{n:'Cinder Spark',c:0,y:'a',r:1,k:'m',t:'e',i:'ember',p:'fire',v:{d:3,n:2},u:{d:4,n:3},ds:'Deal {d} damage. Apply {n} <em>Burn</em>.',f:(B,v,T)=>{B.hit(T,v.d);B.apply(T,'burn',v.n);}},
+smolder:{n:'Smolder',c:1,y:'s',r:1,k:'m',i:'shield',p:'fire',v:{b:6,n:4},u:{b:8,n:5},ds:'Gain {b} block. If any enemy is burning, gain {n} more.',f:(B,v)=>{B.block(v.b);if(B.foes2().some(f=>f.st.burn))B.block(v.n,1);}},
+emberrain:{n:'Ember Rain',c:1,y:'s',r:2,k:'m',a:2,i:'ember',p:'gold',v:{n:2},u:{n:3},ds:'Apply {n} <em>Burn</em> to ALL enemies twice.',f:(B,v)=>{for(let i=0;i<2;i++)B.foes2().forEach(f=>B.apply(f,'burn',v.n));}},
+firewall:{n:'Fire Barrier',c:2,y:'s',r:2,k:'m',i:'flame',p:'red',v:{b:12,n:2},u:{b:15,n:3},ds:'Gain {b} block. Gain {n} <em>Thorns</em>. Apply 2 <em>Burn</em> to ALL enemies.',f:(B,v)=>{B.block(v.b);B.apply(B.P,'thorns',v.n);B.foes2().forEach(f=>B.apply(f,'burn',2));}},
+ashlord:{n:'Ash Lord',c:2,y:'p',r:3,k:'m',a:3,i:'flame',p:'ash',v:{},u:{c:1},ds:'At the end of your turn, gain block equal to the total <em>Burn</em> on all enemies.',f:B=>B.apply(B.P,'ashguard',1)},
+sunspear:{n:'Sun Spear',c:2,y:'a',r:3,k:'m',a:6,t:'e',i:'sun',p:'gold',v:{d:20},u:{d:26},ds:'Deal {d} damage. Triple the target\'s <em>Burn</em>.',f:(B,v,T)=>{B.hit(T,v.d);if(T.hp>0&&T.st.burn)B.apply(T,'burn',T.st.burn*2,1);}},
+// ---- more for the Shade
+quickstab:{n:'Quick Stab',c:0,y:'a',r:1,k:'s',t:'e',i:'dagger',p:'steel',v:{d:4,n:1},u:{d:6,n:1},ds:'Deal {d} damage. Apply {n} <em>Weak</em>.',f:(B,v,T)=>{B.hit(T,v.d);B.apply(T,'weak',v.n);}},
+smokebomb:{n:'Smoke Bomb',c:1,y:'s',r:1,k:'s',i:'moon',p:'ash',v:{b:8},u:{b:11},ds:'Gain {b} block. Add a <em>Shiv</em> to your hand.',f:(B,v)=>{B.block(v.b);B.addCard('shiv','hand');}},
+venomtide:{n:'Venom Tide',c:1,y:'s',r:2,k:'s',a:2,i:'drop',p:'green',v:{n:3},u:{n:5},ds:'Apply {n} <em>Poison</em> to ALL enemies. Add a <em>Shiv</em> to your hand.',f:(B,v)=>{B.foes2().forEach(f=>B.apply(f,'poison',v.n));B.addCard('shiv','hand');}},
+knifedance:{n:'Knife Dance',c:2,y:'a',r:2,k:'s',i:'dagger',p:'purple',v:{d:3},u:{d:4},ds:'Deal {d} damage to a random enemy for each other card in your hand.',dyn:B=>B.hand.length+' cards',f:(B,v)=>{const n=B.hand.length;for(let i=0;i<n;i++){const e=B.rndFoe();if(!e)break;B.hit(e,v.d);}}},
+nightstalker:{n:'Night Stalker',c:1,y:'p',r:3,k:'s',a:3,i:'eye',p:'green',v:{n:1},u:{n:2},ds:'Your <em>Shivs</em> apply {n} <em>Poison</em>.',f:(B,v)=>B.apply(B.P,'venomshiv',v.n)},
+venomheart:{n:'Venom Heart',c:2,y:'s',r:3,k:'s',a:6,t:'e',i:'drop',p:'green',v:{n:12},u:{n:16},ds:'Apply {n} <em>Poison</em>. If the enemy is <em>Weak</em>, apply it twice.',f:(B,v,T)=>{const w=T.st.weak;B.apply(T,'poison',v.n);if(w)B.apply(T,'poison',v.n);}},
+// ---- more for the Stormcaller
+jolt:{n:'Jolt',c:0,y:'a',r:1,k:'t',t:'e',i:'bolt',p:'gold',v:{d:3,n:2},u:{d:4,n:3},ds:'Deal {d} damage. Apply {n} <em>Static</em>.',f:(B,v,T)=>{B.hit(T,v.d);B.apply(T,'static',v.n);}},
+lodestone:{n:'Lodestone',c:1,y:'s',r:1,k:'t',i:'stone',p:'blue',v:{b:8},u:{b:11},ds:'Gain {b} block. If any enemy has <em>Static</em>, gain 1 <em>Overload</em>.',f:(B,v)=>{B.block(v.b);if(B.foes2().some(f=>f.st.static))B.apply(B.P,'overload',1);}},
+balllight:{n:'Ball Lightning',c:1,y:'a',r:2,k:'t',a:2,t:'e',i:'star',p:'blue',v:{d:7},u:{d:10},ds:'Deal {d} damage. Gain 1 <em>Overload</em>.',f:(B,v,T)=>{B.hit(T,v.d);B.apply(B.P,'overload',1);}},
+galeforce:{n:'Gale Force',c:2,y:'a',r:2,k:'t',a:2,i:'spiral',p:'teal',v:{d:5,n:2},u:{d:7,n:3},ds:'Deal {d} damage to ALL enemies, plus {n} for each <em>Static</em> on each one.',f:(B,v)=>B.foes2().forEach(f=>B.hit(f,v.d+v.n*(f.st.static||0)))},
+stormlord:{n:'Storm Lord',c:2,y:'p',r:3,k:'t',a:3,i:'bolt',p:'purple',v:{n:1},u:{n:2},ds:'At the start of your turn, apply {n} <em>Static</em> to ALL enemies.',f:(B,v)=>B.apply(B.P,'stormlord',v.n)},
+worldstorm:{n:'World Storm',c:3,y:'a',r:3,k:'t',a:6,i:'spiral',p:'gold',v:{d:12},u:{d:16},ds:'Deal {d} damage to ALL enemies twice.',f:(B,v)=>{B.hitAll(v.d);B.hitAll(v.d);}},
+// ---- any climber
+scrounge:{n:'Scrounge',c:1,y:'s',r:2,k:'n',a:2,i:'coin',p:'gold',v:{n:20},u:{n:30},x:{ex:1},ds:'Gain {n} gold. Exhaust.',f:(B,v)=>{R.gold+=v.n;R.stats.gold+=v.n;renderTop();B.toast('+'+v.n+' gold');sfx('coin');}},
+doomsigil:{n:'Doom Sigil',c:1,y:'s',r:2,k:'n',a:3,t:'e',i:'scythe',p:'purple',v:{n:10},u:{n:14},ds:'Apply {n} <em>Doom</em>.',f:(B,v,T)=>B.doom(T,v.n)},
+secondsight:{n:'Second Sight',c:1,y:'s',r:2,k:'n',a:2,i:'eye',p:'blue',v:{n:2},u:{n:3},ds:'Draw {n} cards. Upgrade a random card in your hand for this fight.',f:(B,v)=>{B.draw(v.n);const l=B.hand.filter(c=>!c.up&&CARDS[c.id].y!=='c'&&CARDS[c.id].u);if(l.length){const c=pick(l);c.up=1;const el=handEls.get(c.u);if(el){el.remove();handEls.delete(c.u);}renderHand();}}},
+patchup:{n:'Patch Up',c:1,y:'s',r:2,k:'n',a:3,i:'heart',p:'green',v:{n:6},u:{n:9},x:{ex:1},ds:'Heal {n} HP. Exhaust.',f:(B,v)=>B.heal(v.n)},
+echoblade:{n:'Echo Blade',c:2,y:'a',r:2,k:'n',a:5,i:'sword',p:'teal',v:{d:13},u:{d:17},ds:'Deal {d} damage to ALL enemies.',f:(B,v)=>B.hitAll(v.d)},
+ashenpact:{n:'Ashen Pact',c:0,y:'s',r:3,k:'n',a:5,i:'ember',p:'ash',v:{n:3},u:{n:4},x:{ex:1},ds:'Gain {n} energy. Shuffle 2 <em>Dazed</em> into your draw pile. Exhaust.',f:(B,v)=>{B.gainE(v.n);B.addCard('dazed','draw');B.addCard('dazed','draw');}},
+kindredflame:{n:'Kindred Flame',c:3,y:'a',r:3,k:'n',a:6,i:'flame',p:'fire',v:{d:30},u:{d:38},x:{ex:1},ds:'Deal {d} damage to ALL enemies. Exhaust.',f:(B,v)=>B.hitAll(v.d)},
+throneguard:{n:'Throne Guard',c:2,y:'s',r:2,k:'n',a:6,i:'crown',p:'gold',v:{b:18},u:{b:24},ds:'Gain {b} block. Draw 1 card.',f:(B,v)=>{B.block(v.b);B.draw(1);}},
+});
+for(const k in CARDS)CARDS[k].id=k;
+Object.assign(RELICS,{
+ gravelantern:{n:'Soul Lantern',r:0,i:'lantern',p:'teal',d:'Start each combat with 1 Soul. Whenever an enemy dies, gain 1 Soul.'},
+ tallow:{n:'Tallow Candle',r:1,i:'lantern',p:'gold',d:'At the start of your 2nd turn, gain 1 energy and draw 1 card.'},
+ emberjar:{n:'Ember Jar',r:1,i:'urn',p:'fire',d:'When the climb ends, gain 40 extra Embers.'},
+ cracked:{n:'Cracked Mirror',r:1,i:'crack',p:'steel',d:'At the start of combat, apply 1 Weak to ALL enemies.'},
+ fieldkit:{n:'Field Kit',r:1,i:'bag',p:'green',d:'Whenever you rest at a campfire, raise your Max HP by 3.'},
+ bellows:{n:'Smith\'s Bellows',r:1,i:'flame',p:'fire',d:'At the start of combat, apply 4 Burn to a random enemy.'},
+ soulcage:{n:'Soul Cage',r:2,i:'soul',p:'teal',d:'Whenever an enemy dies, gain 5 block and 1 Soul.'},
+ blackfeather:{n:'Raven Quill',r:2,i:'feather',p:'dark',d:'Every 4th card you play in a turn draws a card.'},
+ brassgear:{n:'Brass Gear',r:2,i:'ring',p:'gold',d:'Whenever you play a Power, gain 6 block.'},
+ mirrorshard:{n:'Mirror Shard',r:2,i:'gem',p:'blue',d:'The first time each combat you fall below half HP, gain 15 block.'},
+ merchantseal:{n:'Merchant\'s Seal',r:2,i:'coin',p:'teal',d:'Shop prices are 20% lower.'},
+ phylactery:{n:'Phylactery',r:3,i:'urn',p:'purple',d:'Once per climb, when you would die, heal to 40% of your Max HP instead.'},
+ kingsring:{n:'King\'s Ring',r:3,i:'ring',p:'gold',d:'At the end of your turn, gain 5 block for each unused energy.'},
+ deathbell:{n:'Death Bell',r:3,i:'horn',p:'purple',d:'At the start of your turn, apply 3 Doom to ALL enemies. An enemy whose Doom reaches its HP is reaped.'},
+ embercrown:{n:'Ember Crown',r:4,i:'crown',p:'fire',d:'Gain 1 energy every turn. Lose 6 HP at the start of each combat.'},
+ soulengine:{n:'Soul Engine',r:4,i:'spiral',p:'teal',d:'Gain 1 energy every turn. Card rewards offer 1 fewer card.'},
+});
+Object.assign(POTIONS,{
+ soulvial:{n:'Soul Vial',p:'teal',d:'Gain 3 Souls and 8 block.',f:B=>{B.gainSoul(3);B.block(8,0,1);}},
+ doomdraught:{n:'Doom Draught',p:'purple',t:'e',d:'Apply 20 Doom to an enemy. It is reaped once its Doom reaches its HP.',f:(B,T)=>B.doom(T,20)},
+ emberbrew:{n:'Ember Brew',p:'fire',d:'Apply 6 Burn to ALL enemies.',f:B=>B.foes2().forEach(e=>B.apply(e,'burn',6))},
+ stormjar:{n:'Storm in a Jar',p:'blue',d:'Apply 3 Static to ALL enemies.',f:B=>B.foes2().forEach(e=>B.apply(e,'static',3))},
+ giant:{n:'Giant\'s Draught',p:'red',d:'Raise your Max HP by 5 and heal 5 HP.',f:B=>{R.maxhp+=5;B.heal(5);}},
+ quicksilver:{n:'Quicksilver',p:'steel',d:'Gain 1 energy and 2 Dexterity.',f:B=>{B.gainE(1);B.apply(B.P,'dex',2);}},
+});
+// ---- act 6: the ember throne
+Object.assign(ENEMIES,{
+ cinderthrall:{n:'Cinder Thrall',hp:[84,90],art:'skel',pal:['#ffd8a8','#7a2a10','#ffb040'],sz:1.05,moves:{blaze:{n:'Blazing Swing',a:[14],s:[['p','burn',3]]},rattle:{n:'Rattle',b:14,a:[8]},cleave:{n:'Cleave',a:[20]}},ai:rnd({blaze:3,rattle:2,cleave:3})},
+ ashwraith:{n:'Ash Wraith',hp:[76,82],art:'ghost',pal:['#ffc8a0','#4a1a10','#ffe0b0'],sz:1,fly:1,moves:{chill:{n:'Searing Touch',a:[10],s:[['p','weak',2]]},fade:{n:'Fade',b:18},scorch:{n:'Scorch',a:[8],s:[['p','burn',4]]}},ai:rnd({chill:3,fade:2,scorch:2})},
+ pyrepriest:{n:'Pyre Priest',hp:[90,96],art:'robe',pal:['#6a1a0a','#200604','#ffa030'],sz:1,moves:{hex:{n:'Ash Hex',s:[['p','frail',2],['p','weak',2]]},smite:{n:'Pyre Smite',a:[24]},prayer:{n:'Fire Prayer',b:12,s:[['a','str',3]]}},ai:rnd({hex:1,smite:3,prayer:2})},
+ emberhound:{n:'Ember Hound',hp:[82,88],art:'hound',pal:['#6a2a14','#1a0604','#ffb030'],sz:1.05,moves:{maul:{n:'Maul',a:[17]},rend:{n:'Rend',a:[8],s:[['p','vul',2]]},howl:{n:'Fire Howl',s:[['a','str',3]]}},ai:rnd({maul:3,rend:2,howl:1})},
+ salamander:{n:'Salamander',hp:[96,104],art:'lizard',pal:['#ff8a3a','#5a1606','#fff080'],sz:1,moves:{bite:{n:'Bite',a:[16]},spit:{n:'Flame Spit',a:[9],s:[['p','burn',5]]},scales:{n:'Molten Scales',b:20,s:[['m','metal',3]]}},ai:rnd({bite:3,spit:3,scales:2})},
+ magmatoad:{n:'Magma Toad',hp:[104,112],art:'toad',pal:['#c04a1a','#3a0e04','#ffd040'],sz:1.15,moves:{lash:{n:'Tongue Lash',a:[22]},bloat:{n:'Bloat',b:16,s:[['m','str',3]]},belch:{n:'Ash Belch',a:[8],add:['dazed',2,'disc']}},ai:rnd({lash:3,bloat:2,belch:2})},
+ firemoth:{n:'Pyre Moth',hp:[70,76],art:'moth',pal:['#ff9a4a','#4a1406','#ffe060'],sz:.85,fly:1,moves:{dust:{n:'Ember Dust',a:[8],s:[['p','frail',2]]},flutter:{n:'Flutter',a:[6,3]},lull:{n:'Lull',add:['dazed',2,'draw'],b:10}},ai:rnd({dust:2,flutter:3,lull:1})},
+ scorchknight:{n:'Scorched Knight',hp:[160,170],art:'armor',pal:['#5a2a1a','#140604','#ff7020'],sz:1.25,elite:1,start:[['thorns',3]],moves:{reap:{n:'Molten Edge',a:[26]},guard:{n:'Iron Oath',b:22,s:[['m','str',2]]},rend:{n:'Rend',a:[12,2]}},ai:cyc('guard','reap','rend','reap','rend')},
+ phoenix:{n:'Ash Phoenix',hp:[320,330],art:'wyrm',pal:['#ffa040','#5a1406','#fff4a0'],sz:1.3,elite:1,fly:1,moves:{roar:{n:'Cry of Ash',s:[['p','weak',2],['p','vul',2]]},breath:{n:'Firebreath',a:[14,3]},reborn:{n:'Rebirth',b:24,heal:30},dive:{n:'Burning Dive',a:[30],s:[['p','burn',4]]}},ai:cyc('roar','breath','dive','reborn','breath','dive')},
+ forgegolem:{n:'Forge Golem',hp:[340,350],art:'golem',pal:['#4a2a1a','#120604','#ff8a20'],sz:1.45,elite:1,start:[['metal',6]],moves:{quake:{n:'Quake',a:[36]},charge:{n:'Stoke the Forge',b:26,s:[['m','str',4]]},rubble:{n:'Slag Rain',a:[10,4]}},ai:cyc('charge','quake','rubble','quake','charge','rubble')},
+ sovereign:{n:'The Ember Sovereign',hp:[1000,1000],art:'sovereign',pal:['#ffb050','#2a0a06','#fff0a0'],sz:1.08,boss:1,moves:{brand:{n:'Royal Brand',s:[['p','burn',8],['p','vul',3]],add:['wound',2,'disc']},rain:{n:'Ember Rain',a:[9,6]},crown:{n:'Crown of Cinders',b:40,s:[['m','str',4]]},blade:{n:'Sunsplitter',a:[52]},court:{n:'Court of Ash',a:[18],s:[['p','weak',2],['p','frail',2]]}},ai:cyc('brand','rain','crown','blade','court','rain','blade')},
+});
+for(const k in ENEMIES)ENEMIES[k].id=k;
+ENC[6]={easy:[['cinderthrall'],['firemoth','firemoth']],norm:[['salamander'],['cinderthrall','firemoth'],['ashwraith','ashwraith'],['pyrepriest','cinderthrall'],['emberhound','emberhound'],['magmatoad'],['salamander','firemoth'],['pyrepriest','ashwraith']],elite:[['phoenix'],['forgegolem'],['scorchknight','scorchknight']],boss:['sovereign']};
+ACTS[6]={n:'The Ember Throne',s:'Act VI',music:'desert',bg:['#2a0e06','#0a0302','#ff6a20']};
+function gainEmb(n){META.embers+=n;META.total+=n;saveMeta();}
+EVENTS.push(
+ {id:'gravedigger',n:'The Gravedigger',art:'skull',p:'bone',t:'A hunched gravedigger leans on his spade between rows of nameless stones. "Every soul down here is for sale," he croaks.',
+  ch:[{l:'Buy a buried secret: <i>lose 40 gold</i>, <em>choose a card</em>',ok:R=>R.gold>=40,f:R=>{R.gold-=40;R.pendingPick=1;return 'He digs up three cards wrapped in old cloth.';}},
+      {l:'Help him dig: <em>gain a random potion</em>, <i>take 6 damage</i>',f:R=>{gainPotion(R);R.hp=Math.max(1,R.hp-6);return 'Your hands blister, but he pays you in strange bottles.';}},
+      {l:'Leave',f:()=>'He goes back to his digging.'}]},
+ {id:'lostclimber',n:'A Lost Climber',art:'lantern',p:'gold',t:'A young climber huddles by a dead lantern. She has been lost on these stairs for days.',
+  ch:[{l:'Walk her to safety: <em>heal 10 HP</em>, <em>gain 20 Embers</em>',f:R=>{healR(R,10);gainEmb(20);return 'She presses a warm ember into your palm before she goes.';}},
+      {l:'Give her a potion: <i>lose a potion</i>, <em>gain a relic</em>',ok:R=>R.potions.some(p=>p),f:R=>{const i=R.potions.findIndex(p=>p);R.potions[i]=null;const r=gainRelic(R,pickRelic(R,R0()<.5?1:2));return 'She gives you her only treasure: the '+RELICS[r].n+'.';}},
+      {l:'Leave',f:()=>'You hope someone else finds her.'}]},
+ {id:'emberforge',ma:2,n:'The Ember Forge',art:'sword',p:'fire',t:'An abandoned forge still glows deep in the wall. The anvil is warm, as if the smith only just left.',
+  ch:[{l:'Work the anvil: <em>upgrade a card of your choice</em>',f:R=>{R.pendingUp=1;return 'The hammer fits your hand. Choose a card to temper.';}},
+      {l:'Stoke it hot: <em>upgrade 3 random cards</em>, <i>take 12 damage</i>',f:R=>{upRandom(R,3);R.hp=Math.max(1,R.hp-12);return 'Sparks bite your skin as three cards come out stronger.';}},
+      {l:'Leave',f:()=>'The forge keeps glowing behind you.'}]},
+ {id:'mirrors',ma:2,n:'Hall of Mirrors',art:'gem',p:'blue',t:'Mirrors line a long hall. In each one your reflection holds a different card.',
+  ch:[{l:'Step into a mirror: <em>duplicate a card</em>, <i>gain the curse Regret</i>',f:R=>{addDeck(R,'regret');R.pendingDup=1;return 'The glass gives way like water. Choose a card to copy.';}},
+      {l:'Smash them: <em>gain 45 gold</em>, <i>take 5 damage</i>',f:R=>{R.gold+=45;R.hp=Math.max(1,R.hp-5);return 'Silver frames come loose in your hands.';}},
+      {l:'Leave',f:()=>'Your reflections watch you go.'}]},
+ {id:'ashaltar',ma:3,n:'Altar of Ash',art:'ember',p:'ash',t:'A black altar is heaped with grey ash. Anything laid on it burns away and leaves embers behind.',
+  ch:[{l:'Burn a card: <em>remove a card</em>, <em>gain 30 Embers</em>',ok:R=>R.deck.length>5,f:R=>{R.pendingRemove=1;gainEmb(30);return 'The altar is hungry. Choose a card to burn.';}},
+      {l:'Burn your gold: <i>lose all your gold</i>, <em>gain a rare relic</em>',ok:R=>R.gold>=60,f:R=>{R.gold=0;const r=gainRelic(R,pickRelic(R,3));return 'Your coins melt into the '+RELICS[r].n+'.';}},
+      {l:'Leave',f:()=>'The ash stirs as you walk away.'}]},
+ {id:'bonechoir',ma:3,n:'The Bone Choir',art:'note',p:'bone',t:'A row of skeletons sings in perfect harmony. The song is beautiful and a little too loud.',
+  ch:[{l:'Sing along: <em>upgrade all Skills</em>, <i>take 12 damage</i>',f:R=>{R.deck.forEach(c=>{if(CARDS[c.id].y==='s'&&CARDS[c.id].u)c.up=1;});R.hp=Math.max(1,R.hp-12);return 'The song shakes your bones, and your craft with it.';}},
+      {l:'Silence them: <i>fight</i>',f:R=>{R.pendingFight=1;return 'The choir stops singing and starts walking.';}},
+      {l:'Leave',f:()=>'The song follows you up the stairs.'}]},
+ {id:'ghostmerchant',ma:3,n:'Ghost of a Merchant',art:'coin',p:'teal',t:'A see-through merchant counts see-through coins. "One last sale," he sighs, "and then I can rest."',
+  ch:[{l:'Buy his last wares: <i>lose 90 gold</i>, <em>gain an uncommon relic</em>',ok:R=>R.gold>=90,f:R=>{R.gold-=90;const r=gainRelic(R,pickRelic(R,2));return 'He hands over the '+RELICS[r].n+' and fades with a smile.';}},
+      {l:'Take his ledger: <em>gain 35 gold</em>',f:R=>{R.gold+=35;return 'A few real coins were pressed between the pages.';}},
+      {l:'Leave',f:()=>'He goes back to counting.'}]},
+ {id:'emberwell',ma:4,n:'The Ember Well',art:'urn',p:'fire',t:'A well full of glowing embers instead of water. They drift up past you like slow fireflies.',
+  ch:[{l:'Gather embers: <em>gain 60 Embers</em>, <i>take 10 damage</i>',f:R=>{gainEmb(60);R.hp=Math.max(1,R.hp-10);return 'Your hands burn, but your pockets glow.';}},
+      {l:'Warm yourself: <em>heal 30% HP</em>',f:R=>{healR(R,Math.ceil(R.maxhp*.3));return 'The warmth soaks into your bones.';}},
+      {l:'Drink the fire: <em>gain 6 Max HP</em>',f:R=>{R.maxhp+=6;R.hp+=6;return 'It tastes like a summer bonfire.';}}]},
+ {id:'cinderroad',ma:6,n:'The Cinder Road',art:'flame',p:'red',t:'The stairs give way to a road of hot coals leading straight toward the throne.',
+  ch:[{l:'Walk the coals: <em>gain a rare relic</em>, <i>take 20% of your HP</i>',f:R=>{const r=gainRelic(R,pickRelic(R,3));R.hp=Math.max(1,R.hp-Math.ceil(R.maxhp*.2));return 'You reach the far side holding the '+RELICS[r].n+'.';}},
+      {l:'Sift the ash: <em>gain 100 gold</em>',f:R=>{R.gold+=100;return 'Old crowns and coins lie under the ash.';}},
+      {l:'Rest in the warm ash: <em>heal 30% HP</em>',f:R=>{healR(R,Math.ceil(R.maxhp*.3));return 'For once, the heat is kind.';}}]},
+ {id:'kneeling',ma:6,n:'The Kneeling Knights',art:'shield',p:'steel',t:'Three burnt knights kneel before an empty plinth. One holds out a sword to you, hilt first.',
+  ch:[{l:'Take the sword: <em>gain a rare card</em>',f:R=>{const c=rollCard(R,3);addDeck(R,c);return 'The blade becomes '+CARDS[c].n+' in your hand.';}},
+      {l:'Kneel with them: <em>upgrade 2 random cards</em>, <em>heal 15 HP</em>',f:R=>{upRandom(R,2);healR(R,15);return 'For a moment you are one of them.';}}]},
+);
+function reap(f){if(!B||f.hp<=0)return;const y=BASE_Y-HT[f.d.art]*f.d.sz*ESC;float(f.x,y-30,'Reaped','#d8b0ff',true);burst(f.x,BASE_Y-HT[f.d.art]*f.d.sz*ESC*.55,'#b080ff',34,260);FX.flashScreen=Math.max(FX.flashScreen||0,.2);sfx('gong');dmgFoe(f,f.hp,'reap');}
+function doomMark(c,x,y,w,f,t){const d=f.st.doom,full=d>=f.hp,fr=Math.min(1,d/Math.max(1,f.maxhp));c.save();c.fillStyle=full?'rgba(200,140,255,'+(.55+.35*Math.sin(t*8))+')':'rgba(160,90,240,.85)';c.fillRect(x+1,y+10,(w-2)*fr,3);
+ const hx=x+(w-2)*Math.min(1,f.hp/Math.max(1,f.maxhp));c.strokeStyle='#e0c0ff';c.lineWidth=1.5;c.beginPath();c.moveTo(x+1+(w-2)*fr,y-2);c.lineTo(x+1+(w-2)*fr,y+16);c.stroke();
+ if(full){const im=icImg('scythe','purple');if(im.complete)c.drawImage(im,x+w+8,y-8,28,28);}c.restore();}
+function rwN(){return Math.max(1,3+(sl('kiln')?1:0)-(hasR('soulengine')?1:0));}
+function shopMul(){return (1-.08*sl('haggle'))*(hasR('merchantseal')?.8:1);}
+function recordWin(){if(!R||R.winRec)return;R.winRec=1;__mgt('w',()=>'Full run: '+R.hero);__mgt('m','run');const H=R.hero,L=R.dusk;
+ META.stats.wins++;if(!META.unl.t){META.unl.t=1;toastLater('New climber unlocked: The Stormcaller');}META.best[H]=Math.max(META.best[H]==null?-1:META.best[H],L);if(L>=(META.dusk[H]||0)&&L<10){META.dusk[H]=L+1;}saveMeta();saveRun();}
+function gTutorial(){META.tutG=1;saveMeta();ovl('<div class="panel" style="position:relative;width:640px;padding:28px 34px;text-align:center"><div class="ttl" style="font-size:28px">The Gravebinder</div><div style="font:17px/1.5 system-ui;color:#ddd;margin-top:12px;text-align:left">'+
+ '<p>'+ICX('soul','teal','','style="width:30px;height:30px;vertical-align:middle"')+' <b style="color:#7affd8">Souls</b> are your fuel. You gain them from cards and whenever an enemy dies. Some cards grow stronger with every Soul you hold, others spend them.</p>'+
+ '<p>'+ICX('scythe','purple','','style="width:30px;height:30px;vertical-align:middle"')+' <b style="color:#d0a8ff">Doom</b> stacks on enemies and never fades. A purple line on its health bar shows how close it is. At the start of its turn, if its Doom is at least its HP, it is <b>reaped</b> and dies on the spot.</p></div><button class="bt" id="tgOk" style="margin-top:14px">Got it</button></div>');
+ $('tgOk').onclick=()=>{closeOvl();sfx('click');};}
+
 /* ===== Sanctum (meta upgrades bought with Embers) ===== */
 const SANCT=[
  {id:'hp',n:'Hardy Spirit',i:'heart',p:'red',max:5,cost:[30,60,100,150,220],d:l=>'+'+(4*l)+' Max HP at the start of every climb.'},
@@ -1121,6 +1316,21 @@ const SANCT=[
  {id:'rarity',n:'Lucky Star',i:'gem',p:'pink',max:3,cost:[60,120,200],d:l=>'Rare cards appear '+(l*25)+'% more often.'},
  {id:'cut',n:'Light Pack',i:'feather',p:'teal',max:1,cost:[150],d:l=>'Remove a Strike from your starting deck.'},
 ];
+/* more Sanctum blessings, for the Embers that pile up after many climbs */
+(()=>{const S=id=>SANCT.find(s=>s.id===id);
+ const hp=S('hp');hp.max=8;hp.cost=hp.cost.concat([300,400,520]);
+ const gd=S('gold');gd.max=6;gd.cost=gd.cost.concat([200,280]);
+ const po=S('potion');po.max=3;po.cost=po.cost.concat([320]);po.d=l=>'Start with '+l+' random potion'+(l>1?'s':'')+'.';
+ SANCT.push(
+ {id:'tithe',n:'Ember Tithe',i:'ember',p:'fire',max:5,cost:[80,150,240,350,500],d:l=>'Earn '+(10*l)+'% more Embers from every climb.'},
+ {id:'warded',n:'Warding Sigil',i:'shield',p:'blue',max:3,cost:[60,130,220],d:l=>'Start every combat with '+(4*l)+' block.'},
+ {id:'honed',n:'Honed Edge',i:'stone',p:'steel',max:3,cost:[70,160,280],d:l=>'Start every climb with '+l+' random card'+(l>1?'s':'')+' upgraded.'},
+ {id:'trophy',n:'Trophy Hunter',i:'horns',p:'red',max:3,cost:[50,110,190],d:l=>'Elites drop '+(15*l)+' more gold.'},
+ {id:'firstaid',n:'Field Dressing',i:'regen',p:'green',max:3,cost:[50,110,190],d:l=>'Heal '+(3*l)+' HP after every elite and boss fight.'},
+ {id:'haggle',n:'Haggler',i:'coin',p:'teal',max:3,cost:[60,130,220],d:l=>'Shop prices are '+(8*l)+'% lower.'},
+ {id:'kiln',n:'Ember Kiln',i:'cards',p:'fire',max:1,cost:[300],d:l=>'Card rewards offer 4 cards instead of 3.'},
+ );})();
+
 /* ===== painted art (canvas) ===== */
 const TAU=Math.PI*2;
 function RG(c,x,y,r0,r1,stops){const g=c.createRadialGradient(x,y,r0,x,y,r1);stops.forEach((s,i)=>g.addColorStop(s[0],s[1]));return g;}
@@ -1481,6 +1691,65 @@ Object.assign(ART,{
   c.fillStyle='#0a0614';c.strokeStyle='#e8c46a';c.lineWidth=2;c.beginPath();c.moveTo(-34,-302);for(let i=0;i<6;i++){const x=-34+i*11.33;c.lineTo(x+5.67,-338-(i===2||i===3?14:i%2?4:9));c.lineTo(x+11.33,-304);}c.closePath();c.fill();c.stroke();
   c.restore();},
 });
+Object.assign(ART,{
+ /* Salamander: one long body from snout to tail tip, four splayed legs with claws, molten cracks glowing along the back */
+ lizard(c,P,t){const b=Math.sin(t*3)*2;shadowE(c,120);
+  const sp=[],ws=[30,34,37,40,42,40,34,26,18,11,5];for(let i=0;i<11;i++){const k=i/10;sp.push([-112+i*24.5,-50-(i>7?(i-7)*12:0)+Math.sin(t*3+i*.7)*k*k*14+b*(1-k)]);}
+  const dk=shade(P[1],-.35),foot=(x,y,s,col)=>{c.fillStyle=col;for(let j=-1;j<=1;j++){c.beginPath();c.moveTo(x-3,y-4);c.quadraticCurveTo(x+j*9-2*s,y-1,x+j*12-6*s,y+1);c.lineTo(x+j*9-4*s,y+2);c.quadraticCurveTo(x,y,x+3,y-3);c.closePath();c.fill();}};
+  // far legs, in shadow behind the body
+  limb(c,[[-46,-50],[-34,-30],[-44,-4]],[15,10,7],dk);foot(-44,-2,1,dk);limb(c,[[62,-50],[80,-30],[70,-4]],[17,11,7],dk);foot(70,-2,1,dk);
+  // body: the whole spine as one tapered outline
+  limb(c,sp,ws,LG(c,0,-90,0,-20,[[0,shade(P[0],-.05)],[.55,P[0]],[1,shade(P[1],.2)]]));
+  // head flowing out of the neck into a blunt snout
+  c.fillStyle=LG(c,-150,-70,-100,-36,[[0,shade(P[0],.1)],[1,P[0]]]);c.beginPath();c.moveTo(-96,-70+b);c.bezierCurveTo(-116,-76,-138,-74,-152,-58+b);c.quadraticCurveTo(-158,-48,-148,-40+b);c.bezierCurveTo(-130,-32,-112,-32,-94,-34+b);c.closePath();c.fill();
+  c.strokeStyle=shade(P[1],-.2);c.lineWidth=2;c.beginPath();c.moveTo(-150,-47+b);c.quadraticCurveTo(-130,-44,-112,-46+b);c.stroke();
+  // belly, lighter underside following the body
+  c.strokeStyle='rgba(255,236,170,.35)';c.lineWidth=7;c.lineCap='round';c.beginPath();c.moveTo(sp[1][0],sp[1][1]+14);for(let i=2;i<8;i++)c.lineTo(sp[i][0],sp[i][1]+ws[i]*.38);c.stroke();
+  // molten cracks and glowing spots on the back
+  c.save();c.globalCompositeOperation='lighter';for(let i=1;i<9;i++){const[x,y]=sp[i],r=ws[i]*.16+2;c.fillStyle=RG(c,x,y-ws[i]*.3,0,r*3,[[0,P[2]],[.4,'rgba(255,120,30,.5)'],[1,'rgba(255,60,0,0)']]);c.beginPath();c.arc(x,y-ws[i]*.3,r*3,0,TAU);c.fill();}
+  c.strokeStyle=P[2];c.lineWidth=1.6;c.globalAlpha=.7+.3*Math.sin(t*5);c.beginPath();for(let i=1;i<8;i++){const[x,y]=sp[i];c.moveTo(x-8,y-6);c.lineTo(x-2,y+2);c.lineTo(x+6,y-3);}c.stroke();c.restore();
+  // near legs: shoulder into elbow into a clawed foot
+  limb(c,[[-62,-48],[-78,-28],[-66,-4]],[18,12,8],P[0]);foot(-66,-2,1,P[0]);limb(c,[[42,-48],[62,-28],[52,-4]],[20,13,8],P[0]);foot(52,-2,1,P[0]);
+  // eye and a lick of flame from the mouth
+  c.fillStyle='#1a0602';c.beginPath();c.ellipse(-128,-58+b,5,4,0,0,TAU);c.fill();eyeGlow(c,-128,-58+b,2.4,P[2]);
+  c.save();c.globalCompositeOperation='lighter';const fx=-156,fy=-46+b,L=16+8*Math.abs(Math.sin(t*6));c.fillStyle=RG(c,fx,fy,0,L,[[0,'rgba(255,240,160,.9)'],[.5,'rgba(255,120,30,.5)'],[1,'rgba(255,40,0,0)']]);c.beginPath();c.moveTo(fx,fy-5);c.quadraticCurveTo(fx-L,fy-8,fx-L*1.4,fy);c.quadraticCurveTo(fx-L,fy+8,fx,fy+5);c.closePath();c.fill();c.restore();},
+ /* The Ember Sovereign: plate armor from sabatons to crowned helm, a burning cloak, a greatsword planted at his feet */
+ sovereign(c,P,t){const b=Math.sin(t*1.2)*3,fl=Math.sin(t*7),fl2=Math.sin(t*11+1);shadowE(c,120);
+  c.save();c.globalCompositeOperation='lighter';c.fillStyle=RG(c,0,-190,20,260,[[0,'rgba(255,150,60,.32)'],[1,'rgba(255,60,0,0)']]);c.beginPath();c.arc(0,-190,260,0,TAU);c.fill();c.restore();
+  const steel=LG(c,-70,0,70,0,[[0,'#1a0c08'],[.5,shade(P[1],.45)],[1,'#1a0c08']]),armS=LG(c,-110,0,120,0,[[0,shade(P[1],.38)],[.5,shade(P[1],.12)],[1,shade(P[1],.38)]]),rim='#d8a050';
+  // cloak, shoulders to a ragged burning hem
+  c.fillStyle=LG(c,-120,0,120,0,[[0,'#120402'],[.5,P[1]],[1,'#120402']]);c.beginPath();c.moveTo(-58,-262+b);c.quadraticCurveTo(-110,-230,-118,-140);c.quadraticCurveTo(-126,-60,-134,0);for(let i=0;i<=10;i++)c.lineTo(-134+i*26.8,(i%2?-18:2)+Math.sin(t*2+i)*5);c.quadraticCurveTo(126,-60,118,-140);c.quadraticCurveTo(110,-230,58,-262+b);c.closePath();c.fill();
+  c.save();c.clip();c.globalCompositeOperation='lighter';c.fillStyle=LG(c,0,-70,0,4,[[0,'rgba(255,90,20,0)'],[1,'rgba(255,150,40,.6)']]);c.fillRect(-140,-80,280,90);for(let i=0;i<18;i++){const x=((i*53)%250)-125,y=-((t*40+i*37)%220);c.fillStyle='rgba(255,'+(140+i*5)+',60,'+(.5-y/-440)+')';c.fillRect(x,y,2.4,2.4);}c.restore();
+  // legs: thigh, knee and greave as one plate, then sabatons
+  for(const s of[-1,1]){limb(c,[[s*30,-136+b],[s*38,-74],[s*40,-14]],[42,32,26],steel);c.fillStyle=shade(P[1],.25);c.beginPath();c.ellipse(s*38,-76,15,11,0,0,TAU);c.fill();c.strokeStyle=rim;c.lineWidth=1.5;c.stroke();
+   c.fillStyle='#1a0a06';c.beginPath();c.moveTo(s*24,-26);c.quadraticCurveTo(s*46,-28,s*64,-8);c.lineTo(s*64,0);c.lineTo(s*22,0);c.closePath();c.fill();c.strokeStyle=rim;c.stroke();}
+  c.save();c.translate(0,b);
+  // faulds and cuirass in one tapering plate
+  c.fillStyle=steel;c.beginPath();c.moveTo(-54,-112);c.quadraticCurveTo(-62,-190,-56,-248);c.quadraticCurveTo(0,-270,56,-248);c.quadraticCurveTo(62,-190,54,-112);c.quadraticCurveTo(0,-96,-54,-112);c.fill();c.strokeStyle=rim;c.lineWidth=2;c.stroke();
+  c.strokeStyle='rgba(0,0,0,.45)';c.lineWidth=2;for(const y of[-140,-126]){c.beginPath();c.moveTo(-54,y);c.quadraticCurveTo(0,y+14,54,y);c.stroke();}
+  // molten heart and cracks across the chest
+  c.save();c.globalCompositeOperation='lighter';c.fillStyle=RG(c,0,-196,0,38,[[0,'#fff6c0'],[.3,P[2]],[1,'rgba(255,80,0,0)']]);c.beginPath();c.arc(0,-196,38,0,TAU);c.fill();
+  c.strokeStyle=P[2];c.lineWidth=2;c.globalAlpha=.7+.3*fl;c.beginPath();c.moveTo(0,-196);c.lineTo(-18,-176);c.lineTo(-12,-158);c.lineTo(-30,-138);c.moveTo(0,-196);c.lineTo(20,-214);c.lineTo(14,-232);c.moveTo(4,-192);c.lineTo(26,-170);c.lineTo(40,-176);c.stroke();c.restore();
+  // greatsword planted point-down in front of him
+  c.fillStyle=LG(c,-82,0,-64,0,[[0,'#3a1a10'],[.5,'#ffd8a0'],[1,'#5a2a14']]);c.beginPath();c.moveTo(-82,-140);c.lineTo(-64,-140);c.lineTo(-66,-6-b);c.lineTo(-73,8-b);c.lineTo(-80,-6-b);c.closePath();c.fill();
+  c.save();c.globalCompositeOperation='lighter';c.strokeStyle='rgba(255,170,80,.7)';c.lineWidth=2;c.beginPath();c.moveTo(-73,-136);c.lineTo(-73,-8-b);c.stroke();c.restore();
+  c.fillStyle='#2a1208';c.beginPath();c.roundRect(-104,-152,62,12,5);c.fill();c.strokeStyle=rim;c.lineWidth=2;c.stroke();c.fillStyle='#3a1a0c';c.fillRect(-78,-180,10,28);c.fillStyle=rim;c.beginPath();c.arc(-73,-184,7,0,TAU);c.fill();
+  // front arm reaching down to the hilt
+  limb(c,[[-50,-238],[-84,-204],[-76,-162]],[36,28,22],armS);c.strokeStyle=rim;c.lineWidth=1.5;c.stroke();c.fillStyle='#2a1208';c.beginPath();c.ellipse(-74,-162,14,12,.2,0,TAU);c.fill();c.strokeStyle=rim;c.lineWidth=1.5;c.stroke();
+  // back arm raised, a living flame in the gauntlet
+  limb(c,[[50,-238],[90,-206],[104,-252]],[36,28,22],armS);c.strokeStyle=rim;c.lineWidth=1.5;c.stroke();c.fillStyle='#2a1208';c.beginPath();c.ellipse(104,-256,13,12,0,0,TAU);c.fill();
+  const hx=104,hy=-268;c.save();c.globalCompositeOperation='lighter';c.fillStyle=RG(c,hx,hy-14,0,46,[[0,'rgba(255,246,190,.95)'],[.35,'rgba(255,150,40,.6)'],[1,'rgba(255,40,0,0)']]);c.beginPath();c.arc(hx,hy-14,46,0,TAU);c.fill();
+  c.fillStyle='rgba(255,210,110,.9)';c.beginPath();c.moveTo(hx-12,hy);c.quadraticCurveTo(hx-16,hy-22,hx-2+fl*3,hy-48);c.quadraticCurveTo(hx+4,hy-30,hx+10,hy-34+fl2*3);c.quadraticCurveTo(hx+16,hy-14,hx+12,hy);c.closePath();c.fill();c.restore();
+  // pauldrons sweeping over both shoulders
+  for(const s of[-1,1]){c.fillStyle=steel;c.beginPath();c.moveTo(s*24,-258);c.quadraticCurveTo(s*80,-276,s*90,-224);c.quadraticCurveTo(s*70,-210,s*38,-222);c.closePath();c.fill();c.strokeStyle=rim;c.lineWidth=2;c.stroke();c.strokeStyle='rgba(0,0,0,.4)';c.beginPath();c.moveTo(s*40,-250);c.quadraticCurveTo(s*72,-256,s*80,-232);c.stroke();}
+  // crowned great helm with a burning visor
+  c.fillStyle=steel;c.beginPath();c.moveTo(-28,-248);c.quadraticCurveTo(-36,-302,0,-310);c.quadraticCurveTo(36,-302,28,-248);c.quadraticCurveTo(0,-238,-28,-248);c.fill();c.strokeStyle=rim;c.lineWidth=2;c.stroke();
+  c.fillStyle='#050100';c.fillRect(-20,-284,40,7);eyeGlow(c,-9,-281,3.4,P[2]);eyeGlow(c,9,-281,3.4,P[2]);c.strokeStyle='rgba(0,0,0,.5)';c.beginPath();c.moveTo(0,-276);c.lineTo(0,-246);c.stroke();
+  c.fillStyle=rim;c.beginPath();c.moveTo(-30,-298);for(let i=0;i<5;i++){const x=-30+i*12;c.lineTo(x+6,-322-(i===2?12:i%2?4:8));c.lineTo(x+12,-300);}c.closePath();c.fill();
+  c.save();c.globalCompositeOperation='lighter';for(let i=0;i<5;i++){const x=-24+i*12,h=22+10*Math.abs(Math.sin(t*5+i*1.7));c.fillStyle=RG(c,x,-322,0,h,[[0,'rgba(255,240,170,.85)'],[.5,'rgba(255,120,30,.45)'],[1,'rgba(255,40,0,0)']]);c.beginPath();c.moveTo(x-6,-318);c.quadraticCurveTo(x-4,-322-h*.6,x+fl*2,-322-h);c.quadraticCurveTo(x+4,-322-h*.6,x+6,-318);c.closePath();c.fill();}c.restore();
+  c.restore();},
+});
+
 /* ---- heroes (seen from behind-left, facing right) ---- */
 /* tapered limb: one smooth outline through a list of joints, so arms and legs flow instead of stacking */
 function limb(c,pts,ws,fill){const n=pts.length,A=[],Q=[];for(let i=0;i<n;i++){const p=pts[Math.max(0,i-1)],q=pts[Math.min(n-1,i+1)],dx=q[0]-p[0],dy=q[1]-p[1],l=Math.hypot(dx,dy)||1,nx=-dy/l,ny=dx/l,w=ws[i]/2;A.push([pts[i][0]+nx*w,pts[i][1]+ny*w]);Q.unshift([pts[i][0]-nx*w,pts[i][1]-ny*w]);}
@@ -1646,6 +1915,44 @@ const HART={
   c.save();c.globalCompositeOperation='lighter';c.lineCap='round';for(let i=0;i<6;i++){const k=(t*.45+i*.167)%1,x=-46+i*18,y=-4-k*70,sw=Math.sin(t*1.7+i*2)*12;c.strokeStyle='rgba(110,245,190,'+(.34*Math.sin(k*Math.PI))+')';c.lineWidth=2.5;c.beginPath();c.moveTo(x,y);c.bezierCurveTo(x+sw,y-14,x-sw,y-26,x+sw*.6,y-40);c.stroke();}c.restore();
   c.restore();},
 };
+/* The Gravebinder: hood flowing into a tattered robe, bone mask, a soul lantern in one hand and a scythe in the other */
+HART.g=function(c,t,s=1){const b=Math.sin(t*1.8)*1.5,w=Math.sin(t*1.3),fl=Math.sin(t*9);c.save();c.scale(s,s);shadowE(c,70);
+ const wisp=(x,y,r)=>{c.save();c.globalCompositeOperation='lighter';c.fillStyle=RG(c,x,y,0,r*3.2,[[0,'rgba(170,255,220,.75)'],[.4,'rgba(60,220,170,.3)'],[1,'rgba(20,120,90,0)']]);c.beginPath();c.arc(x,y,r*3.2,0,TAU);c.fill();
+  c.fillStyle='rgba(220,255,240,.9)';c.beginPath();c.moveTo(x,y-r*2.4);c.quadraticCurveTo(x+r*1.1,y-r*.6,x+r,y+r*.3);c.arc(x,y+r*.3,r,0,Math.PI);c.quadraticCurveTo(x-r*1.1,y-r*.6,x,y-r*2.4);c.fill();c.fillStyle='rgba(20,60,50,.8)';c.fillRect(x-r*.5,y,r*.3,r*.5);c.fillRect(x+r*.2,y,r*.3,r*.5);c.restore();};
+ const ws=[0,1,2].map(i=>{const a=t*1.1+i*TAU/3;return[Math.cos(a)*74,-118+Math.sin(a*1.3)*26,Math.sin(a)];});
+ ws.forEach(o=>{if(o[2]<0)wisp(o[0],o[1],4.5);});
+ // cape behind, sweeping back and torn into strips
+ c.fillStyle=LG(c,-90,-160,10,0,[[0,'#08100c'],[.6,'#1a2a22'],[1,'#0a120e']]);c.beginPath();c.moveTo(-6,-172+b);c.bezierCurveTo(-50,-160,-72+w*4,-92,-86+w*7,-6);c.lineTo(-74,-16);c.lineTo(-66+w*4,0);c.lineTo(-56,-12);c.lineTo(-44,2);c.bezierCurveTo(-32,-60,-22,-124,-6,-172+b);c.closePath();c.fill();
+ // the scythe shaft, behind the body
+ const sx0=30,sy0=0,sx1=58,sy1=-244+b;c.strokeStyle='#2a1a10';c.lineWidth=7;c.lineCap='round';c.beginPath();c.moveTo(sx0,sy0);c.lineTo(sx1,sy1);c.stroke();c.strokeStyle='#7a5a3a';c.lineWidth=2.5;c.beginPath();c.moveTo(sx0+1,sy0-4);c.lineTo(sx1+1,sy1+4);c.stroke();
+ // robe from shoulders to a ragged hem, one outline
+ c.fillStyle=LG(c,-42,0,42,0,[[0,'#0e1412'],[.45,'#2c3a33'],[.7,'#1c2622'],[1,'#080c0a']]);c.beginPath();c.moveTo(-18,-160+b);c.bezierCurveTo(-34,-152,-38,-112,-30,-82+b*.5);c.bezierCurveTo(-36,-52,-46,-24,-50,0);
+ for(let i=1;i<=8;i++)c.lineTo(-50+i*12.5,(i%2?-10:0)+Math.sin(t*2+i)*2);c.bezierCurveTo(44,-26,34,-56,28,-84+b*.5);c.bezierCurveTo(32,-114,30,-150,16,-160+b);c.closePath();c.fill();
+ c.strokeStyle='rgba(0,0,0,.5)';c.lineWidth=2.5;c.beginPath();c.moveTo(-10,-110+b);c.bezierCurveTo(-16,-70,-24,-34,-30,-6);c.moveTo(8,-108+b);c.bezierCurveTo(12,-70,18,-36,24,-6);c.stroke();
+ c.strokeStyle='rgba(110,255,200,.25)';c.lineWidth=2;c.beginPath();c.moveTo(22,-110+b);c.bezierCurveTo(28,-74,36,-40,42,-10);c.stroke();
+ // a chain of vertebrae worn like a sash, shoulder to hip
+ for(let i=0;i<9;i++){const k=i/8,x=-16+k*40,y=-150+k*58+b+Math.sin(k*3)*4;c.fillStyle='#e8dcc0';c.beginPath();c.ellipse(x,y,4.6,3.2,.9,0,TAU);c.fill();c.fillStyle='#8a7e64';c.beginPath();c.arc(x,y,1.3,0,TAU);c.fill();}
+ // back arm hanging down, holding the soul lantern on a short chain
+ limb(c,[[-16,-150+b],[-34,-118+b],[-42,-92+b]],[17,13,11],'#1e2a24');c.fillStyle='#c8c0a8';c.beginPath();c.ellipse(-43,-88+b,5.5,6.5,0,0,TAU);c.fill();
+ const lx=-44+w*2,ly=-60+b;c.strokeStyle='#5a5448';c.lineWidth=1.5;c.beginPath();c.moveTo(-43,-84+b);c.lineTo(lx,ly-14);c.stroke();
+ c.fillStyle='#2a2a26';c.beginPath();c.moveTo(lx-9,ly-14);c.lineTo(lx+9,ly-14);c.lineTo(lx+11,ly+12);c.lineTo(lx-11,ly+12);c.closePath();c.fill();
+ c.save();c.globalCompositeOperation='lighter';c.fillStyle=RG(c,lx,ly,0,30,[[0,'rgba(200,255,230,.95)'],[.3,'rgba(80,240,180,.5)'],[1,'rgba(20,120,90,0)']]);c.beginPath();c.arc(lx,ly,30,0,TAU);c.fill();c.restore();
+ c.fillStyle='#bfffe6';c.beginPath();c.moveTo(lx,ly-9+fl);c.quadraticCurveTo(lx+6,ly,lx+4,ly+5);c.arc(lx,ly+5,4,0,Math.PI);c.quadraticCurveTo(lx-6,ly,lx,ly-9+fl);c.fill();c.strokeStyle='#1a1a16';c.lineWidth=1.5;c.strokeRect(lx-9,ly-14,18,26);
+ // hood: one deep cowl, mask within
+ c.fillStyle=LG(c,-24,-210,30,-150,[[0,'#0c1410'],[.5,'#26342c'],[1,'#0a100c']]);c.beginPath();c.moveTo(-20,-150+b);c.bezierCurveTo(-32,-178,-24,-208,2,-212+b);c.bezierCurveTo(24,-210,32,-190,30,-168+b);c.quadraticCurveTo(24,-152,8,-148+b);c.closePath();c.fill();
+ c.fillStyle='#050807';c.beginPath();c.ellipse(13,-178+b,13,18,.15,0,TAU);c.fill();
+ c.fillStyle=LG(c,4,-196,24,-160,[[0,'#f4ecd6'],[1,'#a89c80']]);c.beginPath();c.moveTo(6,-194+b);c.bezierCurveTo(16,-198,26,-190,26,-180+b);c.lineTo(28,-172+b);c.lineTo(24,-170+b);c.quadraticCurveTo(22,-160,14,-160+b);c.quadraticCurveTo(6,-164,4,-176+b);c.closePath();c.fill();
+ c.fillStyle='#0a1210';c.beginPath();c.ellipse(16,-182+b,4,3.2,0,0,TAU);c.fill();eyeGlow(c,16,-182+b,2.2,'#6affc8');
+ c.strokeStyle='#5a5040';c.lineWidth=1;c.beginPath();for(let i=0;i<4;i++){c.moveTo(12+i*3,-167+b);c.lineTo(12+i*3,-162+b);}c.stroke();
+ // front arm: sleeve tapering to the hand that grips the scythe
+ const gy=-112+b,gx=sx0+(sx1-sx0)*((sy0-gy)/(sy0-sy1));limb(c,[[14,-152+b],[34,-130+b],[gx,gy]],[18,14,11],'#26342c');c.fillStyle='#c8c0a8';c.beginPath();c.ellipse(gx,gy,6.5,7.5,.3,0,TAU);c.fill();
+ // the blade, a long crescent curling forward over the head
+ c.fillStyle=LG(c,sx1,sy1-30,sx1+90,sy1+40,[[0,'#f0f4f6'],[.5,'#8a96a0'],[1,'#3a4248']]);c.beginPath();c.moveTo(sx1-2,sy1+4);c.bezierCurveTo(sx1+22,sy1-26,sx1+70,sy1-20,sx1+92,sy1+26);c.bezierCurveTo(sx1+66,sy1+2,sx1+30,sy1+2,sx1+4,sy1+12);c.closePath();c.fill();
+ c.save();c.globalCompositeOperation='lighter';c.strokeStyle='rgba(110,255,200,'+(.45+.25*fl)+')';c.lineWidth=2;c.beginPath();c.moveTo(sx1+4,sy1-2);c.bezierCurveTo(sx1+26,sy1-24,sx1+70,sy1-18,sx1+92,sy1+26);c.stroke();c.restore();
+ c.fillStyle='#3a3a36';c.beginPath();c.arc(sx1,sy1+6,5,0,TAU);c.fill();
+ ws.forEach(o=>{if(o[2]>=0)wisp(o[0],o[1],4.5);});
+ c.restore();};
+
 /* the Night Merchant's portrait */
 function merchantArt(c,sz){c.save();c.scale(sz/120,sz/120);c.fillStyle=RG(c,60,66,4,70,[[0,'#6a3a18'],[.6,'#1e1220'],[1,'#07050c']]);c.fillRect(0,0,120,120);
  c.fillStyle=LG(c,10,40,110,120,[[0,'#2a2036'],[1,'#0a0810']]);c.beginPath();c.moveTo(4,120);c.bezierCurveTo(14,88,26,76,36,66);c.bezierCurveTo(30,30,44,10,62,10);c.bezierCurveTo(82,10,92,32,86,66);c.bezierCurveTo(98,76,110,90,116,120);c.closePath();c.fill();
@@ -1669,7 +1976,7 @@ const sfx=(n,...a)=>{try{SND.play(n,...a);}catch(_){}};
 const mus=n=>{try{SND.music(n);}catch(_){}};
 /* ---- save data ---- */
 const MK='duskspire-meta',RK='duskspire-run';
-const META={embers:0,total:0,sanct:{},unl:{w:1},dusk:{w:0,m:0,s:0,t:0},best:{w:-1,m:-1,s:-1,t:-1},seen:{},relSeen:{},foes:{},stats:{runs:0,wins:0,kills:0,floors:0,bosses:0,best:0,dmg:0},opt:{music:true,sfx:true,fast:false},tut:0,last:'w',rareT:0};
+const META={embers:0,total:0,sanct:{},unl:{w:1},dusk:{w:0,m:0,s:0,t:0,g:0},best:{w:-1,m:-1,s:-1,t:-1,g:-1},seen:{},relSeen:{},foes:{},stats:{runs:0,wins:0,kills:0,floors:0,bosses:0,best:0,dmg:0},opt:{music:true,sfx:true,fast:false},tut:0,last:'w',rareT:0};
 function loadMeta(){try{const s=JSON.parse(__store.get(MK));if(s){for(const k in s){if(META[k]&&typeof META[k]==='object'&&!Array.isArray(META[k]))Object.assign(META[k],s[k]);else META[k]=s[k];}}}catch(_){}}
 function saveMeta(){try{__store.set(MK,JSON.stringify(META));}catch(_){}}
 let R=null;
@@ -1715,7 +2022,7 @@ function ovl(html,cls){const o=$('ovl');o.style.cssText='';o.innerHTML=html;o.hi
 function closeOvl(){$('ovl').hidden=true;$('ovl').innerHTML='';}
 /* ---- card element ---- */
 const RIM={0:'linear-gradient(160deg,#a8a090,#4a4438 50%,#c2b8a2)',1:'linear-gradient(160deg,#d8dce4,#5a606a 50%,#e8ecf2)',2:'linear-gradient(160deg,#9cd0ff,#24507a 50%,#b8e0ff)',3:'linear-gradient(160deg,#fff0b0,#9a6a1a 45%,#ffe08a 60%,#7a4a10)',9:'linear-gradient(160deg,#a090b0,#2a2034 50%,#8a7a9a)'};
-const GEM={w:'radial-gradient(circle at 35% 30%,#fff2c8,#d8a050 50%,#5a3410)',m:'radial-gradient(circle at 35% 30%,#ffe4b0,#ff6a20 50%,#6a1404)',s:'radial-gradient(circle at 35% 30%,#d8fff0,#30b080 50%,#0a3a28)',n:'radial-gradient(circle at 35% 30%,#f0f0f0,#8a8a96 50%,#2a2a34)',x:'radial-gradient(circle at 35% 30%,#e0e0e0,#6a6a6a 50%,#1a1a1a)'};
+const GEM={g:'radial-gradient(circle at 35% 30%,#e0fff4,#3ad0a0 50%,#0a3028)',t:'radial-gradient(circle at 35% 30%,#e0f0ff,#5a9be0 50%,#10284a)',w:'radial-gradient(circle at 35% 30%,#fff2c8,#d8a050 50%,#5a3410)',m:'radial-gradient(circle at 35% 30%,#ffe4b0,#ff6a20 50%,#6a1404)',s:'radial-gradient(circle at 35% 30%,#d8fff0,#30b080 50%,#0a3a28)',n:'radial-gradient(circle at 35% 30%,#f0f0f0,#8a8a96 50%,#2a2a34)',x:'radial-gradient(circle at 35% 30%,#e0e0e0,#6a6a6a 50%,#1a1a1a)'};
 const TYN={a:'Attack',s:'Skill',p:'Power',c:'Curse'};
 function descOf(ci,B,T){const d=CARDS[ci.id],v=cv(ci);let s=(ci.up&&d.dsu)||d.ds;
  s=s.replace(/\{d\}/g,()=>{let base=v.d+(d.dynb?(ci.bonus||0):0);if(!B)return '<b>'+base+'</b>';let x=base+(B.P.st.str||0)+(d.shv?(B.P.st.accuracy||0):0);if(B.P.st.weak)x=Math.floor(x*.75);if(T&&T.st.vul)x=Math.floor(x*1.5);x=Math.max(0,x);return '<b class="'+(x>base?'g':x<base?'r':'')+'">'+x+'</b>';});
@@ -1759,7 +2066,7 @@ function usePotion(i){const id=R.potions[i],p=POTIONS[id];
 let B=null;
 const HT={slime:106,bat:150,rat:90,skel:176,robe:180,armor:236,hound:112,colossus:340,ghost:190,spider:112,toad:130,shroom:145,gargoyle:236,queen:320,eye:180,imp:180,lich:226,golem:250,dusk:330,vine:250,moth:190,clock:270,treant:350,seraph:250,wyrm:240,king:350};
 const WD={slime:160,bat:190,rat:200,skel:150,robe:130,armor:190,hound:200,colossus:240,ghost:160,spider:220,toad:190,shroom:140,gargoyle:280,queen:230,eye:150,imp:150,lich:170,golem:250,dusk:330,vine:200,moth:240,clock:190,treant:300,seraph:240,wyrm:290,king:290};
-const ESC=.8,HERO_X=250,BASE_Y=520;
+const ESC=.8,HERO_X=250,BASE_Y=520;Object.assign(HT,{lizard:120,sovereign:360});Object.assign(WD,{lizard:270,sovereign:300});
 let ending=false;const handEls=new Map();
 const FX={floats:[],parts:[],slashes:[],shake:0,arrow:null,flashScreen:0};
 function float(x,y,t,col,big){FX.floats.push({x,y,t,col,life:1,big});}
@@ -1799,23 +2106,30 @@ function makeBattle(enc,kind){
   upAll(){[this.hand,this.dp,this.disc].forEach(p=>p.forEach(c=>{if(CARDS[c.id].u&&CARDS[c.id].y!=='c')c.up=(c.up||0)+1;}));renderHand();},
   usePot(i,T){const id=R.potions[i];if(!id||this.busy||this.phase!=='player'){this.potTarget=null;return;}R.potions[i]=null;this.potTarget=null;try{POTIONS[id].f(this,T);}catch(err){console.error(err);}sfx('magic');renderTop();renderHand();if(!checkEnd())snapB();},
  };
+ B.gainSoul=n=>{if(n<=0)return;B.apply(B.P,'soul',n);if(B.P.st.soulguard)B.block(B.P.st.soulguard*n,1);};
+ B.spendSoul=n=>{const s=B.P.st.soul||0;if(s<n)return false;if(n>0){B.P.st.soul=s-n;if(!B.P.st.soul)delete B.P.st.soul;float(HERO_X,BASE_Y-210,'-'+n+(n>1?' Souls':' Soul'),'#7affd8');burst(HERO_X+30,BASE_Y-150,'#7affd8',12);}return true;};
+ B.doom=(T,n)=>{if(T&&T!==B.P&&T.hp>0&&n>0)B.apply(T,'doom',n);};
+ B.reapCheck=()=>{let k=0;B.foes2().forEach(f=>{if(f.st.doom&&f.st.doom>=f.hp){reap(f);k++;}});return k;};
  B.dp=shuf(R.deck.map(c=>({id:c.id,up:c.up,u:c.u})));
  // innate-like: none. layout
  layoutFoes();B.foes.forEach(f=>chooseMove(f));
  if(enc.includes('bat')||enc.length>1)B.foes.forEach((f,i)=>f.ph=i*1.7);
  return B;}
-function dmgFoe(f,x,kind){if(f.hp<=0)return;let a=x;if(kind!=='poison'&&kind!=='burn'){const b=Math.min(f.block,a);f.block-=b;a-=b;if(b>0&&a===0){float(f.x,BASE_Y-HT[f.d.art]*f.d.sz*ESC*.5,'Blocked','#8cc8ff');sfx('tap');}}
+function dmgFoe(f,x,kind){if(f.hp<=0)return;let a=x;if(kind!=='poison'&&kind!=='burn'&&kind!=='reap'){const b=Math.min(f.block,a);f.block-=b;a-=b;if(b>0&&a===0){float(f.x,BASE_Y-HT[f.d.art]*f.d.sz*ESC*.5,'Blocked','#8cc8ff');sfx('tap');}}
  f.hp-=a;META.stats.dmg+=a;f.anim.hit=1;const y=BASE_Y-HT[f.d.art]*f.d.sz*ESC*.55;
  if(a>0){float(f.x+ri(-20,20),y-30,String(a),kind==='poison'?'#8aff6a':kind==='burn'?'#ffa040':'#fff',a>=20);}
  if(kind==='atk'||kind==='jugg'){slash(f.x,y,'#fff');sfx('hit');FX.shake=Math.min(14,4+a*.25);burst(f.x,y,f.d.pal[2],8);}
  if(kind==='burn'&&B.P.st.kindsoul&&a>0)B.block(B.P.st.kindsoul,1);
  if(f.hp<=0){f.hp=0;f.anim.dead=.001;burst(f.x,y,f.d.pal[0],34,260);sfx(f.d.boss?'gong':'crash');R.stats.kills++;META.stats.kills++;META.foes[f.id]=(META.foes[f.id]||0)+1;
   if(hasR('chain')){B.energy++;renderEnergy();flashRelic('chain');}
-  if(hasR('shears')){healR(R,4);renderTop();flashRelic('shears');}}
+  if(hasR('shears')){healR(R,4);renderTop();flashRelic('shears');}
+  if(B){if(hasR('gravelantern'))B.gainSoul(1);if(hasR('soulcage')){B.gainSoul(1);B.block(5,1);flashRelic('soulcage');}if(B.P.st.rites){const n=B.P.st.rites;B.foes2().forEach(o=>dmgFoe(o,n,'jugg'));}}}
 }
 function dmgPlayer(x,kind,noBlock){let a=Math.max(0,Math.floor(x));if(!noBlock){const b=Math.min(B.P.block,a);B.P.block-=b;a-=b;if(b>0&&a===0)float(HERO_X,BASE_Y-150,'Blocked','#8cc8ff');}
  if(a>0&&hasR('rod')){a=Math.max(0,a-1);flashRelic('rod');}
  if(a>0){R.hp-=a;float(HERO_X+ri(-15,15),BASE_Y-170,'-'+a,'#ff5a4a',a>=15);FX.flashScreen=Math.min(.5,.15+a/60);sfx('hurt');FX.shake=Math.min(16,5+a*.3);B.heroHit=1;}
+ if(R.hp<=0&&hasR('phylactery')&&!R.phyUsed){R.phyUsed=1;R.hp=Math.ceil(R.maxhp*.4);float(HERO_X,BASE_Y-220,'Phylactery','#d8b0ff',true);flashRelic('phylactery');sfx('magic');}
+ if(B&&R.hp>0&&hasR('mirrorshard')&&!B.mirrorUsed&&R.hp*2<R.maxhp){B.mirrorUsed=1;B.block(15,1);flashRelic('mirrorshard');}
  if(R.hp<0)R.hp=0;renderTop();}
 function renderEnergy(){if(!B)return;$('enT').textContent=B.energy+'/'+B.maxE;renderHandPlayable();}
 function snapB(){if(!B||!R||!R.cur||B.phase!=='player'||B.busy)return;
@@ -1828,7 +2142,7 @@ async function startCombat(enc,kind){BT++;ending=false;$('hand').innerHTML='';ha
  const saved=R.cur&&R.cur.bs;
  B=makeBattle(enc,kind);$('battle').classList.remove('won');show('battle');renderTop();closeOvl();
  mus(kind==='boss'?'boss':ACTS[R.act].music);if(kind==='boss')sfx('gong');
- B.maxE=3+(hasR('sunshard')?1:0)+(hasR('voidlens')?1:0)+(hasR('duskcrown')?1:0)+(hasR('thorncrown')?1:0);
+ B.maxE=3+(hasR('embercrown')?1:0)+(hasR('soulengine')?1:0)+(hasR('sunshard')?1:0)+(hasR('voidlens')?1:0)+(hasR('duskcrown')?1:0)+(hasR('thorncrown')?1:0);
  if(saved){resumeB(saved);banner('Your Turn');return;}
  renderHand();await wait(500);
  // combat start relics
@@ -1844,6 +2158,11 @@ async function startCombat(enc,kind){BT++;ending=false;$('hand').innerHTML='';ha
  if(hasR('stormglass')){B.foes2().forEach(f=>B.apply(f,'static',2));flashRelic('stormglass');}
  if(hasR('nightbloom')){B.foes2().forEach(f=>B.apply(f,'poison',3,1));flashRelic('nightbloom');}
  if(hasR('thorncrown')){B.addCard('wound','draw');flashRelic('thorncrown');}
+ if(hasR('gravelantern')){B.gainSoul(1);flashRelic('gravelantern');}
+ if(hasR('cracked')){B.foes2().forEach(f=>B.apply(f,'weak',1));flashRelic('cracked');}
+ if(hasR('bellows')){const e=B.rndFoe();if(e)B.apply(e,'burn',4,1);flashRelic('bellows');}
+ if(hasR('embercrown')){dmgPlayer(6,'self',1);flashRelic('embercrown');}
+ if(sl('warded'))B.block(4*sl('warded'),1);
  await startTurn();}
 async function startTurn(){const P=B.P;B.turn++;B.phase='start';B.busy=true;
  if(R.hero!=='w'&&!P.st.bastion&&!P.st.blur)P.block=0;if(P.st.blur){P.st.blur--;if(!P.st.blur)delete P.st.blur;}
@@ -1855,15 +2174,19 @@ async function startTurn(){const P=B.P;B.turn++;B.phase='start';B.busy=true;
  if(hasR('hourglass')){B.foes2().forEach(f=>dmgFoe(f,3,'jugg'));flashRelic('hourglass');}
  if(hasR('horn')&&B.turn===2){B.block(14,1);flashRelic('horn');}
  if(hasR('eclipseorb')){B.foes2().forEach(f=>B.apply(f,'vul',1,1));flashRelic('eclipseorb');}
+ if(P.st.creep)B.foes2().forEach(f=>B.doom(f,P.st.creep));
+ if(P.st.lich){B.gainSoul(P.st.lich);B.foes2().forEach(f=>B.doom(f,4));}
+ if(P.st.stormlord)B.foes2().forEach(f=>B.apply(f,'static',P.st.stormlord));
+ if(hasR('deathbell')){B.foes2().forEach(f=>B.doom(f,3));flashRelic('deathbell');}
  if(checkEnd())return;
- const carry=hasR('urn')?B.energy:0;B.energy=B.maxE+carry+(P.st.innerflame||0)+(B.turn===1&&hasR('lantern')?1:0)+(B.turn===3&&hasR('lunarbell')?2:0)+(P.st.overload||0);delete P.st.overload;
- B.atkTurn=0;B.sklTurn=0;
- const n=5+(P.st.study||0)+(hasR('ringx')?1:0)+(hasR('grandtome')?2:0)-(hasR('voidlens')?1:0)+(B.turn===1&&hasR('starmap')?2:0);
+ const carry=hasR('urn')?B.energy:0;B.energy=B.maxE+carry+(P.st.innerflame||0)+(B.turn===1&&hasR('lantern')?1:0)+(B.turn===3&&hasR('lunarbell')?2:0)+(B.turn===2&&hasR('tallow')?1:0)+(P.st.overload||0);delete P.st.overload;
+ B.atkTurn=0;B.sklTurn=0;B.cardTurn=0;
+ const n=5+(P.st.study||0)+(hasR('ringx')?1:0)+(hasR('grandtome')?2:0)-(hasR('voidlens')?1:0)+(B.turn===1&&hasR('starmap')?2:0)+(B.turn===2&&hasR('tallow')?1:0);
  B.draw(n);
  if(P.st.knives)for(let i=0;i<P.st.knives;i++)B.addCard('shiv','hand');
  if(B.turn===1&&hasR('viperfang')){B.addCard('shiv','hand');B.addCard('shiv','hand');flashRelic('viperfang');}
  renderEnergy();await wait(350);B.phase='player';B.busy=false;renderHand();snapB();
- if(!META.tut&&R.floorsTotal<=1)tutorial();}
+ if(!META.tut&&R.floorsTotal<=1)tutorial();else if(R.hero==='g'&&!META.tutG&&B.turn===1)gTutorial();}
 function banner(t){const b=$('turnBan');b.textContent=t;b.classList.add('on');setTimeout(()=>b.classList.remove('on'),800);}
 function canPlay(ci){const d=CARDS[ci.id];if(d.x&&d.x.un)return false;const c=cc(ci);return c<=B.energy;}
 async function playCard(ci,T){if(!B||B.busy||B.phase!=='player')return;const d=CARDS[ci.id];if(!canPlay(ci)){sfx('error');toast(d.x&&d.x.un?'This card cannot be played':'Not enough energy');return;}
@@ -1878,6 +2201,10 @@ async function playCard(ci,T){if(!B||B.busy||B.phase!=='player')return;const d=C
  if(d.y==='s')B.foes2().forEach(f=>{if(f.st.enrage)B.apply(f,'str',f.st.enrage);});
  if(d.y==='a'&&B.P.st.conduit){const e=B.rndFoe();if(e)B.apply(e,'static',B.P.st.conduit);}
  if(B.P.st.cuts)B.foes2().forEach(f=>dmgFoe(f,B.P.st.cuts,'jugg'));
+ B.cardTurn=(B.cardTurn||0)+1;if(hasR('blackfeather')&&B.cardTurn%4===0){B.draw(1);flashRelic('blackfeather');}
+ if(d.y==='p'&&hasR('brassgear')){B.block(6,1);flashRelic('brassgear');}
+ if(d.y==='a'&&B.P.st.necro){const e=T&&T.hp>0?T:B.rndFoe();if(e)B.doom(e,B.P.st.necro);}
+ if(ci.id==='shiv'&&B.P.st.venomshiv){const e=T&&T.hp>0?T:B.rndFoe();if(e)B.apply(e,'poison',B.P.st.venomshiv);}
  if(d.y==='a'&&B.atkTurn%3===0){if(hasR('starcharm')){B.apply(B.P,'str',1);flashRelic('starcharm');}if(hasR('twinfangs')){B.apply(B.P,'dex',1);flashRelic('twinfangs');}if(hasR('fan')){B.block(4,1);flashRelic('fan');}}
  if(d.y==='s'&&B.sklTurn%3===0&&hasR('knife')){B.foes2().forEach(f=>dmgFoe(f,5,'jugg'));flashRelic('knife');}
  if(d.y==='s'&&B.sklTurn%3===0&&hasR('comet')){B.gainE(1);flashRelic('comet');}
@@ -1890,6 +2217,8 @@ async function endTurn(){if(!B||B.busy||B.phase!=='player')return;B.busy=true;B.
  if(P.st.ironskin)B.block(P.st.ironskin,1);
  if(P.st.tempest)for(let i=0;i<P.st.tempest*1;i++){const e=B.rndFoe();if(e)dmgFoe(e,5+(e.st.static||0),'jugg');}
  if(P.st.eternal)B.foes2().forEach(f=>B.apply(f,'burn',P.st.eternal));
+ if(P.st.ashguard){const tb=B.foes2().reduce((a,f)=>a+(f.st.burn||0),0);if(tb)B.block(tb,1);}
+ if(hasR('kingsring')&&B.energy>0){B.block(5*B.energy,1);flashRelic('kingsring');}
  // curses in hand
  B.hand.forEach(c=>{if(c.id==='regret')dmgPlayer(B.hand.length,'self',1);if(c.id==='doubt')B.apply(P,'weak',1);});
  if(hasR('moonstone')&&P.block===0){B.block(6,1);flashRelic('moonstone');}
@@ -1901,6 +2230,7 @@ async function endTurn(){if(!B||B.busy||B.phase!=='player')return;B.busy=true;B.
  if(R.hp<=0)return lose();if(checkEnd())return;
  await wait(380);banner('Enemy Turn');await wait(500);
  for(const f of B.foes){if(f.hp<=0)continue;f.block=0;
+  if(f.st.doom&&f.st.doom>=f.hp){reap(f);await wait(500);if(checkEnd())return;continue;}
   if(f.st.poison){dmgFoe(f,f.st.poison,'poison');f.st.poison--;if(!f.st.poison)delete f.st.poison;await wait(260);if(f.hp<=0){if(checkEnd())return;continue;}}
   await foeAct(f);if(R.hp<=0)return lose();if(checkEnd())return;
   if(f.st.burn){dmgFoe(f,f.st.burn,'burn');f.st.burn=Math.floor(f.st.burn/2);if(!f.st.burn)delete f.st.burn;await wait(200);if(f.hp<=0){if(checkEnd())return;continue;}}
@@ -1927,6 +2257,7 @@ function checkEnd(){if(!B||ending)return false;if(R.hp<=0){lose();return true;}i
 async function winCombat(){if(!B)return;__mgt('w',()=>B.foes.map(f=>f.d.n||f.d.name||f.id).join(' + '));const kind=B.kind;B.hand=[];$('hand').innerHTML='';handEls.clear();$('battle').classList.add('won');
  if(hasR('emberheart')){healR(R,6);flashRelic('emberheart');}
  if(hasR('goldleaf')){R.gold+=8;R.stats.gold+=8;flashRelic('goldleaf');}
+ if((kind==='elite'||kind==='boss')&&sl('firstaid'))healR(R,3*sl('firstaid'));
  R.deck.forEach(c=>{});// rampage bonus is per-combat only
  if(kind==='elite'){R.stats.elites++;}
  if(kind==='boss'){R.stats.bosses++;META.stats.bosses++;}
@@ -1976,7 +2307,7 @@ $('battle').addEventListener('pointerdown',e=>{if(!B||scene!=='battle')return;if
 function foeTip(f){const it=intentOf(f);let h='<b>'+f.d.n+'</b>'+f.hp+' / '+f.maxhp+' HP'+(f.block?' &middot; '+f.block+' block':'');
  if(it){h+='<div class="k"><span style="color:#ffd27a">Intends: '+it.m.n+'</span> &mdash; '+(it.dmg!=null?'attack for '+it.dmg+(it.times>1?' x'+it.times:'')+'. ':'')+(it.blk?'gain block. ':'')+(it.buf?'grow stronger. ':'')+(it.deb?'curse you. ':'')+'</div>';}
  for(const k in f.st)if(STAT[k])h+='<div class="k">'+statTip(k,f.st[k])+'</div>';tip(h,f.x,BASE_Y+70>700?600:BASE_Y+70);}
-function heroTip(){let h='<b>'+HEROES[R.hero].n+'</b>'+R.hp+' / '+R.maxhp+' HP'+(B.P.block?' &middot; '+B.P.block+' block':'')+(R.hero==='w'?'<div class="k"><b>Oathsworn Guard</b> Unused block carries over to your next turn.</div>':'');for(const k in B.P.st)if(STAT[k])h+='<div class="k">'+statTip(k,B.P.st[k])+'</div>';tip(h,HERO_X,BASE_Y+60);}
+function heroTip(){let h='<b>'+HEROES[R.hero].n+'</b>'+R.hp+' / '+R.maxhp+' HP'+(B.P.block?' &middot; '+B.P.block+' block':'')+(R.hero==='w'?'<div class="k"><b>Oathsworn Guard</b> Unused block carries over to your next turn.</div>':'')+(R.hero==='g'?'<div class="k"><b>Gravebinder</b> Souls fuel your cards. An enemy whose Doom reaches its HP is reaped at the start of its turn.</div>':'');for(const k in B.P.st)if(STAT[k])h+='<div class="k">'+statTip(k,B.P.st[k])+'</div>';tip(h,HERO_X,BASE_Y+60);}
 $('endT').onclick=()=>endTurn();
 function pileView(which){if(!B)return;const l=which==='draw'?[...B.dp].sort((a,b)=>CARDS[a.id].n.localeCompare(CARDS[b.id].n)):which==='disc'?B.disc:B.exh;
  deckGrid(l,{title:which==='draw'?'Draw Pile':which==='disc'?'Discard Pile':'Exhausted',sub:which==='draw'?'The order is hidden until you draw them':which==='disc'?'These shuffle back when the draw pile runs out':'Gone until the fight ends',noOrder:which==='draw'});}
@@ -2002,12 +2333,12 @@ function genMap(act){const ROWS=15,COLS=7,rows=[];for(let r=0;r<ROWS;r++)rows.pu
 function newRun(hero,dusk,beyond){const H=HEROES[hero];
  R={hero,dusk,act:1,map:genMap(1),pos:null,hp:H.hp+4*sl('hp'),maxhp:H.hp+4*sl('hp'),gold:99+25*sl('gold'),deck:[],relics:[],potions:[null,null,null],stats:{kills:0,elites:0,bosses:0,gold:0},rerolls:sl('reroll'),removeCost:75,floorsTotal:0,cur:null,seenEv:[],v:1};
  if(sl('slot'))R.potions.push(null);
- H.deck.forEach(id=>addDeck(R,id));if(sl('cut')){const i=R.deck.findIndex(c=>CARDS[c.id].n==='Strike'||c.id==='slash'||c.id==='spark');if(i>=0)R.deck.splice(i,1);}
- gainRelic(R,H.relic);if(sl('relic'))gainRelic(R,pickRelic(R,1));for(let i=0;i<sl('potion');i++)gainPotion(R);
+ H.deck.forEach(id=>addDeck(R,id));if(sl('cut')){const i=R.deck.findIndex(c=>CARDS[c.id].n==='Strike'||c.id==='slash'||c.id==='spark'||c.id==='scythe'||c.id==='zap');if(i>=0)R.deck.splice(i,1);}
+ gainRelic(R,H.relic);upRandom(R,sl('honed'));if(sl('relic'))gainRelic(R,pickRelic(R,1));for(let i=0;i<sl('potion');i++)gainPotion(R);
  if(dusk>=2)R.gold-=30;if(dusk>=6){R.maxhp-=6;R.hp=R.maxhp;}if(dusk>=8)addDeck(R,'doubt');
  R.hp=Math.min(R.hp,R.maxhp);
  if(beyond){R.act=4;R.map=genMap(4);R.floorsTotal=45;R.beyond=1;R.maxhp+=25;
-  for(let k=0;k<2;k++){const i=R.deck.findIndex(c=>c.id==='slash'||c.id==='spark'||/^(Strike|Defend)$/.test(CARDS[c.id].n));if(i>=0)R.deck.splice(i,1);}
+  for(let k=0;k<2;k++){const i=R.deck.findIndex(c=>c.id==='slash'||c.id==='spark'||c.id==='scythe'||/^(Strike|Defend)$/.test(CARDS[c.id].n));if(i>=0)R.deck.splice(i,1);}
   R.deck.forEach(c=>{if(CARDS[c.id].y!=='c')c.up=1;});
   [3,3,2,2,2,2,1,1].forEach((r,i)=>addDeck(R,rollCard(R,r),i%2===0));
   [1,2,3].forEach(r=>gainRelic(R,pickRelic(R,r)));shuf(['sunshard','voidlens','duskcrown','thorncrown']).slice(0,2).forEach(id=>gainRelic(R,id));
@@ -2058,7 +2389,7 @@ function runNode(){const c=R.cur;if(!c){openMap();return;}
 function nodeDone(){R.cur=null;saveRun();openMap();}
 /* ---- rewards ---- */
 function rewards(kind,rw){B&&(B.phase='done');
- if(!rw){const gm=hasR('gskull')?1.25:1;rw={gold:Math.round((kind==='elite'?ri(28,38):kind==='boss'?ri(95,105):ri(11,20))*gm),cards:rollCards(R,3,kind==='elite',kind==='boss'),pot:(kind==='elite'||R0()<.4)?pick(Object.keys(POTIONS)):null,relic:kind==='elite'?pickRelic(R,R0()<.5?1:2):null,took:{}};
+ if(!rw){const gm=hasR('gskull')?1.25:1;rw={gold:Math.round((kind==='elite'?ri(28,38)+15*sl('trophy'):kind==='boss'?ri(95,105):ri(11,20))*gm),cards:rollCards(R,rwN(),kind==='elite',kind==='boss'),pot:(kind==='elite'||R0()<.4)?pick(Object.keys(POTIONS)):null,relic:kind==='elite'?pickRelic(R,R0()<.5?1:2):null,took:{}};
   R.cur={t:'reward',kind,rw};saveRun();}
  const render=()=>{let h='<div class="panel" style="position:relative;width:560px;padding:26px 30px;display:flex;flex-direction:column;align-items:center"><div class="ttl">Victory</div><svg class="orn" viewBox="0 0 260 14"><path d="M0 7h100M160 7h100" stroke="#b8893e" stroke-width="1.5"/><path d="M130 0l9 7-9 7-9-7z" fill="#e8c27a"/></svg>';
   if(rw.gold)h+='<button class="rw'+(rw.took.g?' done':'')+'" data-k="g">'+ICX('coin','gold')+rw.gold+' Gold</button>';
@@ -2081,7 +2412,7 @@ function openClaim(p){sfx('click');R.cur={t:'reward',kind:p.kind,rw:p.rw,claim:p
 function cardPick(ids,done,back,canReroll){const kind=R.cur&&R.cur.t==='reward'?R.cur.kind:'';const draw=()=>{let h='<div class="ttl">Choose a Card</div>'+(canReroll?'<div class="oddsL">'+(kind==='boss'?'Boss reward: all rare cards':'Rare card chance on this floor: '+Math.round(rareOdds(R,kind==='elite'))+'%')+'</div>':'')+'<div class="choice">';ids.forEach((id,i)=>h+='<div data-i="'+i+'"></div>');h+='</div><div style="display:flex;gap:14px">';
   if(canReroll&&R.rerolls>0)h+='<button class="bt dk sm" id="cpRe">Reroll ('+R.rerolls+')</button>';h+='<button class="bt dk" id="cpSkip" style="min-width:180px">'+(back?'Back':'Skip')+'</button></div>';ovl(h);$('ovl').style.background='linear-gradient(180deg,rgba(14,9,20,.94),rgba(5,3,9,.97))';
   ids.forEach((id,i)=>{const el=cardEl(mkCard(id,hasR('whetstone')&&false?1:0));if(CARDS[id].r===3)el.classList.add('rr');el.style.transform='scale(1.25)';el.style.margin='0 26px';el.onclick=()=>{addDeck(R,id);sfx('sparkle');toast(CARDS[id].n+' added to your deck');renderTop();done();};$('ovl').querySelector('[data-i="'+i+'"]').replaceWith(el);});
-  if($('cpRe'))$('cpRe').onclick=()=>{R.rerolls--;ids=rollCards(R,3,kind==='elite',kind==='boss');if(R.cur&&R.cur.t==='reward'&&R.cur.rw){R.cur.rw.cards=ids;saveRun();}sfx('swish');draw();};
+  if($('cpRe'))$('cpRe').onclick=()=>{R.rerolls--;ids=rollCards(R,rwN(),kind==='elite',kind==='boss');if(R.cur&&R.cur.t==='reward'&&R.cur.rw){R.cur.rw.cards=ids;saveRun();}sfx('swish');draw();};
   $('cpSkip').onclick=()=>{sfx('click');(back||done)();};};draw();}
 /* ---- deck grid (view / choose) ---- */
 const BACKSVG='<svg viewBox="0 0 24 24" width="24" height="24"><path d="M15 4L6 12l9 8" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
@@ -2102,7 +2433,7 @@ function deckGrid(list,o={}){const s=$('sheet'),keys=o.noOrder?['name','cost','t
  $('dgX').onclick=()=>{sfx('click');closeSheet();if(o.cancel)o.cancel();};}
 /* a single card, large, with every keyword explained */
 function cardKeys(ci){const d=CARDS[ci.id],t=(d.ds+' '+(d.dsu||'')).replace(/<[^>]+>/g,''),out=[];
- for(const k in STAT){const n=STAT[k].n;if(n&&new RegExp('\\b'+n+'\\b').test(t))out.push('<b>'+n+'</b> '+STAT[k].d.replace(/\{n\}/g,'X'));}
+ for(const k in STAT){const n=STAT[k].n;if(n&&new RegExp('\\b'+(STAT[k].rx||n)+'\\b').test(t))out.push('<b>'+n+'</b> '+STAT[k].d.replace(/\{n\}/g,'X'));}
  if(/\bblock\b/i.test(t))out.push(d.k==='w'||(R&&R.hero==='w')?'<b>Block</b> Soaks up attack damage. The Warden keeps unused block from turn to turn until the fight ends.':'<b>Block</b> Soaks up attack damage. It fades at the start of your next turn.');
  if(d.x&&d.x.ex)out.push('<b>Exhaust</b> Removed for the rest of the fight when played.');
  if(d.x&&d.x.et)out.push('<b>Ethereal</b> Exhausted if it is still in your hand when the turn ends.');
@@ -2128,7 +2459,7 @@ function openRest(){show('room');mus('night');if(hasR('pfeather')&&R.cur&&!R.cur
   '<button class="panel" id="rSmith" style="position:relative;width:260px;height:300px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px">'+ICX('sword','steel','','style="width:110px;height:110px"')+'<h2 style="color:#e8c27a">Smith</h2><div style="font:16px system-ui;color:#c9bfae">Upgrade a card</div></button></div><button class="bt dk sm" id="rLeave" style="margin-top:22px">Move on without resting</button>','');
  $('ovl').style.background='radial-gradient(ellipse at center,rgba(10,6,18,.2),rgba(4,2,8,.62))';
  $('rLeave').onclick=()=>{sfx('click');nodeDone();};
- $('rRest').onclick=()=>{if(!can)return;healR(R,amt);sfx('powerup');renderTop();nodeDone();};
+ $('rRest').onclick=()=>{if(!can)return;healR(R,amt);if(hasR('fieldkit')){R.maxhp+=3;R.hp+=3;}sfx('powerup');renderTop();nodeDone();};
  $('rSmith').onclick=()=>{sfx('click');const l=R.deck.filter(c=>!c.up&&CARDS[c.id].y!=='c');if(!l.length){toast('Nothing to upgrade');return;}
   deckGrid(R.deck,{title:'Choose a card to upgrade',sub:'Hold a card to preview the upgrade',filter:c=>!c.up&&CARDS[c.id].y!=='c',preview:1,pick:ci=>{ci.up=1;sfx('levelup');toast(CARDS[ci.id].n+' upgraded');nodeDone();}});};}
 /* ---- treasure ---- */
@@ -2144,6 +2475,7 @@ function genShop(){const it=[];const cls=rollCards(R,5),neu=shuf(Object.keys(CAR
  cls.forEach(id=>it.push({k:'c',id,p:pr(CARDS[id].r)}));neu.forEach(id=>it.push({k:'c',id,p:pr(CARDS[id].r)+10}));
  const rels=[pickRelic(R,1),pickRelic(R,2),pickRelic(R,R0()<.5?3:2)];[...new Set(rels)].forEach(id=>it.push({k:'r',id,p:RELICS[id].r===1?ri(140,160):RELICS[id].r===2?ri(230,260):ri(280,310)}));
  shuf(Object.keys(POTIONS)).slice(0,3).forEach(id=>it.push({k:'p',id,p:ri(48,72)}));
+ {const m=shopMul();if(m<1)it.forEach(x=>x.p=Math.max(5,Math.round(x.p*m)));}
  const sale=it.findIndex(x=>x.k==='c');if(sale>=0){it[sale].p=Math.round(it[sale].p/2);it[sale].sale=1;}
  return {it,rm:0};}
 function openShop(){show('room');mus('kitchen');const S=R.cur.shop;if(hasR('token')&&!S.healed){S.healed=1;healR(R,15);flashRelic('token');}renderTop();
@@ -2172,8 +2504,9 @@ function afterEvent(txt){$('evT').innerHTML=txt;const c=$('evC');c.innerHTML='';
  b.onclick=()=>{sfx('click');
   if(R.pendingRemove){const n=R.pendingRemove;R.pendingRemove=0;const step=k=>deckGrid(R.deck,{title:'Remove a card'+(k>1?' ('+k+' left)':''),pick:ci=>{R.deck.splice(R.deck.indexOf(ci),1);sfx('buy');if(k>1)step(k-1);else nodeDone();},cancel:nodeDone});step(n);return;}
   if(R.pendingDup){R.pendingDup=0;deckGrid(R.deck,{title:'Duplicate a card',filter:c=>CARDS[c.id].y!=='c',pick:ci=>{addDeck(R,ci.id,ci.up);sfx('sparkle');nodeDone();},cancel:nodeDone});return;}
+  if(R.pendingUp){R.pendingUp=0;const l=R.deck.filter(c=>!c.up&&CARDS[c.id].y!=='c');if(!l.length){nodeDone();return;}deckGrid(R.deck,{title:'Choose a card to upgrade',sub:'Hold a card to preview the upgrade',filter:c=>!c.up&&CARDS[c.id].y!=='c',preview:1,pick:ci=>{ci.up=1;sfx('levelup');toast(CARDS[ci.id].n+' upgraded');nodeDone();},cancel:nodeDone});return;}
   if(R.pendingPick){R.pendingPick=0;cardPick(rollCards(R,3),nodeDone,nodeDone);return;}
-  if(R.pendingFight){R.pendingFight=0;R.cur={t:'fight',enc:R.act===1?['thrall','thrall']:R.act===2?['wraith','thrall']:R.act===3?['shadowknight','thrall']:R.act===4?['rothound','thornsprite']:['seraph','wisp']};saveRun();runNode();return;}
+  if(R.pendingFight){R.pendingFight=0;R.cur={t:'fight',enc:R.act===1?['thrall','thrall']:R.act===2?['wraith','thrall']:R.act===3?['shadowknight','thrall']:R.act===4?['rothound','thornsprite']:R.act===5?['seraph','wisp']:['cinderthrall','ashwraith']};saveRun();runNode();return;}
   nodeDone();};}
 function paintEventArt(cv,E){const c=cv.getContext('2d');c.scale(2,2);const pal=ICC[E.p];
  c.fillStyle=RG(c,150,170,10,220,[[0,pal[1]],[.45,pal[2]],[1,'#05030a']]);c.fillRect(0,0,300,300);
@@ -2186,28 +2519,29 @@ function paintEventArt(cv,E){const c=cv.getContext('2d');c.scale(2,2);const pal=
 function onBossDown(paid){const a=R.act;
  if(a===1&&!META.unl.m){META.unl.m=1;toastLater('New climber unlocked: The Ember Witch');}
  if(a===2&&!META.unl.s){META.unl.s=1;toastLater('New climber unlocked: The Shade');}
+ if(a===3&&!META.unl.g){META.unl.g=1;toastLater('New climber unlocked: The Gravebinder');}
  saveMeta();checkRareUnlocks();
  const gold=paid||Math.round(ri(95,105)*(hasR('gskull')?1.25:1));if(!paid){R.gold+=gold;R.stats.gold+=gold;}renderTop();
  if(a===3&&!META.beyond){META.beyond=1;saveMeta();toastLater('The spire goes higher: Acts IV and V await');}
- if(a===5){endRun(true);return;}
+ if(a===6){endRun(true);return;}
+ if(a===5&&!R.winRec)recordWin();
  R.cur={t:'bossdown',gold};saveRun();show('room');
  // boss relic choice
  const pool=shuf(Object.keys(RELICS).filter(k=>RELICS[k].r===4&&!R.relics.includes(k))).slice(0,3);
  let h='<div class="ttl">'+ENEMIES[ENC[a].boss[0]].n+' Falls</div><div class="sub">+'+gold+' gold. Choose a boss relic.</div><div style="display:flex;gap:26px;margin:26px 0">';
  pool.forEach(id=>{const r=RELICS[id];h+='<button class="panel bossR" data-id="'+id+'" style="position:relative;width:250px;padding:22px 16px;display:flex;flex-direction:column;align-items:center;gap:10px">'+ICX(r.i,r.p,'','style="width:90px;height:90px;filter:drop-shadow(0 0 18px rgba(255,200,120,.5))"')+'<h3 style="color:#e8c27a">'+r.n+'</h3><div style="font:15px system-ui;color:#c9bfae">'+r.d+'</div></button>';});
- h+='</div><button class="bt dk sm" id="brSkip">Skip</button>';ovl(h);
+ h+='</div>'+(a===5?'<div class="sub" style="max-width:760px;margin-top:-6px">The climb is won. Above the broken night an ember throne still burns. Take a relic to climb on into Act VI, or end your climb in triumph.</div><div style="display:flex;gap:16px;margin-top:12px"><button class="bt dk sm" id="brEnd">End the Climb</button><button class="bt dk sm" id="brSkip">Skip Relic, Climb On</button></div>':'<button class="bt dk sm" id="brSkip">Skip</button>');ovl(h);if($('brEnd'))$('brEnd').onclick=()=>{sfx('click');endRun(true);};
  const next=()=>{R.act++;R.map=genMap(R.act);R.pos=null;R.path=[];const heal=Math.ceil((R.maxhp-R.hp)*(R.dusk>=5?.5:.75));healR(R,heal);R.cur=null;saveRun();
-  ovl('<div class="sub" style="font-size:20px">'+ACTS[R.act].s+'</div><div class="ttl" style="font-size:54px">'+ACTS[R.act].n+'</div><svg class="orn" viewBox="0 0 260 14"><path d="M0 7h100M160 7h100" stroke="#b8893e" stroke-width="1.5"/><path d="M130 0l9 7-9 7-9-7z" fill="#e8c27a"/></svg><div class="sub">'+(R.act===4?'Beyond the Dusk the spire keeps rising, into gardens no one has tended in an age. ':R.act===5?'Above the gardens there is only night, and a throne. ':'')+'You climb higher and catch your breath. Healed '+heal+' HP.</div><div class="oddsL" style="margin:10px 0 0">'+Object.keys(CARDS).filter(k=>{const c=CARDS[k];return c.a===R.act&&(c.k===R.hero||c.k==='n');}).length+' new cards can now turn up as rewards.</div><button class="bt" id="actGo" style="margin-top:24px">Climb On</button>');sfx('chime');$('actGo').onclick=()=>openMap();};
+  ovl('<div class="sub" style="font-size:20px">'+ACTS[R.act].s+'</div><div class="ttl" style="font-size:54px">'+ACTS[R.act].n+'</div><svg class="orn" viewBox="0 0 260 14"><path d="M0 7h100M160 7h100" stroke="#b8893e" stroke-width="1.5"/><path d="M130 0l9 7-9 7-9-7z" fill="#e8c27a"/></svg><div class="sub">'+(R.act===4?'Beyond the Dusk the spire keeps rising, into gardens no one has tended in an age. ':R.act===5?'Above the gardens there is only night, and a throne. ':R.act===6?'Past the broken night the last fire of the Dusk still burns, on a throne of molten iron. ':'')+'You climb higher and catch your breath. Healed '+heal+' HP.</div><div class="oddsL" style="margin:10px 0 0">'+Object.keys(CARDS).filter(k=>{const c=CARDS[k];return c.a===R.act&&(c.k===R.hero||c.k==='n');}).length+' new cards can now turn up as rewards.</div><button class="bt" id="actGo" style="margin-top:24px">Climb On</button>');sfx('chime');$('actGo').onclick=()=>openMap();};
  $('ovl').querySelectorAll('.bossR').forEach(b=>b.onclick=()=>{gainRelic(R,b.dataset.id);sfx('rare');next();});$('brSkip').onclick=next;}
 let laterQ=[];function toastLater(t){laterQ.push(t);setTimeout(()=>{const x=laterQ.shift();if(x)toast(x);},1500);}
-function endRun(win){if(!R)return;__mgt(win?'w':'l',()=>'Full run: '+R.hero);if(win)__mgt('m','run');BT++;const H=R.hero,L=R.dusk;const fl=R.floorsTotal;
- let emb=Math.round((fl*2+R.stats.elites*10+R.stats.bosses*25+(win?60:0))*(1+L*.1));META.embers+=emb;META.total+=emb;META.stats.best=Math.max(META.stats.best,fl);
- if(win){META.stats.wins++;if(!META.unl.t){META.unl.t=1;toastLater('New climber unlocked: The Stormcaller');}META.best[H]=Math.max(META.best[H],L);if(L>=META.dusk[H]&&L<10){META.dusk[H]=L+1;}}
+function endRun(win){if(!R)return;if(win)recordWin();else if(!R.winRec)__mgt('l',()=>'Full run: '+R.hero);BT++;const H=R.hero,L=R.dusk;const fl=R.floorsTotal;
+ const won=win||R.winRec,throne=win&&R.act===6;if(throne)META.stats.throne=(META.stats.throne||0)+1;let emb=Math.round((fl*2+R.stats.kills+R.stats.elites*10+R.stats.bosses*25+(won?60:0)+(throne?150:0))*(1+L*.1)*(1+.1*sl('tithe')))+(hasR('emberjar')?40:0);META.embers+=emb;META.total+=emb;META.stats.best=Math.max(META.stats.best,fl);
  saveMeta();const st=R.stats,deckN=R.deck.length,rel=R.relics.length;clearRun();B=null;show('none');
  mus(win?'adventure':'night');sfx(win?'fanfare':'gong');
- ovl('<div class="ttl" style="font-size:60px">'+(win?'Dawn Returns':'The Dusk Claims You')+'</div><div class="sub">'+(win?'The Starless King falls and the Dusk is broken. Light spills down the spire for the first time in a hundred years.':'Your light fades on floor '+fl+'. The tower will be waiting.')+'</div>'+
+ ovl('<div class="ttl" style="font-size:60px">'+(throne?'The Ember Throne Falls':win?'Dawn Returns':won?'The Throne Holds':'The Dusk Claims You')+'</div><div class="sub">'+(throne?'The Ember Sovereign falls and the last fire of the Dusk goes out. You stand alone at the very top of the spire.':win?'The Starless King falls and the Dusk is broken. Light spills down the spire for the first time in a hundred years.':won?'You broke the Dusk, but the Ember Throne held. Your light fades on floor '+fl+'.':'Your light fades on floor '+fl+'. The tower will be waiting.')+'</div>'+
   '<div class="panel" style="position:relative;margin-top:22px;padding:20px 40px"><div class="statl">Floors climbed: <b>'+fl+'</b><br>Enemies slain: <b>'+st.kills+'</b><br>Elites slain: <b>'+st.elites+'</b><br>Bosses slain: <b>'+st.bosses+'</b><br>Gold found: <b>'+st.gold+'</b><br>Deck size: <b>'+deckN+'</b><br>Relics: <b>'+rel+'</b><br>Dusk level: <b>'+L+'</b></div></div>'+
-  '<div class="chip" style="font-size:28px;margin:18px">'+ICX('ember','fire')+'+'+emb+' Embers</div>'+(win&&L<10?'<div class="sub">Dusk level '+(L+1)+' unlocked for '+HEROES[H].n+'.</div>':'')+
+  '<div class="chip" style="font-size:28px;margin:18px">'+ICX('ember','fire')+'+'+emb+' Embers</div>'+(won&&L<10?'<div class="sub">Dusk level '+(L+1)+' unlocked for '+HEROES[H].n+'.</div>':'')+
   '<div style="display:flex;gap:16px;margin-top:14px"><button class="bt" id="enSan">Sanctum</button><button class="bt dk" id="enTi">Title</button><button class="bt dk" id="enHub">Go back to games</button></div>');
  $('enHub').onclick=goHub;$('enSan').onclick=()=>{closeOvl();openSanctum();};$('enTi').onclick=()=>{closeOvl();openTitle();};}
 /* ---- title, heroes, sanctum, codex, settings ---- */
@@ -2217,10 +2551,10 @@ $('bHub').onclick=goHub;$('pHub').onclick=goHub;
 $('bCont').onclick=()=>{sfx('click');R=loadRun();if(!R)return;UID=1+Math.max(0,...R.deck.map(c=>c.u||0));if(R.cur)runNode();else openMap();};
 $('bNew').onclick=(ev)=>{if(ev)window.__beyondPick=0;sfx('click');if(loadRun()){ovl('<div class="ttl">Start a new climb?</div><div class="sub">Your current climb will be lost.</div><div style="display:flex;gap:16px;margin-top:20px"><button class="bt" id="nyY">Start New</button><button class="bt dk" id="nyN">Cancel</button></div>'+backBtn('nyB'));$('nyB').onclick=closeOvl;$('nyY').onclick=()=>{closeOvl();clearRun();openHeroes();};$('nyN').onclick=closeOvl;return;}openHeroes();};
 let pickH='w',pickD=0;
-function openHeroes(){if(META.stats.wins>0&&!META.unl.t){META.unl.t=1;saveMeta();setTimeout(()=>toast('New climber unlocked: The Stormcaller'),400);}show('heroSel');$('hsBeyond').hidden=!(META.stats.wins>0);$('hsGo').hidden=!!window.__beyondPick;pickH=META.unl[META.last]?META.last:'w';renderHeroes();}
+function openHeroes(){if((META.beyond||META.stats.wins>0)&&!META.unl.g){META.unl.g=1;saveMeta();setTimeout(()=>toast('New climber unlocked: The Gravebinder'),600);}if(META.stats.wins>0&&!META.unl.t){META.unl.t=1;saveMeta();setTimeout(()=>toast('New climber unlocked: The Stormcaller'),400);}show('heroSel');$('hsBeyond').hidden=!(META.stats.wins>0);$('hsGo').hidden=!!window.__beyondPick;pickH=META.unl[META.last]?META.last:'w';renderHeroes();}
 function renderHeroes(){const box=$('heroes');box.innerHTML='';
  Object.values(HEROES).forEach(H=>{const lock=!META.unl[H.id];const d=document.createElement('div');d.className='heroC panel'+(lock?' lock':'')+(pickH===H.id?' on':'');d.style.borderColor=pickH===H.id?'#ffd27a':'';
-  const c=document.createElement('canvas');c.width=600;c.height=980;c.style.cssText='width:262px;height:428px';d.appendChild(c);heroPortrait(c,H,lock);
+  const c=document.createElement('canvas');c.width=600;c.height=980;const cw=Object.keys(HEROES).length>4?212:262;d.style.width=cw+'px';c.style.cssText='width:'+cw+'px;height:'+Math.round(428*cw/262)+'px';d.appendChild(c);heroPortrait(c,H,lock);
   d.insertAdjacentHTML('beforeend','<div style="position:absolute;left:0;right:0;bottom:0;padding:16px;background:linear-gradient(0deg,rgba(6,4,10,.95) 60%,transparent);text-align:center"><h2 style="color:'+H.col+'">'+H.n+'</h2><div class="sub" style="font-size:14px">'+H.t+'</div><div style="font:14px/1.35 system-ui;color:#d6ccbc;margin-top:8px">'+(lock?H.unlock:H.blurb)+'</div>'+(lock?'':'<div style="font:13px system-ui;color:#a99f92;margin-top:6px">'+H.hp+' HP &middot; starts with '+RELICS[H.relic].n+'<br>Best: '+(META.best[H.id]>=0?'won at Dusk '+META.best[H.id]:'not yet won')+'</div>')+'</div>');
   d.onclick=()=>{if(lock){sfx('error');toast(H.unlock);return;}pickH=H.id;pickD=Math.min(pickD,META.dusk[H.id]);sfx('click');renderHeroes();};box.appendChild(d);});
  const mx=META.dusk[pickH]||0;pickD=Math.min(pickD,mx);
@@ -2232,7 +2566,7 @@ function heroPortrait(cv,H,lock){const c=cv.getContext('2d');c.scale(2,2);const 
  c.fillStyle=RG(c,150,180,10,320,[[0,shade(col,-.45)],[.6,'#120c18'],[1,'#050308']]);c.fillRect(0,0,300,470);
  c.save();c.globalAlpha=.25;c.fillStyle=col;c.beginPath();c.arc(150,150,90,0,TAU);c.fill();c.restore();
  c.fillStyle=LG(c,0,330,0,490,[[0,'rgba(0,0,0,.15)'],[1,'rgba(0,0,0,.6)']]);c.fillRect(0,330,300,160);
- c.save();c.translate(150,352);if(lock){c.globalAlpha=.9;}HART[H.id](c,1.3,1.25);c.restore();
+ c.save();c.translate(H.id==='g'?122:150,352);if(lock){c.globalAlpha=.9;}HART[H.id](c,1.3,1.25);c.restore();
  if(lock){c.fillStyle='rgba(0,0,0,.55)';c.fillRect(0,0,300,470);const im=icImg('chain','ash');const d=()=>c.drawImage(im,110,120,80,80);if(im.complete&&im.naturalWidth)d();else im.onload=d;}}
 function openSanctum(){show('none');let h='<div class="panel" style="position:relative;width:820px;height:740px;padding:24px 30px;display:flex;flex-direction:column"><div class="ttl">The Sanctum</div><div class="sub">Spend Embers from your climbs on lasting blessings.</div><div class="chip" style="justify-content:center;margin:8px 0;font-size:24px">'+ICX('ember','fire')+META.embers+'</div><div style="flex:1;overflow-y:auto">';
  SANCT.forEach(s=>{const l=sl(s.id),maxed=l>=s.max,cost=maxed?0:s.cost[l];h+='<div class="upg">'+ICX(s.i,s.p)+'<div><h3>'+s.n+'</h3><p>'+s.d(Math.min(s.max,l+(maxed?0:1)))+(l&&!maxed?' <span style="color:#8ef07a">(now: '+s.d(l)+')</span>':'')+'</p><div class="pips">'+Array.from({length:s.max},(_,i)=>'<i class="'+(i<l?'f':'')+'"></i>').join('')+'</div></div>'+(maxed?'<div class="sub" style="font-size:15px">Complete</div>':'<button class="bt sm" data-s="'+s.id+'" '+(META.embers<cost?'disabled':'')+'>'+ICX('ember','fire')+' '+cost+'</button>')+'</div>';});
@@ -2243,12 +2577,12 @@ $('bSanct').onclick=()=>{sfx('click');openSanctum();};
 let codexTab='cards';
 function openCodex(){show('none');const all=Object.keys(CARDS).filter(k=>CARDS[k].r<9);const seen=all.filter(k=>META.seen[k]).length,rels=Object.keys(RELICS),rs=rels.filter(k=>META.relSeen[k]).length;
  let h='<div class="panel" style="position:relative;width:1120px;height:770px;padding:20px;display:flex;flex-direction:column"><div class="ttl" style="font-size:30px">Codex</div><div class="tabs"><button data-t="cards" class="'+(codexTab==='cards'?'on':'')+'">Cards '+seen+'/'+all.length+'</button><button data-t="relics" class="'+(codexTab==='relics'?'on':'')+'">Relics '+rs+'/'+rels.length+'</button><button data-t="foes" class="'+(codexTab==='foes'?'on':'')+'">Bestiary</button><button data-t="stats" class="'+(codexTab==='stats'?'on':'')+'">Records</button></div><div class="grid" id="cxG" style="flex:1"></div></div>'+backBtn('cxX');ovl(h);const g=$('cxG');
- if(codexTab==='cards'){const nb=META.stats.bosses,nx=RARE_STEPS.find(u=>u>nb),nt=document.createElement('div');nt.className='cxNote';nt.textContent='Bosses slain: '+nb+(nx?'. More rare cards unlock at '+nx+'.':'. Every rare card is unlocked.');g.appendChild(nt);all.sort((a,b)=>('wmsn'.indexOf(CARDS[a].k)-'wmsn'.indexOf(CARDS[b].k))||CARDS[a].r-CARDS[b].r).forEach(k=>{const el=cardEl(mkCard(k));if(!META.seen[k]){el.style.filter='brightness(.15) grayscale(1)';}el.style.transform='scale(.85)';el.style.margin='-14px -10px';if(META.seen[k])el.onclick=()=>{sfx('tap');cardZoom(mkCard(k));};if(cardOpen(k)&&(META.seen[k]||!CARDS[k].a)){g.appendChild(el);return;}const w=document.createElement('div');w.className='lockW';w.appendChild(el);const l=document.createElement('div');l.className='lockL';l.textContent=cardOpen(k)?'From Act '+CARDS[k].a:'Slay '+CARDS[k].ul+' boss'+(CARDS[k].ul===1?'':'es')+' to unlock';w.appendChild(l);g.appendChild(w);});}
+ if(codexTab==='cards'){const nb=META.stats.bosses,nx=RARE_STEPS.find(u=>u>nb),nt=document.createElement('div');nt.className='cxNote';nt.textContent='Bosses slain: '+nb+(nx?'. More rare cards unlock at '+nx+'.':'. Every rare card is unlocked.');g.appendChild(nt);all.sort((a,b)=>('wmtsgn'.indexOf(CARDS[a].k)-'wmtsgn'.indexOf(CARDS[b].k))||CARDS[a].r-CARDS[b].r).forEach(k=>{const el=cardEl(mkCard(k));if(!META.seen[k]){el.style.filter='brightness(.15) grayscale(1)';}el.style.transform='scale(.85)';el.style.margin='-14px -10px';if(META.seen[k])el.onclick=()=>{sfx('tap');cardZoom(mkCard(k));};if(cardOpen(k)&&(META.seen[k]||!CARDS[k].a)){g.appendChild(el);return;}const w=document.createElement('div');w.className='lockW';w.appendChild(el);const l=document.createElement('div');l.className='lockL';l.textContent=cardOpen(k)?'From Act '+CARDS[k].a:'Slay '+CARDS[k].ul+' boss'+(CARDS[k].ul===1?'':'es')+' to unlock';w.appendChild(l);g.appendChild(w);});}
  if(codexTab==='relics')rels.forEach(k=>{const r=RELICS[k],s=META.relSeen[k];const d=document.createElement('div');d.style.cssText='width:250px;display:flex;gap:10px;align-items:center;padding:8px;border:1px solid rgba(232,194,122,.15);border-radius:4px;'+(s?'':'opacity:.3');d.innerHTML=ICX(s?r.i:'quest',s?r.p:'ash','','style="width:44px;height:44px;flex:none"')+'<div><b style="color:#e8c27a">'+(s?r.n:'???')+'</b><div style="font:12.5px system-ui;color:#c9bfae">'+(s?r.d:'Not yet found')+'</div></div>';g.appendChild(d);});
  if(codexTab==='foes')Object.values(ENEMIES).forEach(e=>{const n=META.foes[e.id]||0;const d=document.createElement('div');d.style.cssText='width:200px;height:220px;position:relative;border:1px solid rgba(232,194,122,.15);border-radius:4px;background:radial-gradient(circle at 50% 70%,#2a2036,#0c0812)';const c=document.createElement('canvas');c.width=400;c.height=360;c.style.cssText='width:200px;height:180px';d.appendChild(c);
   const x=c.getContext('2d');x.scale(2,2);const h2=HT[e.art],w=WD[e.art];const s=Math.min(150/h2,170/w);x.translate(100,170);x.scale(s,s);if(e.d||1){}if(!n){x.globalAlpha=1;}ART[e.art](x,e.pal,1.5);if(!n){x.globalCompositeOperation='source-atop';x.fillStyle='#000';x.fillRect(-400,-500,800,700);}
   d.insertAdjacentHTML('beforeend','<div style="text-align:center;font-size:15px;color:'+(n?'#e8c27a':'#666')+'">'+(n?e.n:'???')+(e.boss?' (Boss)':e.elite?' (Elite)':'')+'</div><div style="text-align:center;font:12px system-ui;color:#a99f92">'+(n?'Slain '+n:'')+'</div>');g.appendChild(d);});
- if(codexTab==='stats'){const S=META.stats;g.innerHTML='<div class="statl" style="font-size:19px;width:700px;margin-top:30px">Climbs started: <b>'+S.runs+'</b><br>Climbs won: <b>'+S.wins+'</b><br>Bosses slain: <b>'+S.bosses+'</b><br>Enemies slain: <b>'+S.kills+'</b><br>Rooms explored: <b>'+S.floors+'</b><br>Highest floor: <b>'+S.best+'</b><br>Damage dealt: <b>'+S.dmg+'</b><br>Embers earned: <b>'+META.total+'</b><br>Warden best: <b>'+(META.best.w>=0?'Dusk '+META.best.w:'-')+'</b><br>Witch best: <b>'+(META.best.m>=0?'Dusk '+META.best.m:'-')+'</b><br>Shade best: <b>'+(META.best.s>=0?'Dusk '+META.best.s:'-')+'</b></div>';}
+ if(codexTab==='stats'){const S=META.stats;g.innerHTML='<div class="statl" style="font-size:19px;width:700px;margin-top:30px">Climbs started: <b>'+S.runs+'</b><br>Climbs won: <b>'+S.wins+'</b><br>Ember Thrones toppled: <b>'+(S.throne||0)+'</b><br>Bosses slain: <b>'+S.bosses+'</b><br>Enemies slain: <b>'+S.kills+'</b><br>Rooms explored: <b>'+S.floors+'</b><br>Highest floor: <b>'+S.best+'</b><br>Damage dealt: <b>'+S.dmg+'</b><br>Embers earned: <b>'+META.total+'</b><br>Warden best: <b>'+(META.best.w>=0?'Dusk '+META.best.w:'-')+'</b><br>Witch best: <b>'+(META.best.m>=0?'Dusk '+META.best.m:'-')+'</b><br>Shade best: <b>'+(META.best.s>=0?'Dusk '+META.best.s:'-')+'</b></div>';}
  $('ovl').querySelectorAll('.tabs button').forEach(b=>b.onclick=()=>{codexTab=b.dataset.t;sfx('click');openCodex();});$('cxX').onclick=()=>{sfx('click');openTitle();};}
 $('bCodex').onclick=()=>{sfx('click');openCodex();};
 function optRender(){const o=META.opt;$('optBox').innerHTML=[['music','Music'],['sfx','Sound effects'],['fast','Fast animations']].map(([k,l])=>'<div class="togg">'+l+'<button class="sw'+(o[k]?' on':'')+'" data-o="'+k+'"></button></div>').join('');
@@ -2296,7 +2630,7 @@ function paintTitle(c,L,T,W,H){c.fillStyle=LG(c,0,T,0,T+H,[[0,'#05030c'],[.38,'#
  // valley mist
  c.fillStyle=LG(c,0,590,0,820,[[0,'rgba(90,60,90,0)'],[.5,'rgba(70,44,76,.5)'],[1,'rgba(16,10,22,.96)']]);c.fillRect(L,590,W,T+H-590);
  vign(c,L,T,W,H,.72);}
-function paintMapBg(c,L,T,W,H,act){const a=R?R.act:1,tint=[0,'#2b1d12','#10222a','#27122e','#1c2a12','#14123a'][a],edge=[0,'#0a0604','#03090c','#0a040e','#050803','#030208'][a];
+function paintMapBg(c,L,T,W,H,act){const a=R?R.act:1,tint=[0,'#2b1d12','#10222a','#27122e','#1c2a12','#14123a','#3a1408'][a],edge=[0,'#0a0604','#03090c','#0a040e','#050803','#030208','#0c0302'][a];
  c.fillStyle=LG(c,0,T,0,T+H,[[0,tint],[1,edge]]);c.fillRect(L,T,W,H);
  // an old chart of the tower: stains, contour rings and a compass
  let sd=a*97;const rn=()=>(sd=(sd*9301+49297)%233280)/233280;
@@ -2383,6 +2717,7 @@ function hallSummit(c,L,T,W,H,act){const[b0,b1,acc]=act.bg;
  c.fillStyle='rgba(180,200,255,.3)';c.fillRect(L,469,W,2);}
 function petalFx(c,t){c.save();for(let i=0;i<14;i++){const k=(t*.06+i*.071)%1,x=((i*97)%1180)+Math.sin(t*.8+i)*40,y=-20+k*860;c.fillStyle=i%3?'rgba(255,170,210,.75)':'rgba(255,230,150,.7)';c.save();c.translate(x,y);c.rotate(t*1.5+i);c.beginPath();c.ellipse(0,0,5,2.5,0,0,TAU);c.fill();c.restore();}
  c.globalCompositeOperation='lighter';for(let i=0;i<10;i++){const x=100+((i*131)%1000)+Math.sin(t*.7+i*2)*30,y=300+((i*71)%300)+Math.cos(t*.9+i)*20;c.fillStyle=RG(c,x,y,0,10,[[0,'rgba(220,255,120,'+(.45+.45*Math.sin(t*3+i)).toFixed(2)+')'],[1,'rgba(200,255,100,0)']]);c.beginPath();c.arc(x,y,10,0,TAU);c.fill();}c.restore();}
+function emberFx(c,t){c.save();c.globalCompositeOperation='lighter';c.fillStyle=LG(c,0,560,0,820,[[0,'rgba(255,80,20,0)'],[1,'rgba(255,90,20,.22)']]);c.fillRect(0,560,1180,260);for(let i=0;i<34;i++){const k=(t*.09+i*.0294)%1,x=((i*151)%1180)+Math.sin(t*1.3+i)*26,y=820-k*840,a=(1-k)*(.5+.5*Math.sin(t*4+i));c.fillStyle='rgba(255,'+(130+(i*7)%100)+',50,'+a.toFixed(2)+')';c.fillRect(x,y,2.6,2.6);}c.restore();}
 function starFx(c,t){c.save();c.globalCompositeOperation='lighter';for(let i=0;i<3;i++){const k=(t*.12+i*.37)%1;if(k>.25)continue;const q=k/.25,x=200+i*330+q*300,y=40+i*40+q*140;c.strokeStyle='rgba(220,230,255,'+((1-q)*.8).toFixed(2)+')';c.lineWidth=2;c.beginPath();c.moveTo(x,y);c.lineTo(x-50,y-24);c.stroke();}c.restore();}
 
 function paintHall(c,L,T,W,H,act,room){const a=R?R.act:1;(a===2?hallFlood:a===3?hallCrown:a===4?hallGarden:a===5?hallSummit:hallCrypt)(c,L,T,W,H,act);
@@ -2415,7 +2750,7 @@ function frame(ts){const t=ts/1000,dt=Math.min(.05,t-lastT||.016);lastT=t;
   c.save();c.globalCompositeOperation='lighter';for(let i=0;i<3;i++){const x=((t*14+i*420)%1600)-200;c.fillStyle=RG(c,x,700-i*30,0,260,[[0,'rgba(120,100,150,.12)'],[1,'rgba(120,100,150,0)']]);c.fillRect(x-260,440,520,400);}c.restore();}
  if(scene==='title'||scene==='heroSel')titleBats(c,t);
  if(scene==='battle'||scene==='room'){const an=R?R.act:1;if(scene==='battle'&&an===1){torch(c,410,270,t,act.bg[2]);torch(c,770,270,t,act.bg[2]);}else if(scene==='battle'&&an===3){torch(c,170,340,t,act.bg[2]);torch(c,1010,340,t,act.bg[2]);}else if(an===2)floodFx(c,t);
-  if(an===3||an===5)windFx(c,t);if(an===4)petalFx(c,t);if(an===5)starFx(c,t);
+  if(an===3||an===5)windFx(c,t);if(an===4)petalFx(c,t);if(an===5)starFx(c,t);if(an===6){if(scene==='battle'){torch(c,410,270,t,act.bg[2]);torch(c,770,270,t,act.bg[2]);}emberFx(c,t);}
   if(scene==='room'&&R&&R.cur&&R.cur.t==='rest')campfire(c,590,776,t);
   else if(scene==='room'){c.save();c.globalCompositeOperation='lighter';c.fillStyle=RG(c,590,560,0,420,[[0,'rgba(255,150,70,.16)'],[1,'rgba(255,100,40,0)']]);c.fillRect(0,0,1180,820);c.restore();}}
  // dust motes
@@ -2450,7 +2785,7 @@ function drawBattle(c,t,dt){const H=R.hero;
  for(const f of B.foes){const A=f.anim;if(A.dead>=1)continue;if(A.dead>0)A.dead=Math.min(1,A.dead+dt*1.4);A.hit=Math.max(0,A.hit-dt*4);A.lunge=Math.max(0,A.lunge-dt*3.2);A.spawn=Math.max(0,A.spawn-dt*2.5);
   c.save();c.globalAlpha=(1-A.dead)*(1-A.spawn);c.translate(f.x+A.hit*16-Math.sin(A.lunge*Math.PI)*46,BASE_Y+A.dead*24);const s=ESC*f.d.sz;c.scale(s*(1+A.hit*.04),s*(1-A.hit*.04));
   ART[f.d.art](c,f.d.pal,t+f.ph);c.restore();
-  if(f.hp>0){const bw=Math.max(100,Math.min(170,WD[f.d.art]*f.d.sz*ESC*.8));bar(c,f.x-bw/2,BASE_Y+18,bw,f.hp,f.maxhp,f.block,'e');statRow(c,f.x,BASE_Y+40,f.st);drawIntent(c,f,t);
+  if(f.hp>0){const bw=Math.max(100,Math.min(170,WD[f.d.art]*f.d.sz*ESC*.8));bar(c,f.x-bw/2,BASE_Y+18,bw,f.hp,f.maxhp,f.block,'e');if(f.st.doom)doomMark(c,f.x-bw/2,BASE_Y+18,bw,f,t);statRow(c,f.x,BASE_Y+40,f.st);drawIntent(c,f,t);
    c.font='700 14px Georgia,serif';c.textAlign='center';c.textBaseline='middle';c.lineWidth=3.5;c.strokeStyle='rgba(0,0,0,.9)';c.strokeText(f.d.n,f.x,BASE_Y+7);c.fillStyle=f.d.boss?'#ffb070':f.d.elite?'#e8c27a':'#d8cfc0';c.fillText(f.d.n,f.x,BASE_Y+7);}}
  // slashes
  for(const s of FX.slashes){s.life-=dt*3.5;if(s.life<=0)continue;c.save();c.translate(s.x,s.y);c.rotate(s.a);c.globalCompositeOperation='lighter';c.globalAlpha=s.life;c.strokeStyle=s.col;c.lineWidth=8*s.life;c.lineCap='round';c.beginPath();c.arc(0,0,70,-1.1+(1-s.life)*.6,.4+(1-s.life)*.6);c.stroke();c.lineWidth=3*s.life;c.strokeStyle='#fff';c.stroke();c.restore();}
@@ -2463,7 +2798,7 @@ function drawBattle(c,t,dt){const H=R.hero;
  if(FX.arrow){const a=FX.arrow;c.save();c.strokeStyle=B.hover?'#ffd27a':'rgba(255,230,190,.7)';c.lineWidth=6;c.setLineDash([14,10]);c.lineDashOffset=-t*60;c.beginPath();const mx=(a.x0+a.x1)/2,my=Math.min(a.y0,a.y1)-120;c.moveTo(a.x0,a.y0);c.quadraticCurveTo(mx,my,a.x1,a.y1);c.stroke();c.setLineDash([]);
   const ang=Math.atan2(a.y1-my,a.x1-mx);c.translate(a.x1,a.y1);c.rotate(ang);c.fillStyle=c.strokeStyle;c.beginPath();c.moveTo(14,0);c.lineTo(-12,-13);c.lineTo(-6,0);c.lineTo(-12,13);c.fill();c.restore();}
  drawEnergy(t);}
-function drawEnergy(t){const c=$('energyCv').getContext('2d');c.setTransform(2,0,0,2,0,0);c.clearRect(0,0,104,104);const on=B.energy>0,col=R.hero==='m'?'#ff7a3c':R.hero==='s'?'#4affb8':R.hero==='t'?'#8cc8ff':'#ffc860';
+function drawEnergy(t){const c=$('energyCv').getContext('2d');c.setTransform(2,0,0,2,0,0);c.clearRect(0,0,104,104);const on=B.energy>0,col=R.hero==='m'?'#ff7a3c':R.hero==='s'?'#4affb8':R.hero==='t'?'#8cc8ff':R.hero==='g'?'#6affc8':'#ffc860';
  c.save();c.translate(52,52);c.fillStyle=RG(c,0,0,10,52,[[0,on?col+'99':'#33333399'],[1,'rgba(0,0,0,0)']]);c.beginPath();c.arc(0,0,52,0,TAU);c.fill();
  c.fillStyle=RG(c,-8,-10,3,36,on?[[0,'#fffbe8'],[.35,col],[1,shade(col,-.7)]]:[[0,'#888'],[1,'#222']]);c.beginPath();c.arc(0,0,33,0,TAU);c.fill();
  c.rotate(t*.6);c.strokeStyle=on?'#ffe6a8':'#666';c.lineWidth=2;for(let i=0;i<8;i++){c.rotate(TAU/8);c.beginPath();c.moveTo(38,0);c.lineTo(46,-4);c.lineTo(46,4);c.closePath();c.stroke();}
