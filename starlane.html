@@ -1,0 +1,285 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><title>Starlane</title><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover"><meta name="apple-mobile-web-app-capable" content="yes"><style>html,body{margin:0}html{touch-action:manipulation}</style><script>(function(){try{var id=(location.pathname.split('/').pop()||'').replace('.html','');if(!id||id==='index')return;var K='mg_stats',t0=Date.now(),seen={},ended=0;function L(){var s;try{s=JSON.parse(localStorage.getItem(K)||'{}')||{};}catch(e){s={};}s.g=s.g||{};s.d=s.d||{};var g=s.g[id]=s.g[id]||{};g.w=g.w||{};g.l=g.l||{};g.e=g.e||{};g.m=g.m||{};return s;}function W(s){try{localStorage.setItem(K,JSON.stringify(s));}catch(e){}}function V(x){try{return typeof x==='function'?x():x;}catch(e){if(window.__mgterr)window.__mgterr.push(String(e));return null;}}window.__mgt=function(r,w,sc){try{w=V(w);w=(w==null?'':String(w)).replace(/<[^>]+>/g,'').replace(/[←-⯿\uD800-\uDFFF️]+/g,' ').replace(/\s+/g,' ').trim().slice(0,40)||'General';var now=Date.now(),k=r+w;if(r!=='m'&&seen[k]&&now-seen[k]<1200)return;seen[k]=now;var s=L(),g=s.g[id],b=g[r];if(!b)return;if(!(w in b)&&Object.keys(b).length>=50)w='Other';b[w]=(b[w]||0)+1;if(r!=='m')g.r=((g.r||'')+r).slice(-30);if(r==='e'){sc=V(sc);if(typeof sc==='number'&&isFinite(sc)){sc=Math.round(sc);g.sc=g.sc||[];g.sc.push(sc);if(g.sc.length>20)g.sc.shift();g.b=Math.max(g.b||0,sc);}}W(s);}catch(e){}};var s0=L();s0.g[id].s=(s0.g[id].s||0)+1;W(s0);setInterval(function(){if(document.hidden)return;try{var s=L(),n=new Date(),d=n.getFullYear()+'-'+('0'+(n.getMonth()+1)).slice(-2)+'-'+('0'+n.getDate()).slice(-2);s.d[d]=s.d[d]||{};s.d[d][id]=(s.d[d][id]||0)+15;var ks=Object.keys(s.d).sort();while(ks.length>60)delete s.d[ks.shift()];W(s);}catch(e){}},15000);function SY(){try{var u=localStorage.getItem('mg_sync');if(!u||navigator.onLine===false)return;var n=Date.now(),h=localStorage.getItem('mg_hub')||'{}',st=localStorage.getItem(K)||'{}',sig=h.length+':'+st.length+':'+h.slice(-40)+st.slice(-40);if(n-(window.__mgA||0)<4000||localStorage.getItem('mg_sync_s3')===sig)return;window.__mgA=n;var b='{"v":1,"at":"'+new Date(n).toISOString()+'","from":"'+id+'","hub":'+h+',"stats":'+st+'}';try{fetch(u,{method:'POST',mode:'no-cors',credentials:'omit',keepalive:b.length<60000,headers:{'Content-Type':'text/plain'},body:b}).then(function(){try{localStorage.setItem('mg_sync_t',n);localStorage.setItem('mg_sync_s3',sig);}catch(e){}},function(){});}catch(e){navigator.sendBeacon(u,b);}}catch(e){}}document.addEventListener('visibilitychange',function(){if(document.hidden)SY();});setTimeout(SY,1500);addEventListener('pagehide',function(){SY();if(ended)return;ended=1;try{if(Date.now()-t0<45000){var s=L();s.g[id].q=(s.g[id].q||0)+1;W(s);}}catch(e){}});}catch(e){}})();</script>
+<script>(function(){var n=function(e){e.preventDefault();};["gesturestart","gesturechange","gestureend","dblclick"].forEach(function(t){document.addEventListener(t,n,{passive:false});});document.addEventListener("touchmove",function(e){if(e.touches.length>1||(e.scale&&e.scale!==1))e.preventDefault();},{passive:false});})();</script>
+<script>(function(){try{var id='starlane',k='mg_hub',h=JSON.parse(localStorage.getItem(k)||'{}')||{};h.plays=h.plays||{};h.last=h.last||{};h.time=h.time||{};h.plays[id]=(h.plays[id]||0)+1;h.last[id]=Date.now();localStorage.setItem(k,JSON.stringify(h));setInterval(function(){if(document.hidden)return;try{var h2=JSON.parse(localStorage.getItem(k)||'{}')||{};h2.time=h2.time||{};h2.time[id]=(h2.time[id]||0)+15;h2.last=h2.last||{};h2.last[id]=Date.now();localStorage.setItem(k,JSON.stringify(h2));}catch(e){}},15000);}catch(e){}})();</script>
+<script>window.__BACKMODE='own'</script>
+<style>
+html,body{height:100%;overflow:hidden;background:#02040a;position:fixed;inset:0;width:100%;touch-action:none;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;font-family:"Avenir Next Condensed","Arial Narrow","Helvetica Neue",system-ui,sans-serif;color:#dff4ff}
+canvas#cv{position:fixed;inset:0;width:100%;height:100%;display:block}
+button{font:inherit;color:inherit;cursor:pointer;-webkit-tap-highlight-color:transparent}
+[hidden]{display:none!important}
+.ov{position:fixed;inset:0;z-index:20;display:flex;align-items:center;justify-content:center;background:rgba(1,4,12,.78);padding:max(12px,env(safe-area-inset-top)) 12px 12px}
+.st{position:relative;width:min(1000px,100%);max-height:calc(100dvh - 24px);display:flex;flex-direction:column;background:linear-gradient(135deg,rgba(10,24,40,.97),rgba(4,10,20,.97));clip-path:polygon(0 18px,18px 0,calc(100% - 60px) 0,100% 60px,100% 100%,60px 100%,0 calc(100% - 60px));box-shadow:inset 0 0 0 1px #2ad4ff}
+.st::before{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(90deg,#2ad4ff 0 120px,transparent 120px) top left/100% 2px no-repeat,linear-gradient(90deg,transparent calc(100% - 160px),#ff8a2a calc(100% - 160px)) bottom right/100% 3px no-repeat}
+.hd{display:flex;align-items:center;gap:14px;padding:18px 24px 10px}
+.hd h2{margin:0;font:700 34px/1 "Avenir Next Condensed","Arial Narrow",sans-serif;letter-spacing:.06em;text-transform:uppercase;color:#fff}
+.hd small{color:#7ab8d8;font-size:15px;letter-spacing:.08em;text-transform:uppercase}
+.cr{margin-left:auto;font:700 26px "Avenir Next Condensed",sans-serif;color:#ffb84a}
+.tabs{display:flex;gap:4px;padding:0 24px}
+.tab{min-height:48px;padding:0 18px;border:0;background:rgba(42,212,255,.07);color:#7ab8d8;font:700 17px "Avenir Next Condensed",sans-serif;letter-spacing:.1em;text-transform:uppercase;clip-path:polygon(10px 0,100% 0,calc(100% - 10px) 100%,0 100%)}
+.tab.on{background:#2ad4ff;color:#02101a}
+.bd{flex:1;overflow:auto;touch-action:pan-y;-webkit-overflow-scrolling:touch;padding:14px 24px 10px}
+.ft{display:flex;gap:10px;flex-wrap:wrap;padding:12px 24px 20px;border-top:1px solid rgba(42,212,255,.2)}
+.b{min-height:52px;padding:0 22px;border:0;background:rgba(42,212,255,.14);color:#dff4ff;font:700 18px "Avenir Next Condensed",sans-serif;letter-spacing:.08em;text-transform:uppercase;display:inline-flex;align-items:center;gap:9px;clip-path:polygon(12px 0,100% 0,calc(100% - 12px) 100%,0 100%);box-shadow:inset 0 0 0 1px rgba(42,212,255,.6)}
+.b.o{background:#ff8a2a;color:#1a0800;box-shadow:none}.b.c{background:#2ad4ff;color:#02101a;box-shadow:none}.b:disabled{opacity:.35}.b:active{filter:brightness(1.25)}.b svg{width:20px;height:20px}
+table{width:100%;border-collapse:collapse;font-size:17px}th{font-weight:600;color:#7ab8d8;text-align:left;padding:6px 8px;font-size:14px;letter-spacing:.08em;text-transform:uppercase}td{padding:6px 8px;border-top:1px solid rgba(42,212,255,.12)}
+td .b{min-height:44px;padding:0 14px;font-size:15px}.up{color:#6aff9a}.dn{color:#ff7a6a}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:10px}
+.card{padding:12px 14px;background:rgba(42,212,255,.06);box-shadow:inset 0 0 0 1px rgba(42,212,255,.25);clip-path:polygon(0 0,calc(100% - 14px) 0,100% 14px,100% 100%,0 100%)}
+.card b{display:block;font-size:19px;color:#fff;letter-spacing:.04em}.card p{margin:4px 0 10px;color:#a8d0e8;font-size:15px;line-height:1.35}
+.pips{display:flex;gap:4px;margin:4px 0 8px}.pips i{width:22px;height:8px;background:rgba(42,212,255,.2)}.pips i.f{background:#2ad4ff}
+h1{font:800 84px/1 "Avenir Next Condensed","Arial Narrow",sans-serif;letter-spacing:.14em;margin:0;color:#fff;text-shadow:0 0 30px rgba(42,212,255,.7)}
+p{line-height:1.45}
+.x{position:absolute;right:16px;top:14px;width:50px;height:50px;border:0;background:rgba(42,212,255,.15);color:#dff4ff;display:grid;place-items:center;clip-path:polygon(10px 0,100% 0,100% calc(100% - 10px),calc(100% - 10px) 100%,0 100%,0 10px);z-index:2}.x svg{width:20px;height:20px}
+#toast{position:fixed;left:50%;top:92px;transform:translateX(-50%);z-index:30;padding:10px 20px;background:rgba(4,14,26,.92);box-shadow:inset 0 0 0 1px #2ad4ff;font:600 18px "Avenir Next Condensed",sans-serif;letter-spacing:.04em;pointer-events:none;max-width:80vw;text-align:center}
+</style></head><body>
+<canvas id="cv"></canvas>
+<div id="toast" hidden></div>
+<div class="ov" id="ov" hidden><div class="st" id="st"></div></div>
+<script>
+'use strict';
+const $=i=>document.getElementById(i),TAU=Math.PI*2,R=Math.random,clamp=(v,a,b)=>v<a?a:v>b?b:v,pick=a=>a[(R()*a.length)|0];
+const cv=$('cv'),g=cv.getContext('2d');let W=0,H=0,DPR=1,UI=1;
+function size(){DPR=Math.min(2,devicePixelRatio||1);W=innerWidth;H=innerHeight;cv.width=W*DPR;cv.height=H*DPR;UI=Math.min(W/1180,H/820);}addEventListener('resize',size);size();
+const IC={x:'<svg viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M3 3l12 12M15 3L3 15"/></svg>',home:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"><path d="M3 11l9-7 9 7v9h-6v-6H9v6H3z"/></svg>',back:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><path d="M15 4l-8 8 8 8"/></svg>',play:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 4l13 8-13 8z"/></svg>'};
+function toast(t,ms){const e=$('toast');e.textContent=t;e.hidden=false;clearTimeout(toast.t);toast.t=setTimeout(()=>e.hidden=true,ms||2200);}
+/* ---------- world ---------- */
+const GOODS=[['water','Water',22],['ore','Raw Ore',30],['food','Food Packs',40],['fuel','Fuel Cells',55],['meds','Medicine',95],['tech','Electronics',120],['lux','Luxury Goods',210],['relic','Alien Relics',420]];
+const ST=[
+ {id:'haven',n:'Haven Prime',t:'Farming world',x:0,y:0,col:'#4ab86a',make:['food','water'],want:['tech','meds','lux']},
+ {id:'forge',n:'Kessler Forge',t:'Mining colony',x:4200,y:-1800,col:'#c8784a',make:['ore','fuel'],want:['food','water','meds']},
+ {id:'spire',n:'Azure Spire',t:'Tech hub',x:-3600,y:-3000,col:'#4a9aff',make:['tech','meds'],want:['ore','fuel','water']},
+ {id:'orchid',n:'Orchid Station',t:'Pleasure port',x:-4400,y:2600,col:'#e86ab8',make:['lux'],want:['food','tech','relic']},
+ {id:'deep',n:'Deepwell',t:'Ice refinery',x:2400,y:3600,col:'#8ad8ff',make:['water','fuel'],want:['tech','food','lux']},
+ {id:'rook',n:'Rook\'s Nest',t:'Pirate market',x:7600,y:2200,col:'#ff5a3a',make:['relic','lux'],want:['meds','fuel','tech'],shady:1},
+ {id:'zenith',n:'Zenith Observatory',t:'Science outpost',x:-1200,y:-6600,col:'#c8a8ff',make:['meds','tech'],want:['relic','food','ore']}];
+const SHIPS=[
+ {id:'sparrow',n:'Sparrow',d:'A courier with a small hold. Quick and cheap to fix.',price:0,hull:100,shield:60,cargo:12,speed:430,turn:4.2,gun:1,col:'#d8e4f0'},
+ {id:'mule',n:'Mule',d:'Slow freighter with a huge hold. Built for trade runs.',price:28000,hull:180,shield:80,cargo:40,speed:330,turn:2.8,gun:1,col:'#e8c48a'},
+ {id:'viper',n:'Viper',d:'Twin-gun fighter. Hunts pirates for bounties.',price:42000,hull:150,shield:140,cargo:16,speed:520,turn:5.2,gun:2,col:'#ff8a5a'},
+ {id:'albatross',n:'Albatross',d:'Heavy cruiser. Big hold, thick hull, three guns.',price:120000,hull:320,shield:220,cargo:60,speed:400,turn:3,gun:3,col:'#8ad8ff'}];
+const UPG=[['hull','Hull plating','+20% hull',[3000,7000,15000,30000]],['shield','Shield emitter','+20% shields and faster recharge',[3500,8000,16000,32000]],['engine','Engine tuning','+10% speed and turning',[2500,6000,13000,26000]],['cargo','Cargo racks','+6 cargo slots',[2000,5000,11000,22000]],['laser','Laser focus','+25% laser damage',[4000,9000,18000,36000]]];
+const CHARTER=500000;
+/* ---------- save ---------- */
+const SK='starlane-v1';const fresh=()=>({cr:1500,ship:'sparrow',owned:{sparrow:1},up:{hull:0,shield:0,engine:0,cargo:0,laser:0},cargo:{},paid:{},at:'haven',missions:[],done:0,kills:0,earned:0,worth:1500,trips:0,king:0,charter:0,rep:0,prices:null,day:0,opt:{snd:1},seen:{haven:1}});
+let S=fresh();try{const s=JSON.parse(localStorage.getItem(SK)||'null');if(s)S=Object.assign(fresh(),s);}catch(e){}
+const persist=()=>{try{S.worth=netWorth();localStorage.setItem(SK,JSON.stringify(S));}catch(e){}};
+function ship(){return SHIPS.find(s=>s.id===S.ship);}
+function stat(k){const s=ship(),u=S.up;if(k==='hull')return Math.round(s.hull*(1+.2*u.hull));if(k==='shield')return Math.round(s.shield*(1+.2*u.shield));if(k==='cargo')return s.cargo+6*u.cargo;if(k==='speed')return s.speed*(1+.1*u.engine);if(k==='turn')return s.turn*(1+.1*u.engine);if(k==='dmg')return 9*(1+.25*u.laser);return 0;}
+function cargoUsed(){return Object.values(S.cargo).reduce((a,b)=>a+b,0);}
+function netWorth(){let v=S.cr;for(const k in S.cargo)v+=S.cargo[k]*GOODS.find(x=>x[0]===k)[2];v+=Math.round(ship().price*.6);return v;}
+/* prices: each station holds a multiplier per good that drifts */
+function initPrices(){if(S.prices)return;S.prices={};for(const s of ST){S.prices[s.id]={};for(const[k]of GOODS){let m=1+(R()-.5)*.2;if(s.make.includes(k))m*=.62;if(s.want.includes(k))m*=1.45;S.prices[s.id][k]=m;}}}
+initPrices();
+function drift(){for(const s of ST)for(const[k]of GOODS){let m=S.prices[s.id][k];const tgt=(s.make.includes(k)?.62:s.want.includes(k)?1.45:1);m+=(tgt-m)*.15+(R()-.5)*.08;S.prices[s.id][k]=clamp(m,.4,2.1);}}
+function price(sid,k,sell){const base=GOODS.find(x=>x[0]===k)[2];const m=S.prices[sid][k];return Math.max(1,Math.round(base*m*(sell?.94:1)));}
+/* ---------- sound ---------- */
+let AC=null;function ac(){if(!AC){try{AC=new(window.AudioContext||window.webkitAudioContext)();}catch(e){}}if(AC&&AC.state==='suspended')AC.resume();return AC;}
+function tone(f,d,t,v,f2,dl){const A=ac();if(!A||!S.opt.snd)return;const T=A.currentTime+(dl||0),o=A.createOscillator(),q=A.createGain();o.type=t||'sine';o.frequency.setValueAtTime(f,T);if(f2)o.frequency.exponentialRampToValueAtTime(f2,T+d);q.gain.setValueAtTime(0,T);q.gain.linearRampToValueAtTime(v||.05,T+.01);q.gain.exponentialRampToValueAtTime(.0001,T+d);o.connect(q);q.connect(A.destination);o.start(T);o.stop(T+d+.05);}
+function nz(d,v,f){const A=ac();if(!A||!S.opt.snd)return;const T=A.currentTime,b=A.createBuffer(1,A.sampleRate*d|0,A.sampleRate),a=b.getChannelData(0);for(let i=0;i<a.length;i++)a[i]=(Math.random()*2-1)*(1-i/a.length);const s=A.createBufferSource(),fl=A.createBiquadFilter(),q=A.createGain();s.buffer=b;fl.type='lowpass';fl.frequency.value=f||1000;q.gain.value=v||.1;s.connect(fl);fl.connect(q);q.connect(A.destination);s.start(T);}
+const SFX={las:()=>tone(1400,.08,'square',.025,500),hit:()=>nz(.08,.08,2500),boom:()=>{nz(.5,.22,700);tone(90,.5,'sine',.1,40);},buy:()=>{tone(880,.06,'square',.03);tone(1320,.08,'square',.03,0,.05);},dock:()=>[392,523,659].forEach((f,i)=>tone(f,.25,'sine',.05,0,i*.1)),warn:()=>tone(440,.2,'square',.04,330),ore:()=>tone(660,.1,'triangle',.05,990)};
+let MUS=null;function music(n){if(!S.opt.snd){if(MUS)MUS.pause();return;}if(MUS&&MUS.dataset.n===n){MUS.play().catch(()=>{});return;}if(MUS)MUS.pause();MUS=new Audio('music/'+n+'.mp3');MUS.dataset.n=n;MUS.loop=true;MUS.volume=.3;MUS.play().catch(()=>{});}
+/* ---------- art ---------- */
+function LG(c,x0,y0,x1,y1,st){const q=c.createLinearGradient(x0,y0,x1,y1);st.forEach(s=>q.addColorStop(s[0],s[1]));return q;}
+function RG(c,x,y,r,st){const q=c.createRadialGradient(x-r*.3,y-r*.3,r*.05,x,y,r);st.forEach(s=>q.addColorStop(s[0],s[1]));return q;}
+// ships: one hull outline from nose to engines, with cockpit and panel lines
+function drawShip(c,id,col,thr,t){c.save();
+ const hull={sparrow:[[24,0],[8,-6],[-4,-16],[-16,-18],[-12,-7],[-16,-5],[-16,5],[-12,7],[-16,18],[-4,16],[8,6]],
+  mule:[[26,0],[20,-10],[-8,-14],[-20,-22],[-26,-20],[-24,-10],[-28,-8],[-28,8],[-24,10],[-26,20],[-20,22],[-8,14],[20,10]],
+  viper:[[30,0],[6,-5],[-2,-20],[-10,-24],[-8,-8],[-18,-6],[-18,6],[-8,8],[-10,24],[-2,20],[6,5]],
+  albatross:[[36,0],[26,-8],[6,-12],[-6,-28],[-22,-30],[-18,-14],[-30,-10],[-30,10],[-18,14],[-22,30],[-6,28],[6,12],[26,8]],
+  pirate:[[22,0],[4,-8],[-6,-20],[-14,-14],[-10,-5],[-16,-4],[-16,4],[-10,5],[-14,14],[-6,20],[4,8]],
+  king:[[36,0],[18,-10],[0,-26],[-20,-32],[-14,-14],[-28,-10],[-28,10],[-14,14],[-20,32],[0,26],[18,10]]}[id];
+ if(thr>0){c.globalCompositeOperation='lighter';const ex=hull.reduce((a,p)=>Math.min(a,p[0]),0);for(const y of id==='mule'||id==='albatross'||id==='king'?[-8,8]:[0]){const L=14+thr*26+Math.sin(t*40)*4;c.fillStyle=LG(c,ex,0,ex-L,0,[[0,'rgba(180,240,255,.95)'],[.4,id==='pirate'||id==='king'?'rgba(255,90,40,.7)':'rgba(42,180,255,.7)'],[1,'rgba(0,0,0,0)']]);c.beginPath();c.moveTo(ex,y-4);c.lineTo(ex-L,y);c.lineTo(ex,y+4);c.fill();}c.globalCompositeOperation='source-over';}
+ c.beginPath();hull.forEach((p,i)=>i?c.lineTo(p[0],p[1]):c.moveTo(p[0],p[1]));c.closePath();c.fillStyle=LG(c,0,-30,0,30,[[0,'#ffffff'],[.35,col],[1,'#1a2230']]);c.fill();c.lineJoin='round';c.strokeStyle='rgba(2,6,14,.9)';c.lineWidth=1.8;c.stroke();
+ c.strokeStyle='rgba(2,6,14,.35)';c.lineWidth=1;c.beginPath();c.moveTo(hull[0][0]-6,0);c.lineTo(hull.reduce((a,p)=>Math.min(a,p[0]),0)+2,0);c.stroke();
+ const ck=hull[0][0]*.45;c.fillStyle=LG(c,ck-6,-4,ck+6,4,[[0,'#bff4ff'],[1,'#1a4a7a']]);c.beginPath();c.ellipse(ck,0,7,3.6,0,0,TAU);c.fill();c.strokeStyle='rgba(2,6,14,.8)';c.stroke();
+ if(id==='pirate'||id==='king'){c.fillStyle='#ff3a2a';c.beginPath();c.arc(-6,0,2.5,0,TAU);c.fill();}
+ c.restore();}
+function drawStation(c,s,t,r){c.save();c.rotate(t*.05);
+ // ring with spokes and modules: one connected structure
+ c.strokeStyle=LG(c,-r,-r,r,r,[[0,'#e8f0f8'],[.5,'#6a7a8a'],[1,'#2a3440']]);c.lineWidth=r*.16;c.beginPath();c.arc(0,0,r*.82,0,TAU);c.stroke();c.strokeStyle='rgba(2,6,14,.6)';c.lineWidth=1.5;c.beginPath();c.arc(0,0,r*.9,0,TAU);c.arc(0,0,r*.74,0,TAU);c.stroke();
+ for(let i=0;i<4;i++){c.save();c.rotate(i*TAU/4);c.fillStyle='#8a9aaa';c.fillRect(r*.12,-r*.04,r*.62,r*.08);c.fillStyle=LG(c,0,-r*.12,0,r*.12,[[0,'#f4f8fc'],[1,'#5a6a7a']]);c.fillRect(r*.7,-r*.12,r*.26,r*.24);c.fillStyle=s.col;c.fillRect(r*.76,-r*.05,r*.14,r*.1);c.restore();}
+ for(let i=0;i<16;i++){const a=i/16*TAU;c.fillStyle=(i+Math.floor(t*2))%4===0?'#fff6c8':'rgba(255,240,180,.35)';c.beginPath();c.arc(Math.cos(a)*r*.82,Math.sin(a)*r*.82,2,0,TAU);c.fill();}
+ c.fillStyle=RG(c,0,0,r*.2,[[0,'#ffffff'],[.4,s.col],[1,'#1a2230']]);c.beginPath();c.arc(0,0,r*.2,0,TAU);c.fill();c.strokeStyle='rgba(2,6,14,.8)';c.lineWidth=2;c.stroke();c.restore();
+ c.save();c.globalCompositeOperation='lighter';c.fillStyle=RG(c,0,0,r*1.6,[[0,s.col+'33'],[1,'rgba(0,0,0,0)']]);c.beginPath();c.arc(0,0,r*1.6,0,TAU);c.fill();c.restore();}
+function planetImg(col,r,seed){const c=document.createElement('canvas');c.width=c.height=r*2+4;const q=c.getContext('2d');q.translate(r+2,r+2);q.beginPath();q.arc(0,0,r,0,TAU);q.save();q.clip();q.fillStyle=RG(q,0,0,r*1.4,[[0,'#ffffff'],[.25,col],[1,'#05080f']]);q.fillRect(-r,-r,r*2,r*2);
+ let s=seed;const rr=()=>{s=s*16807%2147483647;return s/2147483647;};for(let i=0;i<14;i++){q.fillStyle='rgba(0,0,0,'+(rr()*.18)+')';q.beginPath();q.ellipse((rr()-.5)*r*2,(rr()-.5)*r*2,rr()*r*.6+r*.1,rr()*r*.12+4,rr()*.5,0,TAU);q.fill();}
+ q.fillStyle=LG(q,-r,0,r,0,[[0,'rgba(0,0,0,0)'],[.55,'rgba(0,0,0,0)'],[1,'rgba(0,0,0,.75)']]);q.fillRect(-r,-r,r*2,r*2);q.restore();q.strokeStyle='rgba(180,220,255,.35)';q.lineWidth=3;q.beginPath();q.arc(0,0,r,0,TAU);q.stroke();return c;}
+/* ---------- flight state ---------- */
+let F=null,mode='title';
+function startFlight(fromStation){const s=ST.find(x=>x.id===S.at)||ST[0];F={x:s.x+180,y:s.y,vx:0,vy:0,a:0,hp:stat('hull'),sh:stat('shield'),shT:0,cool:0,ents:[],shots:[],parts:[],rocks:[],t:0,spawnT:6,dockT:0,boost:1,boostE:100,inv:1.5,cam:{x:s.x,y:s.y},msg:0};
+ for(let i=0;i<70;i++){const a=R()*TAU,d=900+R()*1500;F.rocks.push(rock(5200+Math.cos(a)*d*1.4,-5200+Math.sin(a)*d*.5));}
+ for(let i=0;i<50;i++){const a=R()*TAU;F.rocks.push(rock(-6200+Math.cos(a)*900,5200+Math.sin(a)*700));}
+ mode='fly';closeOv();music('mothership');}
+function rock(x,y){const r=16+R()*34,pts=[];const n=9+((R()*4)|0);for(let i=0;i<n;i++){const a=i/n*TAU;pts.push([Math.cos(a)*r*(.75+R()*.3),Math.sin(a)*r*(.75+R()*.3)]);}return{x,y,r,pts,a:R()*TAU,va:(R()-.5)*.4,hp:r*1.4,ore:R()<.35};}
+const PL=ST.map((s,i)=>({x:s.x+[-420,380,-380,420,-360,420,0][i],y:s.y+[-320,300,280,-300,-340,-280,420][i],r:[160,120,180,140,150,110,130][i],img:null,col:s.col,seed:i*991+7}));
+const STARS=[];for(let i=0;i<260;i++)STARS.push({x:R()*4000,y:R()*4000,z:.15+R()*.6,b:R()});
+const NEB=[{x:-6200,y:5200,r:2200,c:'120,60,180'},{x:5200,y:-5200,r:2000,c:'200,110,50'},{x:7600,y:2200,r:1600,c:'200,40,40'},{x:-1200,y:-6600,r:1800,c:'60,120,200'}];
+/* pirates and traders */
+function spawnPirate(near,boss){const a=R()*TAU,d=boss?600:900+R()*500;const lvl=Math.min(4,1+Math.floor(Math.hypot(F.x,F.y)/3000)+(S.worth>60000?1:0));
+ F.ents.push({k:boss?'king':'pirate',x:(near?F.x:near)+Math.cos(a)*d,y:F.y+Math.sin(a)*d,vx:0,vy:0,a:0,hp:boss?900:40+lvl*22,mhp:boss?900:40+lvl*22,sp:boss?360:300+lvl*25,dmg:boss?14:4+lvl*1.5,cool:R()*2,lvl,boss:!!boss,col:boss?'#5a1a1a':'#7a4a4a',flash:0});}
+const JOY={id:null,x:0,y:0,sx:0,sy:0,on:false},BTNS={fire:false,boost:false};let fireId=null,boostId=null;
+function btnRects(){const s=UI;return{fire:{x:W-160*s,y:H-170*s,r:70*s},boost:{x:W-300*s,y:H-110*s,r:48*s},dock:{x:W/2,y:H-90*s,w:240*s,h:64*s},pause:{x:W-60*s,y:44*s,r:30*s},map:{x:W-140*s,y:44*s,r:30*s}};}
+cv.addEventListener('pointerdown',e=>{ac();if(mode!=='fly'||!$('ov').hidden)return;const B=btnRects(),x=e.clientX,y=e.clientY;
+ if(Math.hypot(x-B.pause.x,y-B.pause.y)<B.pause.r+10){pauseMenu();return;}
+ if(Math.hypot(x-B.map.x,y-B.map.y)<B.map.r+10){openMap();return;}
+ if(nearStation()&&x>B.dock.x-B.dock.w/2&&x<B.dock.x+B.dock.w/2&&y>B.dock.y-B.dock.h/2&&y<B.dock.y+B.dock.h/2){dock(nearStation());return;}
+ if(Math.hypot(x-B.fire.x,y-B.fire.y)<B.fire.r+16){fireId=e.pointerId;BTNS.fire=true;return;}
+ if(Math.hypot(x-B.boost.x,y-B.boost.y)<B.boost.r+14){boostId=e.pointerId;BTNS.boost=true;return;}
+ if(x<W*.6&&JOY.id===null){JOY.id=e.pointerId;JOY.sx=x;JOY.sy=y;JOY.x=x;JOY.y=y;JOY.on=true;}});
+cv.addEventListener('pointermove',e=>{if(e.pointerId===JOY.id){JOY.x=e.clientX;JOY.y=e.clientY;}});
+const up=e=>{if(e.pointerId===JOY.id){JOY.id=null;JOY.on=false;}if(e.pointerId===fireId){fireId=null;BTNS.fire=false;}if(e.pointerId===boostId){boostId=null;BTNS.boost=false;}};
+cv.addEventListener('pointerup',up);cv.addEventListener('pointercancel',up);
+function nearStation(){if(!F)return null;for(const s of ST){if(Math.hypot(F.x-s.x,F.y-s.y)<260)return s;}return null;}
+/* ---------- simulation ---------- */
+function step(dt){F.t+=dt;F.inv=Math.max(0,F.inv-dt);const sp=stat('speed');
+ // steering
+ let thr=0;if(JOY.on){const dx=JOY.x-JOY.sx,dy=JOY.y-JOY.sy,m=Math.hypot(dx,dy);if(m>8){const want=Math.atan2(dy,dx);let da=((want-F.a+Math.PI*3)%TAU)-Math.PI;F.a+=clamp(da,-stat('turn')*dt,stat('turn')*dt);thr=clamp(m/(70*UI),0,1);}}
+ if(BTNS.boost&&F.boostE>0){F.boost=1.8;F.boostE=Math.max(0,F.boostE-dt*35);thr=Math.max(thr,1);}else{F.boost=1;F.boostE=Math.min(100,F.boostE+dt*12);}
+ F.thr=thr;F.vx+=Math.cos(F.a)*thr*sp*1.6*dt*F.boost;F.vy+=Math.sin(F.a)*thr*sp*1.6*dt*F.boost;const v=Math.hypot(F.vx,F.vy),mx=sp*F.boost;if(v>mx){F.vx*=mx/v;F.vy*=mx/v;}const drag=Math.pow(.55,dt);F.vx*=drag;F.vy*=drag;F.x+=F.vx*dt;F.y+=F.vy*dt;
+ const lim=9500;F.x=clamp(F.x,-lim,lim);F.y=clamp(F.y,-lim,lim);
+ // shields recharge
+ F.shT-=dt;if(F.shT<=0)F.sh=Math.min(stat('shield'),F.sh+dt*stat('shield')*(.08+.02*S.up.shield));
+ // guns
+ F.cool-=dt;if(BTNS.fire&&F.cool<=0){F.cool=.16;const n=ship().gun;const tgt=aimTarget();let a=F.a;if(tgt){const da=((Math.atan2(tgt.y-F.y,tgt.x-F.x)-F.a+Math.PI*3)%TAU)-Math.PI;if(Math.abs(da)<.45)a=F.a+da;}
+  for(let i=0;i<n;i++){const off=(i-(n-1)/2)*8;F.shots.push({x:F.x+Math.cos(F.a)*20-Math.sin(F.a)*off,y:F.y+Math.sin(F.a)*20+Math.cos(F.a)*off,vx:Math.cos(a)*1100+F.vx,vy:Math.sin(a)*1100+F.vy,life:.75,me:1,dmg:stat('dmg')});}SFX.las();}
+ for(const s of F.shots){s.x+=s.vx*dt;s.y+=s.vy*dt;s.life-=dt;
+  if(s.me){for(const e of F.ents){if(e.hp>0&&Math.hypot(e.x-s.x,e.y-s.y)<(e.boss?50:28)){e.hp-=s.dmg;e.flash=1;s.life=0;sparks(s.x,s.y,'#ffcf7a',6);SFX.hit();if(e.hp<=0)kill(e);break;}}
+   if(s.life>0)for(const r of F.rocks){if(r.hp>0&&Math.hypot(r.x-s.x,r.y-s.y)<r.r){r.hp-=s.dmg;s.life=0;sparks(s.x,s.y,'#c8b8a8',4);if(r.hp<=0)breakRock(r);break;}}}
+  else if(Math.hypot(F.x-s.x,F.y-s.y)<24&&F.inv<=0){s.life=0;hurt(s.dmg);}}
+ F.shots=F.shots.filter(s=>s.life>0);
+ // enemies
+ F.spawnT-=dt;const dz=danger();if(F.spawnT<=0){F.spawnT=dz>0?8+R()*10:30+R()*20;if(dz>0&&F.ents.filter(e=>e.hp>0).length<2+dz){const n=dz>=2?2:1;for(let i=0;i<n;i++)spawnPirate(F.x);F.msg=2.5;F.msgT='Pirates on scanner!';SFX.warn();}}
+ for(const m of S.missions){if(m.k==='bounty'&&!m.spawned&&Math.hypot(F.x-m.x,F.y-m.y)<900){m.spawned=1;for(let i=0;i<m.n;i++)spawnPirate(F.x);if(m.boss){spawnPirate(F.x,true);F.msgT='The Pirate King is here!';F.msg=3;}F.ents.slice(-m.n-(m.boss?1:0)).forEach(e=>e.mid=m.id);}}
+ for(const e of F.ents){if(e.hp<=0)continue;e.flash=Math.max(0,e.flash-dt*4);const dx=F.x-e.x,dy=F.y-e.y,d=Math.hypot(dx,dy);const want=Math.atan2(dy,dx)+(d<220?1.2:0);let da=((want-e.a+Math.PI*3)%TAU)-Math.PI;e.a+=clamp(da,-3*dt,3*dt);const th=d>160?1:.3;e.vx+=Math.cos(e.a)*e.sp*1.4*th*dt;e.vy+=Math.sin(e.a)*e.sp*1.4*th*dt;const v=Math.hypot(e.vx,e.vy);if(v>e.sp){e.vx*=e.sp/v;e.vy*=e.sp/v;}e.vx*=Math.pow(.6,dt);e.vy*=Math.pow(.6,dt);e.x+=e.vx*dt;e.y+=e.vy*dt;e.thr=th;
+  e.cool-=dt;if(d<620&&e.cool<=0&&Math.abs(da)<.5){e.cool=e.boss?.35:1.1-e.lvl*.1;const a=Math.atan2(dy,dx)+(R()-.5)*.12;F.shots.push({x:e.x,y:e.y,vx:Math.cos(a)*720+e.vx,vy:Math.sin(a)*720+e.vy,life:1.1,me:0,dmg:e.dmg});}
+  if(d>4000&&!e.mid)e.hp=0;}
+ F.ents=F.ents.filter(e=>e.hp>0||e.dead>0);
+ for(const r of F.rocks){r.a+=r.va*dt;if(r.hp>0&&Math.hypot(F.x-r.x,F.y-r.y)<r.r+12){const nx=(F.x-r.x),ny=(F.y-r.y),nl=Math.hypot(nx,ny)||1;F.x=r.x+nx/nl*(r.r+12);F.y=r.y+ny/nl*(r.r+12);const vn=F.vx*nx/nl+F.vy*ny/nl;if(vn<0){F.vx-=1.6*vn*nx/nl;F.vy-=1.6*vn*ny/nl;if(-vn>220)hurt(-vn*.04);}}}
+ // loot pods
+ for(const p of F.parts){p.x+=p.vx*dt;p.y+=p.vy*dt;p.vx*=.98;p.vy*=.98;p.life-=dt;if(p.pod&&Math.hypot(F.x-p.x,F.y-p.y)<40){p.life=0;collect(p);}}F.parts=F.parts.filter(p=>p.life>0);
+ // planets hurt? no. mission arrivals
+ if(F.msg>0)F.msg-=dt;S.trips+=0;}
+function danger(){const d0=Math.min(...ST.map(s=>Math.hypot(F.x-s.x,F.y-s.y)));if(d0<900)return 0;const rook=Math.hypot(F.x-ST[5].x,F.y-ST[5].y);return d0>2600||rook<3000?2:1;}
+function aimTarget(){let best=null,bd=700;for(const e of F.ents){if(e.hp<=0)continue;const d=Math.hypot(e.x-F.x,e.y-F.y);if(d<bd){bd=d;best=e;}}if(!best)for(const r of F.rocks){if(r.hp<=0)continue;const d=Math.hypot(r.x-F.x,r.y-F.y);if(d<Math.min(bd,500)){bd=d;best=r;}}return best;}
+function sparks(x,y,col,n){for(let i=0;i<n;i++){const a=R()*TAU,v=60+R()*240;F.parts.push({x,y,vx:Math.cos(a)*v,vy:Math.sin(a)*v,life:.4+R()*.4,col});}}
+function kill(e){S.kills++;SFX.boom();for(let i=0;i<40;i++){const a=R()*TAU,v=60+R()*400;F.parts.push({x:e.x,y:e.y,vx:Math.cos(a)*v,vy:Math.sin(a)*v,life:.6+R()*.8,col:pick(['#ffcf7a','#ff7a2a','#fff'])});}
+ const bounty=e.boss?25000:150+e.lvl*120;S.cr+=bounty;S.earned+=bounty;F.msgT='+'+bounty.toLocaleString()+' cr bounty';F.msg=2;
+ if(R()<.5||e.boss)F.parts.push({pod:1,x:e.x,y:e.y,vx:(R()-.5)*60,vy:(R()-.5)*60,life:40,g:e.boss?'relic':pick(['tech','meds','lux','fuel']),n:e.boss?6:1+((R()*2)|0)});
+ if(e.boss){S.king++;__mgt('m','king');__mgt('w','Pirate King');}else __mgt('w',()=>'Pirate lvl '+e.lvl);
+ if(e.mid){const m=S.missions.find(m=>m.id===e.mid);if(m&&F.ents.filter(x=>x.mid===e.mid&&x.hp>0).length===0){m.ready=1;F.msgT='Bounty complete: return to '+ST.find(s=>s.id===m.to).n;F.msg=3;}}
+ persist();}
+function breakRock(r){r.hp=0;SFX.hit();sparks(r.x,r.y,'#c8b8a8',14);if(r.ore||R()<.5)F.parts.push({pod:1,x:r.x,y:r.y,vx:(R()-.5)*40,vy:(R()-.5)*40,life:30,g:'ore',n:1+((R()*3)|0),rock:1});setTimeout(()=>{if(F){Object.assign(r,rock(r.x+(R()-.5)*400,r.y+(R()-.5)*400));}},45000);}
+function collect(p){const room=stat('cargo')-cargoUsed();if(room<=0){F.msgT='Cargo hold full';F.msg=1.5;return;}const n=Math.min(room,p.n);S.cargo[p.g]=(S.cargo[p.g]||0)+n;S.paid[p.g]=S.paid[p.g]??0;SFX.ore();F.msgT='+'+n+' '+GOODS.find(x=>x[0]===p.g)[1];F.msg=1.5;}
+function hurt(d){if(F.inv>0)return;F.shT=2.4;const ab=Math.min(F.sh,d);F.sh-=ab;d-=ab;F.hp-=d;F.hitFx=1;if(d>0)SFX.hit();if(F.hp<=0){F.hp=0;destroyed();}}
+function destroyed(){SFX.boom();__mgt('l',()=>'Shot down');const lost=cargoUsed();S.cargo={};const fee=Math.min(S.cr,Math.round(stat('hull')*12));S.cr-=fee;mode='dead';persist();
+ setTimeout(()=>{ov(`<div class="hd"><h2>Ship destroyed</h2></div><div class="bd"><p>Your escape pod drifts home to ${ST.find(s=>s.id===S.at).n}. You lost ${lost} units of cargo, and the insurance claim cost ${fee.toLocaleString()} cr.</p></div><div class="ft"><button class="b c" id="dR">${IC.play} Relaunch</button><button class="b" id="dS">Station services</button><button class="b" id="dG">${IC.home} Go back to games</button></div>`);$('dR').onclick=()=>startFlight();$('dS').onclick=()=>dock(ST.find(s=>s.id===S.at));$('dG').onclick=goHub;},900);}
+/* ---------- docking and station ---------- */
+function dock(s){S.at=s.id;S.seen[s.id]=1;mode='station';drift();S.day++;if(F){F.vx=F.vy=0;}F=null;SFX.dock();
+ for(const m of S.missions){if(m.to===s.id&&(m.k==='cargo'&&(S.cargo[m.g]||0)>=m.n||m.k==='bounty'&&m.ready)){if(m.k==='cargo'){S.cargo[m.g]-=m.n;if(!S.cargo[m.g])delete S.cargo[m.g];}S.cr+=m.pay;S.earned+=m.pay;S.done++;m.fin=1;__mgt('w',()=>m.k==='cargo'?'Delivery':'Bounty');toast('Contract complete: +'+m.pay.toLocaleString()+' cr',3000);}}
+ S.missions=S.missions.filter(m=>!m.fin);if(!S.board||S.board.at!==s.id||S.board.day!==S.day)makeBoard(s);persist();music('travelers_notebook');station('market');}
+function makeBoard(s){const L=[];const others=ST.filter(x=>x.id!==s.id&&(!x.shady||S.seen.rook));for(let i=0;i<4;i++){const to=pick(others);const d=Math.hypot(to.x-s.x,to.y-s.y);
+  if(i<3){const gd=pick(GOODS.slice(0,7));const n=4+((R()*10)|0);L.push({id:Date.now()+i,k:'cargo',to:to.id,g:gd[0],n,pay:Math.round(n*gd[2]*.5+d*.6),from:s.id,give:1});}
+  else{const a=R()*TAU,r=2800+R()*2500;const bx=Math.round(s.x+Math.cos(a)*r),by=Math.round(s.y+Math.sin(a)*r);const boss=S.done>=8&&S.king===0&&R()<.5;L.push({id:Date.now()+i,k:'bounty',to:s.id,x:bx,y:by,n:2+((R()*3)|0)+(boss?2:0),boss,pay:boss?20000:1200+Math.round(r*.6)});}}
+ S.board={at:s.id,day:S.day,list:L};}
+let tab='market';
+function station(t){tab=t||tab;const s=ST.find(x=>x.id===S.at);const tabs=[['market','Market'],['missions','Contracts'],['yard','Shipyard'],['ship','My ship'],['log','Captain\'s log']];
+ ov(`<div class="hd"><div><h2>${s.n}</h2><small>${s.t}${s.shady?' · no questions asked':''}</small></div><div class="cr">${S.cr.toLocaleString()} cr</div></div><div class="tabs">${tabs.map(([k,n])=>`<button class="tab${tab===k?' on':''}" data-t="${k}">${n}</button>`).join('')}</div><div class="bd" id="sb"></div>
+ <div class="ft"><button class="b c" id="uD">${IC.play} Undock</button><button class="b" id="uM">Galaxy map</button><button class="b" id="uP">Settings</button><button class="b" id="uG">${IC.home} Go back to games</button><span style="margin-left:auto;align-self:center;color:#7ab8d8">Hold ${cargoUsed()}/${stat('cargo')} · Hull ${ship().n}</span></div>`);
+ document.querySelectorAll('[data-t]').forEach(b=>b.onclick=()=>{tab=b.dataset.t;station();});$('uD').onclick=()=>startFlight(1);$('uM').onclick=()=>openMap(()=>station());$('uP').onclick=()=>settings(()=>station());$('uG').onclick=goHub;
+ const B=$('sb');
+ if(tab==='market'){let h='<table><tr><th>Good</th><th>Buy</th><th>Sell</th><th>In hold</th><th></th></tr>';for(const[k,n]of GOODS){if(k==='relic'&&!s.make.includes('relic')&&!s.want.includes('relic')&&!(S.cargo.relic)){continue;}const b=price(s.id,k),sl=price(s.id,k,1),own=S.cargo[k]||0,paid=S.paid[k];const tag=s.make.includes(k)?'<span class="up"> cheap here</span>':s.want.includes(k)?'<span class="dn"> wanted here</span>':'';
+  h+=`<tr><td><b>${n}</b>${tag}</td><td>${b}</td><td>${sl}${own&&paid?` <small class="${sl>paid?'up':'dn'}">(${sl>paid?'+':''}${sl-paid})</small>`:''}</td><td>${own}</td><td style="white-space:nowrap"><button class="b" data-b="${k}">Buy 1</button> <button class="b" data-bm="${k}">Max</button> <button class="b" data-s="${k}" ${own?'':'disabled'}>Sell all</button></td></tr>`;}
+  B.innerHTML=h+'</table><p style="color:#7ab8d8">Buy where goods are cheap, sell where they are wanted. Prices shift a little every time you dock.</p>';
+  const buy=(k,n)=>{const p=price(s.id,k);const room=stat('cargo')-cargoUsed();n=Math.min(n,room,Math.floor(S.cr/p));if(n<=0){toast(room<=0?'Cargo hold is full':'Not enough credits');return;}const own=S.cargo[k]||0;S.paid[k]=Math.round(((S.paid[k]||0)*own+p*n)/(own+n));S.cargo[k]=own+n;S.cr-=p*n;SFX.buy();persist();station();};
+  B.querySelectorAll('[data-b]').forEach(b=>b.onclick=()=>buy(b.dataset.b,1));B.querySelectorAll('[data-bm]').forEach(b=>b.onclick=()=>buy(b.dataset.bm,999));
+  B.querySelectorAll('[data-s]').forEach(b=>b.onclick=()=>{const k=b.dataset.s,n=S.cargo[k]||0;if(!n)return;const p=price(s.id,k,1);S.cr+=p*n;const prof=(p-(S.paid[k]||p))*n;S.earned+=Math.max(0,prof);delete S.cargo[k];SFX.buy();if(prof>0)__mgt('m','trade');toast((prof>=0?'Profit ':'Loss ')+prof.toLocaleString()+' cr');persist();station();});}
+ if(tab==='missions'){const L=S.board.list;let h='<h3 style="margin:0 0 8px;color:#fff">Contracts posted here</h3><div class="grid">';
+  for(const m of L){const to=ST.find(x=>x.id===m.to),gd=m.g&&GOODS.find(x=>x[0]===m.g);h+=`<div class="card"><b>${m.k==='cargo'?'Deliver '+m.n+' '+gd[1]:m.boss?'Hunt the Pirate King':'Pirate bounty: '+m.n+' ships'}</b><p>${m.k==='cargo'?'Take them to '+to.n+'. The cargo is loaded for you.':'Destroy them at the marked spot, then come back here.'} Pays <b style="display:inline;color:#ffb84a">${m.pay.toLocaleString()} cr</b>.</p><button class="b c" data-m="${m.id}" ${S.missions.length>=4?'disabled':''}>Accept</button></div>`;}
+  h+='</div><h3 style="margin:16px 0 8px;color:#fff">Active contracts ('+S.missions.length+'/4)</h3>';h+=S.missions.length?'<div class="grid">'+S.missions.map(m=>{const to=ST.find(x=>x.id===m.to),gd=m.g&&GOODS.find(x=>x[0]===m.g);return`<div class="card"><b>${m.k==='cargo'?m.n+' '+gd[1]+' to '+to.n:(m.boss?'Pirate King':'Bounty')+(m.ready?': return to '+to.n:': marked on your map')}</b><p>${m.pay.toLocaleString()} cr</p><button class="b" data-x="${m.id}">Abandon</button></div>`;}).join('')+'</div>':'<p style="color:#7ab8d8">None. Accept one above.</p>';
+  B.innerHTML=h;B.querySelectorAll('[data-m]').forEach(b=>b.onclick=()=>{const m=L.find(x=>x.id==b.dataset.m);if(m.k==='cargo'){const room=stat('cargo')-cargoUsed();if(room<m.n){toast('Not enough room in your hold');return;}S.cargo[m.g]=(S.cargo[m.g]||0)+m.n;S.paid[m.g]=S.paid[m.g]||0;}S.missions.push(m);L.splice(L.indexOf(m),1);SFX.buy();persist();station();});
+  B.querySelectorAll('[data-x]').forEach(b=>b.onclick=()=>{const m=S.missions.find(x=>x.id==b.dataset.x);if(m.k==='cargo'&&S.cargo[m.g]){S.cargo[m.g]=Math.max(0,S.cargo[m.g]-m.n);if(!S.cargo[m.g])delete S.cargo[m.g];}S.missions.splice(S.missions.indexOf(m),1);persist();station();});}
+ if(tab==='yard'){let h='<div class="grid">';for(const sh of SHIPS){const own=S.owned[sh.id],cur=S.ship===sh.id;h+=`<div class="card"><canvas data-sh="${sh.id}" width="240" height="110" style="width:120px;height:55px"></canvas><b>${sh.n}</b><p>${sh.d}<br>Hull ${sh.hull} · Shields ${sh.shield} · Hold ${sh.cargo} · Guns ${sh.gun}</p>${cur?'<button class="b" disabled>Flying it</button>':own?`<button class="b c" data-fly="${sh.id}">Switch to it</button>`:`<button class="b o" data-buy="${sh.id}" ${S.cr<sh.price?'disabled':''}>Buy · ${sh.price.toLocaleString()} cr</button>`}</div>`;}
+  h+=`<div class="card"><b>Starlane Charter</b><p>Own the trade lanes themselves. The final goal of every captain. ${S.charter?'<b style="display:inline;color:#6aff9a">You hold the Charter.</b>':''}</p>${S.charter?'':`<button class="b o" id="chB" ${S.cr<CHARTER?'disabled':''}>Buy · ${CHARTER.toLocaleString()} cr</button>`}</div></div>`;B.innerHTML=h;
+  B.querySelectorAll('[data-sh]').forEach(c=>{const q=c.getContext('2d');q.scale(2,2);q.translate(60,28);q.scale(1.3,1.3);const sh=SHIPS.find(x=>x.id===c.dataset.sh);drawShip(q,sh.id,sh.col,.6,0);});
+  B.querySelectorAll('[data-buy]').forEach(b=>b.onclick=()=>{const sh=SHIPS.find(x=>x.id===b.dataset.buy);if(S.cr<sh.price)return;if(cargoUsed()>sh.cargo){toast('Sell cargo first: the new hold is smaller');return;}S.cr-=sh.price;S.owned[sh.id]=1;S.ship=sh.id;SFX.dock();persist();station();});
+  B.querySelectorAll('[data-fly]').forEach(b=>b.onclick=()=>{const sh=SHIPS.find(x=>x.id===b.dataset.fly);if(cargoUsed()>sh.cargo+6*S.up.cargo){toast('Too much cargo for that hold');return;}S.ship=sh.id;persist();station();});
+  if($('chB'))$('chB').onclick=()=>{if(S.cr<CHARTER)return;S.cr-=CHARTER;S.charter=1;__mgt('m','charter');persist();SFX.dock();toast('The Starlane Charter is yours. Every lane in the sector answers to you now.',4000);station();};}
+ if(tab==='ship'){let h=`<p>${ship().n}: hull ${stat('hull')}, shields ${stat('shield')}, hold ${stat('cargo')}, top speed ${Math.round(stat('speed'))}, laser ${stat('dmg').toFixed(1)}.</p><div class="grid">`;
+  for(const[k,n,d,cost]of UPG){const l=S.up[k],mx=l>=cost.length;h+=`<div class="card"><b>${n}</b><div class="pips">${cost.map((_,i)=>`<i class="${i<l?'f':''}"></i>`).join('')}</div><p>${d}</p>${mx?'<button class="b" disabled>Maxed</button>':`<button class="b c" data-u="${k}" ${S.cr<cost[l]?'disabled':''}>Upgrade · ${cost[l].toLocaleString()} cr</button>`}</div>`;}
+  B.innerHTML=h+'</div><p style="color:#7ab8d8">Upgrades stay with you when you switch ships.</p>';B.querySelectorAll('[data-u]').forEach(b=>b.onclick=()=>{const u=UPG.find(x=>x[0]===b.dataset.u);const l=S.up[u[0]];if(S.cr<u[3][l])return;S.cr-=u[3][l];S.up[u[0]]++;SFX.buy();persist();station();});}
+ if(tab==='log'){B.innerHTML=`<div class="grid"><div class="card"><b>${netWorth().toLocaleString()} cr</b><p>Net worth</p></div><div class="card"><b>${S.earned.toLocaleString()} cr</b><p>Earned in total</p></div><div class="card"><b>${S.done}</b><p>Contracts completed</p></div><div class="card"><b>${S.kills}</b><p>Pirates destroyed${S.king?' · Pirate King: '+S.king:''}</p></div><div class="card"><b>${Object.keys(S.seen).length} / ${ST.length}</b><p>Stations visited</p></div><div class="card"><b>${rank()}</b><p>Captain rank</p></div></div>`;}}
+function rank(){const w=netWorth();return w<10000?'Drifter':w<40000?'Hauler':w<120000?'Merchant':w<300000?'Trade Baron':w<CHARTER?'Magnate':'Lane Lord';}
+function openMap(back){const prevMode=mode;if(mode==='fly')mode='map';ov(`<div class="hd"><h2>Galaxy map</h2><small>Tap a station to set a course</small><button class="x" id="mX" aria-label="Close">${IC.x}</button></div><div class="bd" style="display:flex;justify-content:center"><canvas id="mc" width="1600" height="1100" style="width:min(800px,100%);height:auto;touch-action:none"></canvas></div><div class="ft"><button class="b c" id="mB">${IC.back} Back</button><span style="align-self:center;color:#7ab8d8">Orange marks are bounty targets. Red space is pirate country.</span></div>`);
+ const c=$('mc'),q=c.getContext('2d'),sc=1600/22000;const tx=x=>(x+11000)*sc,ty=y=>(y+7500)*sc;
+ q.fillStyle='#030814';q.fillRect(0,0,1600,1100);for(const n of NEB){q.fillStyle=RG(q,tx(n.x),ty(n.y),n.r*sc,[[0,'rgba('+n.c+',.35)'],[1,'rgba(0,0,0,0)']]);q.beginPath();q.arc(tx(n.x),ty(n.y),n.r*sc,0,TAU);q.fill();}
+ q.fillStyle='rgba(255,60,40,.08)';q.beginPath();q.arc(tx(ST[5].x),ty(ST[5].y),3000*sc,0,TAU);q.fill();
+ for(const s of ST){q.fillStyle=s.col;q.beginPath();q.arc(tx(s.x),ty(s.y),14,0,TAU);q.fill();q.strokeStyle='#fff';q.lineWidth=2;q.stroke();q.fillStyle='#dff4ff';q.font='600 30px Arial Narrow,sans-serif';q.textAlign='center';q.fillText(S.seen[s.id]?s.n:'Unknown signal',tx(s.x),ty(s.y)-26);if(S.course===s.id){q.strokeStyle='#2ad4ff';q.setLineDash([10,8]);q.lineWidth=3;q.beginPath();q.arc(tx(s.x),ty(s.y),30,0,TAU);q.stroke();q.setLineDash([]);}}
+ for(const m of S.missions){if(m.k==='bounty'&&!m.ready){q.fillStyle='#ff8a2a';q.beginPath();q.moveTo(tx(m.x),ty(m.y)-16);q.lineTo(tx(m.x)+14,ty(m.y)+10);q.lineTo(tx(m.x)-14,ty(m.y)+10);q.fill();}if(m.k==='cargo'){const to=ST.find(s=>s.id===m.to);q.strokeStyle='#ffb84a';q.lineWidth=3;q.beginPath();q.arc(tx(to.x),ty(to.y),22,0,TAU);q.stroke();}}
+ const px=F?F.x:ST.find(s=>s.id===S.at).x,py=F?F.y:ST.find(s=>s.id===S.at).y;q.fillStyle='#2ad4ff';q.beginPath();q.arc(tx(px),ty(py),10,0,TAU);q.fill();q.fillStyle='#fff';q.font='700 24px Arial Narrow';q.fillText('YOU',tx(px),ty(py)+34);
+ c.onclick=e=>{const r=c.getBoundingClientRect();const mx=(e.clientX-r.left)/r.width*1600,my=(e.clientY-r.top)/r.height*1100;for(const s of ST){if(Math.hypot(tx(s.x)-mx,ty(s.y)-my)<60){S.course=s.id;persist();openMap(back);toast('Course set for '+(S.seen[s.id]?s.n:'the unknown signal'));return;}}};
+ const close=()=>{if(back)back();else{mode=prevMode==='map'?'fly':prevMode;closeOv();}};$('mX').onclick=$('mB').onclick=close;}
+function ov(h){$('st').innerHTML=h;$('ov').hidden=false;}
+function closeOv(){$('ov').hidden=true;}
+function goHub(){persist();location.href='index.html';}
+function settings(back){ov(`<div class="hd"><h2>Settings</h2></div><div class="bd"><p>Sound and music: <b>${S.opt.snd?'on':'off'}</b></p><p>Left side of the screen: drag to steer and thrust. Right side: hold FIRE to shoot (it aims for the closest target), hold BOOST to sprint. Shoot asteroids for ore. Fly close to a station and tap DOCK.</p></div><div class="ft"><button class="b c" id="sB">${IC.back} Back</button><button class="b" id="sS">Toggle sound</button><button class="b" id="sG">${IC.home} Go back to games</button></div>`);$('sB').onclick=back;$('sS').onclick=()=>{S.opt.snd=S.opt.snd?0:1;persist();if(!S.opt.snd&&MUS)MUS.pause();else music(mode==='fly'?'mothership':'travelers_notebook');settings(back);};$('sG').onclick=goHub;}
+function pauseMenu(){if(mode!=='fly'&&mode!=='paused')return;mode='paused';ov(`<div class="hd"><h2>Paused</h2><small>${ST.find(s=>s.id===S.at).n} · ${S.cr.toLocaleString()} cr</small></div><div class="bd"><p>Your progress is saved every time you dock and on every bounty.</p></div><div class="ft"><button class="b c" id="pR">${IC.play} Resume</button><button class="b" id="pM">Galaxy map</button><button class="b" id="pS">Settings</button><button class="b" id="pT">${IC.back} Title screen</button><button class="b" id="pG">${IC.home} Go back to games</button></div>`);
+ const res=()=>{mode='fly';closeOv();};$('pR').onclick=res;$('pM').onclick=()=>openMap(pauseMenu);$('pS').onclick=()=>settings(pauseMenu);$('pT').onclick=()=>{persist();title();};$('pG').onclick=goHub;}
+function title(){mode='title';F=null;music('mothership');ov(`<div class="bd" style="text-align:center;padding:30px 24px 10px"><canvas id="tcv" width="900" height="240" style="width:450px;height:120px"></canvas><h1>STARLANE</h1><p style="font-size:19px;max-width:640px;margin:10px auto 0">Trade between seven stations, run contracts, mine asteroids and hunt pirates. Build a fleet and buy the Starlane Charter.</p><p style="color:#7ab8d8">${S.done||S.earned?`Captain rank: ${rank()} · ${S.cr.toLocaleString()} cr`:'You start with a Sparrow and 1,500 credits.'}</p></div>
+ <div class="ft" style="justify-content:center;border:0"><button class="b c" id="tP">${IC.play} ${S.day?'Continue':'Launch'}</button><button class="b" id="tS">Settings and controls</button><button class="b" id="tN">New career</button><button class="b" id="tG">${IC.home} Go back to games</button></div>`);
+ const c=$('tcv').getContext('2d');c.scale(2,2);c.translate(225,60);drawShip(c,'viper','#ff8a5a',1,0);c.translate(-120,20);c.scale(.7,.7);drawShip(c,'pirate','#7a4a4a',.5,0);c.setTransform(2,0,0,2,0,0);c.translate(360,60);c.scale(.9,.9);drawShip(c,'mule','#e8c48a',.7,0);
+ $('tP').onclick=()=>{ac();dock(ST.find(s=>s.id===S.at)||ST[0]);};$('tS').onclick=()=>settings(title);$('tN').onclick=()=>{if(!confirmNew())return;S=fresh();initPrices();persist();title();};$('tG').onclick=goHub;}
+let cn=0;function confirmNew(){if(Date.now()-cn<3000)return true;cn=Date.now();toast('Tap New career again to wipe your save');return false;}
+/* ---------- render ---------- */
+let last=performance.now();
+function frame(now){requestAnimationFrame(frame);const dt=Math.min(.05,(now-last)/1000);last=now;const t=now/1000;g.setTransform(DPR,0,0,DPR,0,0);
+ if(mode==='fly'&&F)step(dt);
+ const cx=F?F.x:(ST.find(s=>s.id===S.at)||ST[0]).x,cy=F?F.y:(ST.find(s=>s.id===S.at)||ST[0]).y;if(F){F.cam.x+=(F.x+F.vx*.35-F.cam.x)*Math.min(1,dt*4);F.cam.y+=(F.y+F.vy*.35-F.cam.y)*Math.min(1,dt*4);}
+ const camx=F?F.cam.x:cx+Math.sin(t*.1)*60,camy=F?F.cam.y:cy;const Z=Math.max(.62,Math.min(1,UI*1.05));
+ g.fillStyle='#02040a';g.fillRect(0,0,W,H);
+ for(const n of NEB){const x=(n.x-camx)*Z*.5+W/2,y=(n.y-camy)*Z*.5+H/2;if(x<-n.r||x>W+n.r||y<-n.r||y>H+n.r)continue;g.fillStyle=RG(g,x,y,n.r*Z*.5,[[0,'rgba('+n.c+',.28)'],[1,'rgba(0,0,0,0)']]);g.fillRect(0,0,W,H);}
+ for(const s of STARS){const x=((s.x-camx*s.z)%4000+4000)%4000*(W/4000*1.2)-W*.1,y=((s.y-camy*s.z)%4000+4000)%4000*(H/4000*1.2)-H*.1;g.fillStyle='rgba(220,235,255,'+(.3+s.b*.6)+')';g.fillRect(x,y,s.z*2.4,s.z*2.4);}
+ g.save();g.translate(W/2,H/2);g.scale(Z,Z);g.translate(-camx,-camy);
+ for(const p of PL){if(Math.abs(p.x-camx)>W/Z+p.r||Math.abs(p.y-camy)>H/Z+p.r)continue;if(!p.img)p.img=planetImg(p.col,p.r,p.seed);g.drawImage(p.img,p.x-p.r-2,p.y-p.r-2);}
+ for(const s of ST){if(Math.abs(s.x-camx)>W/Z+200||Math.abs(s.y-camy)>H/Z+200)continue;g.save();g.translate(s.x,s.y);drawStation(g,s,t,110);g.restore();g.fillStyle='#dff4ff';g.font='600 22px Arial Narrow,sans-serif';g.textAlign='center';g.fillText(S.seen[s.id]?s.n:'Unknown station',s.x,s.y-150);
+  if(F&&Math.hypot(F.x-s.x,F.y-s.y)<260){g.strokeStyle='rgba(42,212,255,'+(.5+.3*Math.sin(t*5))+')';g.lineWidth=3;g.setLineDash([12,10]);g.beginPath();g.arc(s.x,s.y,240,0,TAU);g.stroke();g.setLineDash([]);}}
+ if(F){
+  for(const r of F.rocks){if(r.hp<=0||Math.abs(r.x-camx)>W/Z/2+80||Math.abs(r.y-camy)>H/Z/2+80)continue;g.save();g.translate(r.x,r.y);g.rotate(r.a);g.beginPath();r.pts.forEach((p,i)=>i?g.lineTo(p[0],p[1]):g.moveTo(p[0],p[1]));g.closePath();g.fillStyle=RG(g,0,0,r.r,[[0,r.ore?'#b89a7a':'#8a8278'],[1,'#2a2622']]);g.fill();g.strokeStyle='rgba(0,0,0,.6)';g.lineWidth=1.5;g.stroke();if(r.ore){g.fillStyle='#ffcf7a';for(let i=0;i<3;i++){g.beginPath();g.arc(r.pts[i*2][0]*.45,r.pts[i*2][1]*.45,2.5,0,TAU);g.fill();}}g.restore();}
+  for(const m of S.missions){if(m.k==='bounty'&&!m.ready){g.strokeStyle='rgba(255,138,42,.7)';g.lineWidth=3;g.setLineDash([16,10]);g.beginPath();g.arc(m.x,m.y,300+Math.sin(t*3)*10,0,TAU);g.stroke();g.setLineDash([]);}}
+  for(const p of F.parts){if(p.pod){g.save();g.translate(p.x,p.y);g.rotate(t*2);g.fillStyle=p.rock?'#c8a87a':'#2ad4ff';g.fillRect(-7,-7,14,14);g.strokeStyle='#fff';g.lineWidth=1.5;g.strokeRect(-7,-7,14,14);g.restore();g.save();g.globalCompositeOperation='lighter';g.fillStyle=RG(g,p.x,p.y,24,[[0,p.rock?'rgba(255,200,120,.4)':'rgba(42,212,255,.4)'],[1,'rgba(0,0,0,0)']]);g.beginPath();g.arc(p.x,p.y,24,0,TAU);g.fill();g.restore();continue;}
+   g.fillStyle=p.col;g.globalAlpha=clamp(p.life*2,0,1);g.fillRect(p.x-1.5,p.y-1.5,3,3);g.globalAlpha=1;}
+  for(const s of F.shots){g.strokeStyle=s.me?'#7affff':'#ff5a3a';g.lineWidth=3;g.lineCap='round';g.beginPath();g.moveTo(s.x,s.y);g.lineTo(s.x-s.vx*.025,s.y-s.vy*.025);g.stroke();}
+  for(const e of F.ents){if(e.hp<=0)continue;g.save();g.translate(e.x,e.y);g.rotate(e.a);g.scale(1.45,1.45);if(e.boss)g.scale(1.6,1.6);drawShip(g,e.k,e.col,e.thr||0,t);if(e.flash){g.globalCompositeOperation='lighter';g.globalAlpha=e.flash*.6;g.fillStyle='#fff';g.beginPath();g.arc(0,0,22,0,TAU);g.fill();}g.restore();
+   g.fillStyle='rgba(0,0,0,.6)';g.fillRect(e.x-24,e.y-34*(e.boss?1.6:1),48,5);g.fillStyle='#ff5a3a';g.fillRect(e.x-24,e.y-34*(e.boss?1.6:1),48*e.hp/e.mhp,5);}
+  g.save();g.translate(F.x,F.y);g.rotate(F.a);g.scale(1.45,1.45);const sh=ship();if(F.inv>0&&Math.floor(t*10)%2)g.globalAlpha=.4;drawShip(g,sh.id,sh.col,F.thr*(F.boost>1?1.6:1),t);
+  if(F.sh>0&&F.shT>1.6){g.globalCompositeOperation='lighter';g.strokeStyle='rgba(42,212,255,'+((F.shT-1.6)*1.2)+')';g.lineWidth=3;g.beginPath();g.arc(0,0,34,0,TAU);g.stroke();}g.restore();}
+ g.restore();
+ if(mode==='fly'&&F)drawHud(t);}
+function drawHud(t){const s=UI;const B=btnRects();
+ // status bars top left: angled bars
+ const bx=18*s,by=16*s;g.save();g.fillStyle='rgba(4,14,26,.75)';g.beginPath();g.moveTo(bx,by);g.lineTo(bx+360*s,by);g.lineTo(bx+340*s,by+96*s);g.lineTo(bx,by+96*s);g.closePath();g.fill();g.strokeStyle='#2ad4ff';g.lineWidth=1.5;g.stroke();
+ const bar=(y,v,mx,col,lbl)=>{g.fillStyle='rgba(255,255,255,.08)';g.beginPath();g.moveTo(bx+86*s,y);g.lineTo(bx+316*s,y);g.lineTo(bx+308*s,y+14*s);g.lineTo(bx+86*s,y+14*s);g.fill();const w=228*s*clamp(v/mx,0,1);g.fillStyle=col;g.beginPath();g.moveTo(bx+86*s,y);g.lineTo(bx+86*s+w,y);g.lineTo(bx+86*s+w-6*s,y+14*s);g.lineTo(bx+86*s,y+14*s);g.fill();g.fillStyle='#7ab8d8';g.font='700 '+(14*s)+'px Arial Narrow,sans-serif';g.textAlign='left';g.fillText(lbl,bx+14*s,y+12*s);};
+ bar(by+12*s,F.sh,stat('shield'),'#2ad4ff','SHIELD');bar(by+36*s,F.hp,stat('hull'),F.hp<stat('hull')*.3?'#ff5a3a':'#ffb84a','HULL');bar(by+60*s,F.boostE,100,'#c8a8ff','BOOST');
+ g.fillStyle='#ffb84a';g.font='700 '+(17*s)+'px Arial Narrow,sans-serif';g.fillText(S.cr.toLocaleString()+' cr   ·   hold '+cargoUsed()+'/'+stat('cargo'),bx+14*s,by+88*s);g.restore();
+ // radar
+ const rx=110*s,ry=H-120*s,rr=88*s;g.save();g.fillStyle='rgba(4,14,26,.7)';g.beginPath();g.arc(rx,ry,rr,0,TAU);g.fill();g.strokeStyle='rgba(42,212,255,.6)';g.lineWidth=1.5;g.stroke();g.beginPath();g.arc(rx,ry,rr*.5,0,TAU);g.stroke();g.beginPath();g.moveTo(rx-rr,ry);g.lineTo(rx+rr,ry);g.moveTo(rx,ry-rr);g.lineTo(rx,ry+rr);g.strokeStyle='rgba(42,212,255,.2)';g.stroke();
+ const sc=rr/3000;const dot=(x,y,col,r)=>{let dx=(x-F.x)*sc,dy=(y-F.y)*sc;const d=Math.hypot(dx,dy);if(d>rr-4){dx*=(rr-4)/d;dy*=(rr-4)/d;}g.fillStyle=col;g.beginPath();g.arc(rx+dx,ry+dy,r*s,0,TAU);g.fill();};
+ for(const st of ST)dot(st.x,st.y,st.col,5);for(const e of F.ents)if(e.hp>0)dot(e.x,e.y,'#ff3a2a',3);for(const m of S.missions)if(m.k==='bounty'&&!m.ready)dot(m.x,m.y,'#ff8a2a',4);g.fillStyle='#fff';g.save();g.translate(rx,ry);g.rotate(F.a);g.beginPath();g.moveTo(8*s,0);g.lineTo(-5*s,-5*s);g.lineTo(-5*s,5*s);g.fill();g.restore();g.restore();
+ // course arrow
+ const tgt=S.course?ST.find(x=>x.id===S.course):null;const cargoTo=S.missions.find(m=>m.k==='cargo'||m.ready);const goal=tgt||(cargoTo&&ST.find(x=>x.id===cargoTo.to));
+ if(goal&&Math.hypot(goal.x-F.x,goal.y-F.y)>400){const a=Math.atan2(goal.y-F.y,goal.x-F.x);const ax=W/2+Math.cos(a)*170*s,ay=H/2+Math.sin(a)*170*s;g.save();g.translate(ax,ay);g.rotate(a);g.fillStyle='rgba(42,212,255,.85)';g.beginPath();g.moveTo(16*s,0);g.lineTo(-8*s,-10*s);g.lineTo(-3*s,0);g.lineTo(-8*s,10*s);g.fill();g.restore();g.fillStyle='#bfe8ff';g.font='600 '+(14*s)+'px Arial Narrow';g.textAlign='center';g.fillText(goal.n+' '+Math.round(Math.hypot(goal.x-F.x,goal.y-F.y)/100)/10+'k',ax,ay+26*s);}
+ // joystick
+ if(JOY.on){g.strokeStyle='rgba(42,212,255,.5)';g.lineWidth=3;g.beginPath();g.arc(JOY.sx,JOY.sy,70*s,0,TAU);g.stroke();const dx=JOY.x-JOY.sx,dy=JOY.y-JOY.sy,m=Math.min(70*s,Math.hypot(dx,dy)),a=Math.atan2(dy,dx);g.fillStyle='rgba(42,212,255,.5)';g.beginPath();g.arc(JOY.sx+Math.cos(a)*m,JOY.sy+Math.sin(a)*m,30*s,0,TAU);g.fill();}
+ else{g.fillStyle='rgba(122,184,216,.5)';g.font='600 '+(15*s)+'px Arial Narrow';g.textAlign='left';g.fillText('Drag on the left side to fly',220*s,H-30*s);}
+ // buttons
+ const rb=(b,lbl,on,col)=>{g.save();g.translate(b.x,b.y);g.fillStyle=on?col:'rgba(4,14,26,.7)';g.beginPath();for(let i=0;i<6;i++){const a=i/6*TAU;g.lineTo(Math.cos(a)*b.r,Math.sin(a)*b.r);}g.closePath();g.fill();g.strokeStyle=col;g.lineWidth=2.5;g.stroke();g.fillStyle=on?'#02101a':'#dff4ff';g.font='700 '+(b.r*.36)+'px Arial Narrow';g.textAlign='center';g.textBaseline='middle';g.fillText(lbl,0,1);g.restore();};
+ rb(B.fire,'FIRE',BTNS.fire,'#ff8a2a');rb(B.boost,'BOOST',BTNS.boost,'#c8a8ff');
+ g.save();for(const[b,k]of[[B.pause,'p'],[B.map,'m']]){g.translate(0,0);g.fillStyle='rgba(4,14,26,.8)';g.beginPath();g.arc(b.x,b.y,b.r,0,TAU);g.fill();g.strokeStyle='#2ad4ff';g.lineWidth=2;g.stroke();g.fillStyle='#dff4ff';if(k==='p'){g.fillRect(b.x-9*s,b.y-11*s,6*s,22*s);g.fillRect(b.x+3*s,b.y-11*s,6*s,22*s);}else{g.strokeStyle='#dff4ff';g.lineWidth=2.4;g.beginPath();g.moveTo(b.x-12*s,b.y-8*s);g.lineTo(b.x-4*s,b.y-12*s);g.lineTo(b.x+4*s,b.y-8*s);g.lineTo(b.x+12*s,b.y-12*s);g.lineTo(b.x+12*s,b.y+8*s);g.lineTo(b.x+4*s,b.y+12*s);g.lineTo(b.x-4*s,b.y+8*s);g.lineTo(b.x-12*s,b.y+12*s);g.closePath();g.stroke();}}g.restore();
+ const ns=nearStation();if(ns){const b=B.dock;g.fillStyle='#2ad4ff';g.beginPath();g.moveTo(b.x-b.w/2+14*s,b.y-b.h/2);g.lineTo(b.x+b.w/2,b.y-b.h/2);g.lineTo(b.x+b.w/2-14*s,b.y+b.h/2);g.lineTo(b.x-b.w/2,b.y+b.h/2);g.fill();g.fillStyle='#02101a';g.font='700 '+(24*s)+'px Arial Narrow';g.textAlign='center';g.textBaseline='middle';g.fillText('DOCK AT '+ns.n.toUpperCase(),b.x,b.y+1);}
+ if(F.msg>0){g.globalAlpha=clamp(F.msg,0,1);g.fillStyle='#fff';g.font='700 '+(26*s)+'px Arial Narrow';g.textAlign='center';g.shadowColor='#000';g.shadowBlur=10;g.fillText(F.msgT,W/2,150*s);g.shadowBlur=0;g.globalAlpha=1;}
+ if(danger()>0){g.fillStyle='rgba(255,90,58,'+(.5+.3*Math.sin(t*4))+')';g.font='700 '+(15*s)+'px Arial Narrow';g.textAlign='center';g.fillText(danger()>1?'PIRATE SPACE':'OPEN SPACE',W/2,40*s);}
+ if(F.hitFx>0){g.fillStyle='rgba(255,60,30,'+F.hitFx*.25+')';g.fillRect(0,0,W,H);F.hitFx=Math.max(0,F.hitFx-.05);}}
+requestAnimationFrame(frame);
+addEventListener('pagehide',persist);document.addEventListener('visibilitychange',()=>{if(document.hidden){persist();if(MUS)MUS.pause();if(mode==='fly')pauseMenu();}else if(MUS&&S.opt.snd)MUS.play().catch(()=>{});});
+title();
+</script></body></html>
