@@ -9,7 +9,7 @@ function go(){try{if(window.__store&&__store.flush)__store.flush();}catch(e){}tr
 var st=document.createElement('style');st.textContent='.__gb{font:700 18px system-ui,sans-serif;color:#1a1206;background:linear-gradient(180deg,#ffe08a,#ffb02e);border:0;border-radius:999px;padding:12px 26px;margin-top:6px;cursor:pointer;box-shadow:0 4px 0 #b8741c}.__gb.__r{background:rgba(255,255,255,.14);color:#fff;box-shadow:none;border:2px solid rgba(255,255,255,.35)}#__pb{position:fixed;'+POS+';z-index:9998;width:40px;height:40px;border-radius:13px;border:2px solid rgba(255,255,255,.35);background:rgba(10,20,30,.55);color:#fff;font:800 15px system-ui,sans-serif;cursor:pointer;padding:0;-webkit-tap-highlight-color:transparent}#__po{position:fixed;inset:0;z-index:9999;background:rgba(5,10,20,.7);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;font-family:system-ui,sans-serif;color:#fff;text-align:center;padding:16px}#__po[hidden]{display:none}#__po h2{margin:0 0 6px;font-size:34px}#__po p{margin:0;opacity:.75;font-size:14px}';
 function mk(t,cls,fn){var b=document.createElement('button');b.textContent=t;b.className='__gb'+(cls?' '+cls:'');b.addEventListener('pointerdown',function(e){e.stopPropagation();});b.addEventListener('click',function(e){e.stopPropagation();fn();});return b;}
 function init(){document.head.appendChild(st);var own=document.getElementById('pause');
-  if(MODE==='own'&&own){own.appendChild(mk('◀  Back to games','',go));return;}
+  if(MODE==='own'&&own){own.appendChild(mk('Go back to games','',go));return;}
   var pb=document.createElement('button');pb.id='__pb';pb.textContent='II';pb.setAttribute('aria-label','Pause');
   var ov=document.createElement('div');ov.id='__po';ov.hidden=true;var h=document.createElement('h2');h.textContent='Paused';ov.appendChild(h);
   function resume(){paused=false;ov.hidden=true;pb.hidden=false;var c=q;q=[];c.forEach(function(cb){raf(cb);});}
@@ -5620,7 +5620,7 @@ let prBase=1;
 function frame(dt){timeU.value+=dt;QS.t+=dt;QS.n++;if(QS.t>=2.5){const fps=QS.n/QS.t;QS.fps=fps;QS.t=0;QS.n=0;if(QS.auto){if(fps<26&&QS.q>0){QS.q--;applyQ();}else if(fps>57&&QS.q<QS.max){QS.up=(QS.up||0)+1;if(QS.up>4){QS.up=0;QS.q++;applyQ();}}}}
   if(cloudU){cloudU.uOff.value.x+=dt*.0016*windU.value;cloudU.uOff.value.y+=dt*.0007*windU.value;if(clouds){clouds.position.x=camera.position.x;clouds.position.z=camera.position.z;clouds.position.y=QS.cloudY||220;}}
   if(motes){motes.material.uniforms.uCam.value.copy(camera.position);}if(rainMesh)rainMesh.material.uniforms.uCam.value.copy(camera.position);}
-function applyQ(){renderer.setPixelRatio(prBase*(QS.q===0?.8:1));setupPost();}
+function applyQ(){if(QS.onQ)QS.onQ();else renderer.setPixelRatio(prBase*(QS.q===0?.8:1));setupPost();}
 function init(o){renderer=o.renderer;scene=o.scene;camera=o.camera;LEG=o.linear?false:true;PU.uLeg.value=LEG?1:0;if(o.envI!=null)ENVI.v=o.envI;prBase=o.pr||Math.min(devicePixelRatio||1,1.5);QS.max=o.maxQ??2;QS.q=o.q??QS.max;
   renderer.outputEncoding=LEG?THREE.LinearEncoding:THREE.sRGBEncoding;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=o.exp??.9;renderer.physicallyCorrectLights=false;renderer.setPixelRatio(prBase);
   makeTextures();if(!cloudT){makeClouds();if(!o.cloudLayer){scene.remove(clouds);clouds=null;}}if(o.motes)makeMotes();if(o.rain)makeRain();setupPost();
@@ -6178,7 +6178,7 @@ const IOS=!PC&&/iPad|iPhone|iPod/.test(navigator.userAgent)||(navigator.platform
 const cv=$('c');const renderer=new THREE.WebGLRenderer({canvas:cv,antialias:false,powerPreference:'high-performance'});renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;
 const scene=new THREE.Scene();const camera=new THREE.PerspectiveCamera(55,1,.1,3500);scene.fog=new THREE.Fog(0xb8a890,400,2600);
 const hemi=new THREE.HemisphereLight(0xc8d0d8,0x6a5440,.4);scene.add(hemi);
-const sun=new THREE.DirectionalLight(0xffe8cc,1.25);sun.castShadow=true;sun.shadow.mapSize.set(PC?4096:IOS?1024:2048,PC?4096:IOS?1024:2048);{const c=sun.shadow.camera;c.left=-60;c.right=60;c.top=60;c.bottom=-60;c.near=1;c.far=600;}sun.shadow.bias=-.0004;sun.shadow.normalBias=.04;scene.add(sun,sun.target);
+const sun=new THREE.DirectionalLight(0xffe8cc,1.25);sun.castShadow=true;sun.shadow.mapSize.set(PC?4096:IOS?1024:2048,PC?4096:IOS?1024:2048);{const c=sun.shadow.camera,e=IOS?45:60;c.left=-e;c.right=e;c.top=e;c.bottom=-e;c.near=1;c.far=IOS?260:600;}sun.shadow.bias=-.0004;sun.shadow.normalBias=.04;scene.add(sun,sun.target);
 RK.init({renderer,scene,camera,pr:IOS?1:PC?Math.min(devicePixelRatio||1,2):undefined,cloudLayer:true,exp:.82,maxQ:2,motes:false,linear:true});RK.QS.auto=!PC;RK.QS.cloudY=600;const sky=RK.makeSky(scene,3000);sky.material.uniforms.uGam.value=0;
 const ov=$('ov2'),og=ov.getContext('2d');let VW=1,VH=1,DPR=1;
 function resize(){VW=innerWidth;VH=innerHeight;DPR=Math.min(devicePixelRatio||1,2);renderer.setSize(VW,VH,false);camera.aspect=VW/VH;camera.updateProjectionMatrix();ov.width=VW*DPR;ov.height=VH*DPR;og.setTransform(DPR,0,0,DPR,0,0);}
@@ -6190,13 +6190,23 @@ const stars=(()=>{const n=2200,p=new Float32Array(n*3);for(let i=0;i<n;i++){cons
 const moon=new THREE.Sprite(new THREE.SpriteMaterial({map:glowTex,color:0xeef2ff,fog:false,depthWrite:false,transparent:true}));moon.scale.set(90,90,1);scene.add(moon);
 /* ----- assets ----- */
 const AS={};const TEXL=new THREE.TextureLoader();const GL=new THREE.GLTFLoader();GL.setMeshoptDecoder(MeshoptDecoder);const ABASE=PC?'assets/lastlight-hd/':'assets/lastlight/';
-const GLBS=['human','hanims','rifle','jeep','car_sedan','car_alfa','car_bmw','shed','factory','street','urban','gasprops','toolbox','welder','elecbox','tires'];
+/* GPU-compressed textures (ASTC): they stay compressed in video memory, 4 to 9 times smaller than plain images, the way native games store them.
+   Every model also carries its plain images, used when the device has no ASTC support or a compressed load fails. */
+let ASTCX=false;try{ASTCX=!PC&&S.set.astc!==0&&!/[?&]noastc=1/.test(location.search)&&renderer.extensions.has('WEBGL_compressed_texture_astc');}catch(_){ASTCX=false;}
+const ASTCF={4:THREE.RGBA_ASTC_4x4_Format,5:THREE.RGBA_ASTC_5x5_Format,6:THREE.RGBA_ASTC_6x6_Format};
+function parseLLTX(buf){const d=new DataView(buf);if(buf.byteLength<16||d.getUint32(0)!==0x4c4c5458)throw new Error('not a compressed texture');const bw=d.getUint8(4),w=d.getUint16(6,true),h=d.getUint16(8,true),n=d.getUint8(10);if(!ASTCF[bw]||!n)throw new Error('bad compressed texture');
+  let o=12;const mips=[];for(let i=0;i<n;i++){const len=d.getUint32(o,true);o+=4;if(o+len>buf.byteLength)throw new Error('short compressed texture');mips.push({data:new Uint8Array(buf,o,len),width:Math.max(1,w>>i),height:Math.max(1,h>>i)});o+=len;}
+  const t=new THREE.CompressedTexture(mips,w,h,ASTCF[bw],THREE.UnsignedByteType);t.minFilter=n>1?THREE.LinearMipmapLinearFilter:THREE.LinearFilter;t.magFilter=THREE.LinearFilter;t.generateMipmaps=false;t.needsUpdate=true;return t;}
+const LLTX={load(url,ok,_p,bad){fetch(url).then(r=>{if(!r.ok)throw new Error('HTTP '+r.status);return r.arrayBuffer();}).then(b=>ok(parseLLTX(b))).catch(e=>{if(bad)bad(e);});}};
+if(ASTCX)GL.setKTX2Loader(LLTX);
+const GLBS=[...(PC?[]:['human_lo']),'human','hanims','rifle','jeep','car_sedan','car_alfa','car_bmw','shed','factory','street','urban','gasprops','toolbox','welder','elecbox','tires'];
 const TEXS={dirt:1,sand:1,rocky:1,rocky_n:0,gravel:1,gravel_n:0,asphalt:1,asphalt_n:0,conc:1,conc_n:0,brick:1,brick_n:0,metal:1,metal_n:0,wood:1,wood_n:0,mulch:1,pave:1,pave_n:0};
 function loadAssets(onP){let done=0;const tot=GLBS.length+Object.keys(TEXS).length+1;const tick=()=>{done++;onP(done/tot);};
-  const one=g=>new Promise((res,rej)=>GL.load(ABASE+g+'.glb',x=>{AS[g]=x;tick();res();},undefined,e=>rej(new Error(g+': '+(e.message||e)))));
+  const one=g=>new Promise((res,rej)=>{const go=again=>GL.load(ABASE+g+'.glb',x=>{x.parser=null;AS[g]=x;tick();res();},undefined,e=>{if(again&&GL.ktx2Loader){console.warn('Compressed textures failed, using plain images',e);GL.setKTX2Loader(null);ASTCX=false;go(false);}else if(g==='human_lo'){tick();res();}else rej(new Error(g+': '+(e.message||e)));});go(true);});
   const ps=[];if(IOS)ps.push(GLBS.reduce((pr,g)=>pr.then(()=>one(g)),Promise.resolve()));else for(const g of GLBS)ps.push(one(g));
-  for(const t in TEXS)ps.push(new Promise((res,rej)=>TEXL.load(ABASE+t+'.jpg',x=>{x.wrapS=x.wrapT=THREE.RepeatWrapping;x.anisotropy=PC?16:8;if(TEXS[t])x.encoding=THREE.sRGBEncoding;AS[t]=x;tick();res();},undefined,()=>rej(new Error(t)))));
-  ps.push(new Promise(res=>{new THREE.RGBELoader().setDataType(THREE.UnsignedByteType).load(ABASE+'sky.hdr',h=>{AS.hdr=h;tick();res();},undefined,()=>{tick();res();});}));
+  for(const t in TEXS)ps.push(new Promise((res,rej)=>{const fin=x=>{x.wrapS=x.wrapT=THREE.RepeatWrapping;x.anisotropy=PC?16:8;if(TEXS[t])x.encoding=THREE.sRGBEncoding;AS[t]=x;tick();res();};const plain=()=>TEXL.load(ABASE+t+'.jpg',fin,undefined,()=>rej(new Error(t)));
+    if(ASTCX)LLTX.load(ABASE+t+'.tex',fin,undefined,plain);else plain();}));
+  if(IOS)tick();else ps.push(new Promise(res=>{new THREE.RGBELoader().setDataType(THREE.UnsignedByteType).load(ABASE+'sky.hdr',h=>{AS.hdr=h;tick();res();},undefined,()=>{tick();res();});}));
   return Promise.all(ps);}
 /* ----- input ----- */
 const keys={};addEventListener('keydown',e=>{keys[e.code]=true;onKey(e);});addEventListener('keyup',e=>{keys[e.code]=false;});
@@ -6350,8 +6360,33 @@ const FLOORS=[];
 function G(x,z){let y=H(x,z);for(const f of FLOORS){const v=f(x,z);if(v!==null&&v>y)y=v;}return y;}
 const world=new THREE.Group();scene.add(world);
 /* far-away scenery is skipped when drawing (big help on iPad) */
-const CULL=[];function cullAdd(o,x,z,r){if(r<150)CULL.push({o,x,z,r});}
-let cullT=0;function updCull(dt){cullT-=dt;if(cullT>0)return;cullT=.35;const cx=camera.position.x,cz=camera.position.z,D=IOS?(S.set.ultra?190:240):PC?2000:430;for(const c of CULL)c.o.visible=hyp(c.x-cx,c.z-cz)-c.r<D;}
+const CULL=[];function cullAdd(o,x,z,r){if(r<150)CULL.push({o,x,z,r,hid:0,gpu:true});}
+/* AQ: automatic quality. Steps down (view distance, grass, resolution, shadows) when the frame rate stays low and back up when there is room. */
+const AQ={lvl:0,cap:0,bad:0,good:0,hold:0,t:0,vd:1,gr:1,pr:1,sh:true};
+/* VEG: scattered rocks, bushes and dead trees. Only the ones within view distance are sent to the graphics card, and only the ones close to you cast shadows */
+const VEG=[];
+let cullT=0,cullN=0;function updCull(dt){cullT-=dt;if(cullT>0)return;cullT=.35;cullN++;const cx=camera.position.x,cz=camera.position.z,D=(IOS?(S.set.ultra?190:240):PC?2000:430)*AQ.vd;
+  for(const c of CULL){const d=hyp(c.x-cx,c.z-cz)-c.r,v=d<D;c.o.visible=v;c.d=d;if(v){c.hid=0;c.gpu=true;}else c.hid+=.35;if(c.px){const sv=v&&d<105&&!!c.o.parent;for(const m of c.px)m.visible=sv;}}
+  updVeg();
+  if(!PC&&cullN%24===0)streamOut(D);}
+/* streaming: models and textures of places far behind you are dropped from video memory; they load back in by themselves when you return */
+const RESK=['map','normalMap','roughnessMap','metalnessMap','aoMap','emissiveMap','alphaMap'];
+function resOf(o,set){o.traverse(m=>{if(m.geometry)set.add(m.geometry);if(m.material)(Array.isArray(m.material)?m.material:[m.material]).forEach(mt=>{for(const k of RESK)if(mt[k]&&mt[k].isTexture)set.add(mt[k]);});});return set;}
+let STREAMED=0;function streamOut(D){try{const out=CULL.filter(c=>c.gpu&&!c.o.visible&&c.hid>40&&c.d>D+200);if(!out.length)return;
+  const roots=new Set(CULL.map(c=>c.o)),live=new Set();
+  (function walk(o){if(roots.has(o))return;if(o.geometry)live.add(o.geometry);if(o.material)(Array.isArray(o.material)?o.material:[o.material]).forEach(mt=>{for(const k of RESK)if(mt[k]&&mt[k].isTexture)live.add(mt[k]);});for(const ch of o.children)walk(ch);})(scene);
+  for(const c of CULL){if(!c.res)c.res=resOf(c.o,new Set());if(out.indexOf(c)<0&&c.gpu)for(const r of c.res)live.add(r);}
+  for(const c of out){for(const r of c.res)if(!live.has(r)){r.dispose();STREAMED++;}c.gpu=false;}}catch(e){console.warn(e);}}
+function vegDyn(geo,mat,list,o={}){if(!list.length)return;const a=RK.inst(geo,mat,list,o),b=RK.inst(geo,mat,list,Object.assign({},o,{cast:false}));
+  for(const im of[a,b]){im.instanceMatrix.setUsage(THREE.DynamicDrawUsage);im.instanceColor.setUsage(THREE.DynamicDrawUsage);im.count=0;im.visible=false;}
+  VEG.push({a,b,n:list.length,m:a.instanceMatrix.array.slice(),c:a.instanceColor.array.slice(),x:list.map(p=>p.x),z:list.map(p=>p.z),far:o.far||1e9});world.add(a,b);}
+let vegP={x:1e9,z:1e9,cx:1e9,cz:1e9,vd:0};
+function updVeg(force){if(!VEG.length)return;const tx=P.drive&&JEEP?JEEP.x:P.x,tz=P.drive&&JEEP?JEEP.z:P.z,cx=camera.position.x,cz=camera.position.z;
+  if(!force&&hyp(tx-vegP.x,tz-vegP.z)<10&&hyp(cx-vegP.cx,cz-vegP.cz)<14&&vegP.vd===AQ.vd)return;vegP={x:tx,z:tz,cx,cz,vd:AQ.vd};
+  for(const V of VEG){let na=0,nb=0;const A=V.a,B=V.b,am=A.instanceMatrix.array,bm=B.instanceMatrix.array,ac=A.instanceColor.array,bc=B.instanceColor.array,m=V.m,c=V.c,far=V.far*AQ.vd+16;
+    for(let i=0;i<V.n;i++){const x=V.x[i],z=V.z[i];let dm,dc,k;if(hyp(x-tx,z-tz)<105){dm=am;dc=ac;k=na++;}else if(hyp(x-cx,z-cz)<far){dm=bm;dc=bc;k=nb++;}else continue;
+      for(let q=0;q<16;q++)dm[k*16+q]=m[i*16+q];dc[k*3]=c[i*3];dc[k*3+1]=c[i*3+1];dc[k*3+2]=c[i*3+2];}
+    A.count=na;B.count=nb;A.visible=na>0;B.visible=nb>0;A.instanceMatrix.needsUpdate=true;A.instanceColor.needsUpdate=true;B.instanceMatrix.needsUpdate=true;B.instanceColor.needsUpdate=true;}}
 let TERR=null;
 function computeHeights(){// road profile: smoothed terrain heights along the road
   const raw=RPATH.map(p=>baseH(p[0],p[1]));ROADY=raw.map((v,i)=>{let s=0,w=0;for(let k=-8;k<=8;k++){const j=clamp(i+k,0,raw.length-1);const ww=1-Math.abs(k)/9;s+=raw[j]*ww;w+=ww;}return s/w;});
@@ -6390,8 +6425,19 @@ function buildTerrain(){computeHeights();const g=new THREE.PlaneGeometry(WS,WS,N
     const grav=Math.max(smooth(14,6,rd)*.85,site*.55)*(1-rock);const sandK=smooth(.45,.7,n1)*(1-rock)*(1-grav)+smooth(100,420,z)*smooth(-200,200,x)*.6*(1-rock);
     const mulch=smooth(.6,.75,n2)*(1-rock)*(1-grav)*.6;const ld=hyp(x-LAKE.x,(z-LAKE.z)*1.15);lk[k]=smooth(LAKE.r+10,LAKE.r-30,ld);
     sp[k*4]=clamp(sandK,0,1);sp[k*4+1]=rock;sp[k*4+2]=grav;sp[k*4+3]=mulch;}
-  g.setAttribute('splat',new THREE.BufferAttribute(sp,4));g.setAttribute('lake',new THREE.BufferAttribute(lk,1));
-  TERR=new THREE.Mesh(g,terrainMaterial());TERR.receiveShadow=true;TERR.castShadow=false;world.add(TERR);}
+  if(PC){g.setAttribute('splat',new THREE.BufferAttribute(sp,4));g.setAttribute('lake',new THREE.BufferAttribute(lk,1));
+    TERR=new THREE.Mesh(g,terrainMaterial());TERR.receiveShadow=true;TERR.castShadow=false;world.add(TERR);return;}
+  /* the ground is one big sheet of 360,000 triangles: cut it into 16 chunks so only the ones on screen are drawn, pack the blend weights into bytes, and let go of the copy kept in main memory once the graphics card has it */
+  const sp8=new Uint8Array(N*4);for(let k=0;k<N*4;k++)sp8[k]=Math.round(clamp(sp[k],0,1)*255);const lk8=new Uint8Array(N);for(let k=0;k<N;k++)lk8[k]=Math.round(clamp(lk[k],0,1)*255);
+  g.deleteAttribute('uv');g.setAttribute('splat',new THREE.BufferAttribute(sp8,4,true));g.setAttribute('lake',new THREE.BufferAttribute(lk8,1,true));
+  const mat=terrainMaterial(),src=g.index.array,Q=NX-1,CH=4,cq=Math.ceil(Q/CH);TERR=new THREE.Group();const free=function(){this.array=null;};
+  for(let cj=0;cj<CH;cj++)for(let ci=0;ci<CH;ci++){const i0=ci*cq,i1=Math.min(Q,i0+cq),j0=cj*cq,j1=Math.min(Q,j0+cq);if(i1<=i0||j1<=j0)continue;const ix=new Uint32Array((i1-i0)*(j1-j0)*6);let n=0,y0=1e9,y1=-1e9;
+    for(let j=j0;j<j1;j++){const o=(j*Q+i0)*6;ix.set(src.subarray(o,o+(i1-i0)*6),n);n+=(i1-i0)*6;}
+    for(let j=j0;j<=j1;j++)for(let i=i0;i<=i1;i++){const y=HG[j*NX+i];if(y<y0)y0=y;if(y>y1)y1=y;}
+    const cg=new THREE.BufferGeometry();for(const a in g.attributes)cg.setAttribute(a,g.attributes[a]);cg.setIndex(new THREE.BufferAttribute(ix,1));cg.index.onUpload(free);
+    const xa=X0+i0*GS,xb=X0+i1*GS,za=X0+j0*GS,zb=X0+j1*GS;cg.boundingBox=new THREE.Box3(new V3(xa,y0,za),new V3(xb,y1,zb));cg.boundingSphere=cg.boundingBox.getBoundingSphere(new THREE.Sphere());
+    const m=new THREE.Mesh(cg,mat);m.receiveShadow=true;m.castShadow=false;m.matrixAutoUpdate=false;TERR.add(m);}
+  for(const a in g.attributes)g.attributes[a].onUpload(free);g.setIndex(null);world.add(TERR);}
 /* ----- road: a ribbon of photo-scanned asphalt with crumbling edges, faded paint and blown sand ----- */
 let ROADM=null;
 function buildRoad(){const W=4.8;const pos=[],uv=[],nrm=[],idx=[];let acc=0;
@@ -6469,7 +6515,28 @@ function colFromObject(obj,o={}){obj.updateMatrixWorld(true);const ry=obj.rotati
 /* model placement */
 function place(key,x,z,ry=0,o={}){const src=AS[key].scene;const m=src.clone(true);m.position.set(x,o.y??(o.ground?G(x,z):H(x,z))+(o.dy||0),z);m.rotation.set(o.rx||0,ry,o.rz||0);if(o.s)m.scale.setScalar(o.s);
   m.traverse(c=>{if(c.isMesh){c.castShadow=o.cast!==false;c.receiveShadow=true;const ms=Array.isArray(c.material)?c.material:[c.material];ms.forEach(mm=>{mm.envMapIntensity=o.env??.9;if(mm.map)mm.map.anisotropy=PC?16:8;if(o.dusty&&!mm.userData.dust){mm.userData.dust=1;mm.color.multiply(new THREE.Color(o.dusty));}});}});
-  world.add(m);if(o.col!==false)colFromObject(m,o);{m.updateMatrixWorld(true);const bb=new THREE.Box3().setFromObject(m),sp=new THREE.Sphere();if(!bb.isEmpty()){bb.getBoundingSphere(sp);cullAdd(m,sp.center.x,sp.center.z,sp.radius);}}return m;}
+  world.add(m);if(o.col!==false)colFromObject(m,o);{m.updateMatrixWorld(true);
+    /* tiny parts (bolts, handles, bottles) do not cast shadows on the iPad: each one would be a separate draw in the shadow pass */
+    if(!PC)m.traverse(c=>{if(!c.isMesh||!c.castShadow)return;const g=c.geometry;if(!g.boundingSphere)g.computeBoundingSphere();if(g.boundingSphere.radius*c.matrixWorld.getMaxScaleOnAxis()<.45)c.castShadow=false;});const bb=new THREE.Box3().setFromObject(m),sp=new THREE.Sphere();if(!bb.isEmpty()){bb.getBoundingSphere(sp);cullAdd(m,sp.center.x,sp.center.z,sp.radius);}}return m;}
+/* shadow stand-ins: every placed model gets one merged, position-only copy that is drawn only into the shadow map,
+   so a gas station made of 100 parts costs 1 or 2 shadow draws instead of 100. Identical models share one copy. */
+const PXG=new THREE.Group();PXG.visible=false;const PXC=new Map(),PXM={};
+function buildShadowProxies(){if(PC)return;const inv=new THREE.Matrix4(),rel=new THREE.Matrix4(),v=new V3();let made=0;
+  for(const c of CULL){try{const root=c.o;if(c.px||!root.parent)continue;root.updateMatrixWorld(true);inv.copy(root.matrixWorld).invert();const G={};
+    root.traverse(m=>{if(!m.isMesh||m.isSkinnedMesh||m.isInstancedMesh||!m.castShadow||m.customDepthMaterial||Array.isArray(m.material)||!m.geometry||!m.geometry.attributes.position)return;for(let p=m;p&&p!==root;p=p.parent)if(!p.visible)return;(G[m.material.side]=G[m.material.side]||[]).push(m);});
+    for(const side in G){const L=G[side];if(L.length<2)continue;let key=side,nv=0,ni=0;
+      for(const m of L){rel.multiplyMatrices(inv,m.matrixWorld);key+='|'+m.geometry.uuid+':'+Array.from(rel.elements,e=>Math.round(e*1e3)).join(',');const n=m.geometry.attributes.position.count;nv+=n;ni+=m.geometry.index?m.geometry.index.count:n;}
+      let g=PXC.get(key);
+      if(!g){const pos=new Float32Array(nv*3),idx=nv>65535?new Uint32Array(ni):new Uint16Array(ni);let vo=0,io=0;
+        for(const m of L){rel.multiplyMatrices(inv,m.matrixWorld);const a=m.geometry.attributes.position,n=a.count,arr=a.isInterleavedBufferAttribute?a.data.array:a.array;
+          const k=a.normalized?(arr instanceof Int16Array?1/32767:arr instanceof Uint16Array?1/65535:arr instanceof Int8Array?1/127:arr instanceof Uint8Array?1/255:1):1;
+          for(let i=0;i<n;i++){v.set(a.getX(i)*k,a.getY(i)*k,a.getZ(i)*k).applyMatrix4(rel);pos[(vo+i)*3]=v.x;pos[(vo+i)*3+1]=v.y;pos[(vo+i)*3+2]=v.z;}
+          const ix=m.geometry.index,cnt=ix?ix.count:n,flip=rel.determinant()<0;for(let i=0;i+2<cnt;i+=3){const p=ix?ix.getX(i):i,q=ix?ix.getX(i+1):i+1,r=ix?ix.getX(i+2):i+2;idx[io++]=vo+p;idx[io++]=vo+(flip?r:q);idx[io++]=vo+(flip?q:r);}
+          vo+=n;}
+        g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.BufferAttribute(pos,3));g.setIndex(new THREE.BufferAttribute(idx.subarray(0,io),1));g.computeBoundingSphere();PXC.set(key,g);}
+      const pm=new THREE.Mesh(g,PXM[side]||(PXM[side]=new THREE.MeshBasicMaterial({side:+side})));pm.castShadow=true;pm.receiveShadow=false;pm.matrixAutoUpdate=false;pm.matrix.copy(root.matrixWorld);pm.matrixWorldNeedsUpdate=true;pm.visible=false;PXG.add(pm);(c.px=c.px||[]).push(pm);for(const m of L)m.castShadow=false;made++;}
+  }catch(e){console.warn(e);}}
+  if(made&&!PXG.parent){scene.add(PXG);scene.onBeforeRender=()=>{PXG.visible=false;};const um=sun.shadow.updateMatrices;sun.shadow.updateMatrices=function(l){um.call(this,l);PXG.visible=true;};}}
 /* ================= SITES ================= */
 const LOOT=[];// searchable containers
 function lootSpot(id,x,z,kind,o={}){const L={id,x,z,y:o.y??G(x,z),kind,label:o.label||'Search',table:o.table||kind,once:o.once};LOOT.push(L);return L;}
@@ -6656,20 +6723,20 @@ function buildVeg(){const V=RK.variants(),MM=RK.mats();const g=seeded(77);
   // dead trees: bare trunks only
   const TL=[[],[],[]];for(let t=0;t<9000&&TL.flat().length<(IOS?120:PC?420:260);t++){const x=rnd(-760,760),z=rnd(-760,760);const y=H(x,z);if(slopeAt(x,z)>.35||polyDist(x,z,RPATH).d<14||insideCol(x,z))continue;let near=false;for(const s in SITES)if(hyp(x-SITES[s].x,z-SITES[s].z)<50)near=true;if(near)continue;
    if(polyDist(x,z,ARROYO).d>40&&g()<.8)continue;const v=(g()*3)|0;const s=.6+g()*.5;TL[v].push({x,y:y-.2,z,ry:g()*TAU,s,c:[.62,.55,.5]});addCol({x,z,r:.35*s,y0:y,y1:y+6});}
-  const tm=MM.trunk.clone();tm.color=new THREE.Color(0x9a8a7a);TL.forEach((L,i)=>{if(L.length)world.add(RK.inst(V.oak[i].near.trunk,tm,L,{cast:true}));});
+  const tm=MM.trunk.clone();tm.color=new THREE.Color(0x9a8a7a);TL.forEach((L,i)=>{if(!L.length)return;if(PC)world.add(RK.inst(V.oak[i].near.trunk,tm,L,{cast:true}));else vegDyn(V.oak[i].near.trunk,tm,L,{cast:true,far:520});});
   // scrub bushes, dry olive and brown
   const BL=[[],[]];for(let t=0;t<60000&&BL[0].length+BL[1].length<(IOS?800:PC?5200:2400);t++){const x=rnd(-780,780),z=rnd(-780,780);const y=H(x,z);if(slopeAt(x,z)>.45||polyDist(x,z,RPATH).d<9||hyp(x-LAKE.x,(z-LAKE.z)*1.15)<LAKE.r-10||insideCol(x,z))continue;
    const s=.35+g()*.55;const dry=g();BL[(g()*2)|0].push({x,y:y-.15,z,ry:g()*TAU,s,c:dry<.5?[.52,.5,.36]:[.6,.5,.38]});SCRUB.push({x,z,s});}
-  const lm=MM.leaf.clone();lm.color=new THREE.Color(0xa09070);BL.forEach((L,i)=>{if(L.length)world.add(RK.inst(V.bush[i].leaves,lm,L,{cast:true,depth:MM.leafDepth}));});
+  const lm=MM.leaf.clone();lm.color=new THREE.Color(0xa09070);BL.forEach((L,i)=>{if(!L.length)return;if(PC)world.add(RK.inst(V.bush[i].leaves,lm,L,{cast:true,depth:MM.leafDepth}));else vegDyn(V.bush[i].leaves,lm,L,{cast:true,depth:MM.leafDepth,far:300});});
   // rocks and boulders with the photo rock texture
   const RL=[[],[],[]];for(let t=0;t<(IOS?1500:PC?7000:4200);t++){const x=rnd(-800,800),z=rnd(-800,800);const y=H(x,z);const sl=slopeAt(x,z);if(polyDist(x,z,RPATH).d<10||insideCol(x,z))continue;let near=false;for(const s in SITES)if(hyp(x-SITES[s].x,z-SITES[s].z)<45)near=true;if(near)continue;
    if(sl<.25&&g()<.6)continue;const s=.3+g()*g()*(sl>.4?4.5:2.2);RL[(g()*3)|0].push({x,y:y-.25*s,z,ry:g()*TAU,rx:g(),s,c:[.85,.78,.7]});if(s>1)addCol({x,z,r:s*.72,y0:y-1,y1:y+s*1.1});}
-  const rm=MM.rock.clone();rm.map=AS.rocky;rm.normalMap=AS.rocky_n;rm.color=new THREE.Color(0xd8ccc0);RL.forEach((L,i)=>{if(L.length)world.add(RK.inst(V.rock[i].geo,rm,L,{cast:true}));});
+  const rm=MM.rock.clone();rm.map=AS.rocky;rm.normalMap=AS.rocky_n;rm.color=new THREE.Color(0xd8ccc0);RL.forEach((L,i)=>{if(!L.length)return;if(PC)world.add(RK.inst(V.rock[i].geo,rm,L,{cast:true}));else{vegDyn(V.rock[i].geo,rm,L.filter(p=>p.s<1.3),{cast:true,far:380});vegDyn(V.rock[i].geo,rm,L.filter(p=>p.s>=1.3),{cast:true});}});
   const gm=new THREE.MeshStandardMaterial({map:grassTex,alphaTest:.4,side:THREE.DoubleSide,roughness:1,color:0xe8dcc0,emissive:0x120e09});RK.swayShader&&0;
   gm.onBeforeCompile=sh=>{sh.uniforms.uTime=RK.timeU;sh.vertexShader=sh.vertexShader.replace('#include <common>','#include <common>\nuniform float uTime;').replace('#include <begin_vertex>','#include <begin_vertex>\nvec4 ip=instanceMatrix*vec4(0.,0.,0.,1.);float sw=sin(uTime*1.7+ip.x*.3+ip.z*.2)*.12*position.y;transformed.x+=sw;transformed.z+=sw*.6;');};
   GRASS=new THREE.InstancedMesh(grassGeo(),gm,IOS?2000:PC?14000:5000);GRASS.count=0;GRASS.frustumCulled=false;GRASS.receiveShadow=true;world.add(GRASS);}
 function hsh(a,b){let h=Math.imul(a*374761393+b*668265263|0,1274126177);h^=h>>>13;return((h>>>0)%10000)/10000;}
-function grassLOD(px,pz,force){if(!GRASS||(!force&&hyp(px-lastGrass.x,pz-lastGrass.z)<6))return;lastGrass={x:px,z:pz};const R0=IOS?32:PC?72:46,cs=PC?1.05:1.25,NMAX=IOS?2000:PC?14000:5000;let n=0;
+function grassLOD(px,pz,force){if(!GRASS||(!force&&hyp(px-lastGrass.x,pz-lastGrass.z)<6))return;lastGrass={x:px,z:pz};const R0=(IOS?32:PC?72:46)*(.6+.4*AQ.gr),cs=PC?1.05:1.25,NMAX=Math.round((IOS?2000:PC?14000:5000)*AQ.gr);let n=0;
   const i0=Math.floor((px-R0)/cs),i1=Math.floor((px+R0)/cs),j0=Math.floor((pz-R0)/cs),j1=Math.floor((pz+R0)/cs);
   for(let i=i0;i<=i1&&n<NMAX;i++)for(let j=j0;j<=j1&&n<NMAX;j++){const h1=hsh(i,j),h2=hsh(j+77,i);const x=(i+h1)*cs,z=(j+h2)*cs;if((x-px)**2+(z-pz)**2>R0*R0)continue;
    const dens=NOI.fbm(x/40,z/40,81,2);if(h1*2.2>dens)continue;if(slopeAt(x,z)>.4||polyDist(x,z,RPATH).d<6.5||hyp(x-LAKE.x,(z-LAKE.z)*1.15)<LAKE.r||insideCol(x,z))continue;
@@ -6687,13 +6754,17 @@ let TT=0;
 function boneMap(root){const b={};root.traverse(o=>{if(o.isBone)b[o.name.replace('mixamorig','').replace(':','')]=o;});return b;}
 const HCLIP={idle:'unarmed_idle',walk:'unarmed_walk',run:'unarmed_run',jump:'unarmed_jump',ridle:'idle',rwalk:'walk',rrun:'run',crouch:'crouch_idle',cwalk:'crouch_walk',aim:'aim_idle',death:'death',fall:'fall',land:'land',reload:'reload'};
 /* clothing tint: the outfit texture keeps its folds, we shift its colour */
-function makeHuman(o={}){const root=THREE.SkeletonUtils.clone(AS.human.scene);root.traverse(m=>{if(!m.isMesh)return;m.castShadow=true;m.receiveShadow=true;m.frustumCulled=false;const mt=m.material=m.material.clone();mt.envMapIntensity=.8;
+/* everyone except the player uses a model with a third of the triangles; it borrows the full model's materials so no texture is stored twice */
+function prepHumanLo(){if(!AS.human_lo)return;try{const M={};AS.human.scene.traverse(m=>{if(m.isMesh&&m.material)M[m.material.name]=m.material;});let ok=true,n=0;AS.human_lo.scene.traverse(m=>{if(!m.isMesh)return;n++;const src=M[m.material&&m.material.name];if(src)m.material=src;else ok=false;});if(!ok||!n)AS.human_lo=null;}catch(_){AS.human_lo=null;}}
+function makeHuman(o={}){const root=THREE.SkeletonUtils.clone((o.full||!AS.human_lo)?AS.human.scene:AS.human_lo.scene);root.traverse(m=>{if(!m.isMesh)return;m.castShadow=!/^eye/.test(m.material.name);m.receiveShadow=true;m.frustumCulled=false;const mt=m.material=m.material.clone();mt.envMapIntensity=.8;
    if(/hair|eyebrow|eyelash/.test(mt.name)){mt.transparent=false;mt.alphaTest=.45;mt.depthWrite=true;mt.side=THREE.DoubleSide;if(o.hair)mt.color.set(o.hair);}
    if(mt.name==='outfit'){mt.roughness=.92;const sh=new THREE.Color(o.shirt??o.tint??0xffffff),pa=new THREE.Color(o.pants??0xffffff);mt.userData.U={uShirt:{value:sh},uPants:{value:pa}};
      mt.onBeforeCompile=s2=>{Object.assign(s2.uniforms,mt.userData.U);s2.fragmentShader=s2.fragmentShader.replace('#include <common>','#include <common>\nuniform vec3 uShirt,uPants;').replace('#include <map_fragment>','#include <map_fragment>\ndiffuseColor.rgb*=vUv.y<.425?uShirt:uPants;');};mt.customProgramCacheKey=()=>'outfit2';}if(mt.name==='skin'){mt.roughness=.6;if(o.skin)mt.color.set(o.skin);}if(mt.name==='shoes'&&o.boots)mt.color.set(o.boots);});
   if(o.scale)root.scale.setScalar(o.scale);
   const mixer=new THREE.AnimationMixer(root);const A={};for(const k in HCLIP){const cl=AS.hanims.animations.find(c=>c.name===HCLIP[k]);if(cl){A[k]=mixer.clipAction(cl);if(k==='death'||k==='land'||k==='reload'){A[k].setLoop(THREE.LoopOnce);A[k].clampWhenFinished=k==='death';}}}
-  A.idle.play();const bones=boneMap(root);const H={root,mixer,A,bones,cur:'idle'};if(o.gear)addGear(H,o.gear);return H;}
+  A.idle.play();const bones=boneMap(root);const H={root,mixer,A,bones,cur:'idle',cast:[],fine:[]};root.traverse(m=>{if(!m.isMesh)return;if(m.castShadow)H.cast.push(m);if(/^(eyebrows|eyelashes)$/.test(m.material.name))H.fine.push(m);});if(o.gear)addGear(H,o.gear);return H;}
+/* people more than 40 m away cast no shadow, and their eyebrows and eyelashes (invisible at that range) are not drawn past 14 m */
+function humanLOD(H,d){if(PC)return;const s=d<40,f=d<14;if(H._s!==s){H._s=s;for(const m of H.cast)m.castShadow=s;}if(H._f!==f){H._f=f;for(const m of H.fine)m.visible=f;}}
 function setAnim(c,name,fade=.25,speed=1){const a=c.A[name];if(!a)return;a.timeScale=speed;if(c.cur===name)return;const prev=c.A[c.cur];a.reset();a.setEffectiveWeight(1);a.play();if(prev)prev.crossFadeTo(a,fade,false);c.cur=name;}
 /* raider gear: bandanas, goggles, a scrap-plate vest; simple shapes but textured */
 function addGear(H,g){const b=H.bones;if(!b.Head)return;const head=b.Head;const sc=1/head.getWorldScale(new V3()).x;
@@ -6702,7 +6773,7 @@ function addGear(H,g){const b=H.bones;if(!b.Head)return;const head=b.Head;const 
   if(g.vest&&b.Spine2){const v=new THREE.Mesh(new THREE.BoxGeometry(.36,.34,.06),MAT.sheet);const s2=1/b.Spine2.getWorldScale(new V3()).x;v.scale.setScalar(s2);v.position.set(0,.06*s2,.13*s2);b.Spine2.add(v);const v2=v.clone();v2.position.z=-.13*s2;b.Spine2.add(v2);}
   if(g.cap){const c=new THREE.Mesh(new THREE.SphereGeometry(.112,14,8,0,TAU,0,PI*.5),new THREE.MeshStandardMaterial({map:MAT.cloth.map,color:g.cap,roughness:1}));c.scale.setScalar(sc);c.position.set(0,.1*sc,0);head.add(c);const br=new THREE.Mesh(new THREE.CylinderGeometry(.09,.09,.008,12,1,false,-PI*.5,PI),c.material);br.scale.setScalar(sc);br.position.set(0,.1*sc,.07*sc);head.add(br);}}
 /* ----- rifle: a real model held by two-bone IK so both hands sit on the grip and the handguard ----- */
-function makeGun(kind){const g=AS.rifle.scene.clone(true);const sock={};g.traverse(o=>{if(['Grip','Foregrip','Muzzle'].includes(o.name))sock[o.name]=o;if(o.isMesh){o.castShadow=true;o.receiveShadow=true;o.material=o.material.clone();o.material.envMapIntensity=1.1;if(kind==='hunting'){o.material.color.multiply(new THREE.Color(0xc8a070));}}});
+function makeGun(kind){const g=AS.rifle.scene.clone(true);const sock={};g.traverse(o=>{if(['Grip','Foregrip','Muzzle'].includes(o.name))sock[o.name]=o;if(o.isMesh){o.castShadow=PC;o.receiveShadow=true;o.material=o.material.clone();o.material.envMapIntensity=1.1;if(kind==='hunting'){o.material.color.multiply(new THREE.Color(0xc8a070));}}});
   const holder=new THREE.Group();holder.add(g);scene.add(holder);return{holder,g,sock,kind};}
 const _ik={a:new V3(),b:new V3(),c:new V3(),t:new V3(),n:new V3(),pole:new V3(),e:new V3(),q:new THREE.Quaternion(),pq:new THREE.Quaternion(),d1:new V3(),d2:new V3()};
 function rotBoneTo(bone,child,target){// rotate bone in world space so that its child points at target
@@ -6797,7 +6868,7 @@ function callJeep(){if(!JEEP||P.drive||P.dead)return;if(!S.flags.fueled){toast('
   if(!best){toast('No room for the jeep here. Try a more open spot.',3);return;}
   JEEP.x=best[0];JEEP.z=best[1];JEEP.v=0;JEEP.ry=P.rot+PI;placeJeep(0);sfx('horn');toast('Your jeep is here.',2);}
 function teleport(x,z){P.x=x;P.z=z;P.y=G(x,z)+.05;P.vy=0;if(P.ch)P.ch.root.position.set(P.x,P.y,P.z);grassLOD(x,z,true);}
-function buildPlayer(){P.ch=makeHuman({shirt:0x8a7a62,pants:0xc8c0b0,gear:{}});scene.add(P.ch.root);P.ch.root.traverse(o=>{if(o.isMesh)o.layers.enable(1);});equipGun(S.gun);}
+function buildPlayer(){P.ch=makeHuman({full:true,shirt:0x8a7a62,pants:0xc8c0b0,gear:{}});scene.add(P.ch.root);P.ch.root.traverse(o=>{if(o.isMesh)o.layers.enable(1);});equipGun(S.gun);}
 function equipGun(k){S.magOf=S.magOf||{};if(S.gun)S.magOf[S.gun]=S.mag;if(P.gun){scene.remove(P.gun.holder);P.gun=null;}S.gun=k||null;if(k){P.gun=makeGun(k);S.mag=S.magOf[k]??S.mag??0;}else{P.aimHeld=false;$('bAim').classList.remove('on');P.reloadT=0;}
   $('ammo').hidden=!k;$('bAim').hidden=$('bReload').hidden=!k;updAmmo();buildHot();}
 const magSize=()=>S.gun?(S.gun==='rifle'&&S.mods.mag?40:GUNS[S.gun].mag):0;
@@ -6964,7 +7035,7 @@ class Enemy extends Actor{constructor(o){const K=KINDS[o.kind];super(Object.assi
  die(dir){this.dead=true;this.st='dead';setAnim(this.ch,'death',.15);if(this.gun){const g=this.gun.holder;g.userData.fall={vy:1,rx:rnd(-2,2),rz:rnd(-2,2)};}stat('kills');if(this.group)onGroupKill(this.group);
   // body can be searched
   const L=lootSpot('body'+ENEMIES.indexOf(this)+'_'+Math.floor(S.time),this.x,this.z,'body',{label:'Search body',once:1});L.body=this;}
- update(dt){const ch=this.ch;const d=hyp(P.x-this.x,P.z-this.z);if(d>220&&!this.boss){ch.root.visible=false;if(this.gun)this.gun.holder.visible=false;return;}ch.root.visible=true;
+ update(dt){const ch=this.ch;const d=hyp(P.x-this.x,P.z-this.z);if(d>220&&!this.boss){ch.root.visible=false;if(this.gun)this.gun.holder.visible=false;return;}ch.root.visible=true;humanLOD(ch,d);
   this._acc=(this._acc||0)+dt;if(IOS&&d>70&&this.st!=='combat'&&!this.boss&&this._acc<.2)return;dt=Math.min(this._acc,.25);this._acc=0;
   if(this.dead){ch.mixer.update(dt);if(this.gun){const g=this.gun.holder,f=g.userData.fall;if(f&&g.position.y>H(g.position.x,g.position.z)+.05){f.vy-=9*dt;g.position.y+=f.vy*dt;g.rotateX(f.rx*dt);g.rotateZ(f.rz*dt);}}return;}
   this.t-=dt;this.fireT-=dt;this.flinch=Math.max(0,(this.flinch||0)-dt);const tgt=P.drive?{x:JEEP.x,z:JEEP.z,y:JEEP.y+1}:{x:P.x,z:P.z,y:P.y+(P.crouch?.9:1.3)};
@@ -7023,7 +7094,7 @@ function updCamps(){for(const C of CAMPS){const id='camp_'+C.id;const live=group
 const NPCOBJ={};
 class NPC extends Actor{constructor(id){const D=NPCS[id];super({x:D.at?D.at[0]:0,z:D.at?D.at[1]:0,rot:D.ry||0,tint:D.tint,pants:D.pants,scale:D.scale,kind:'npc',gun:D.gun,hair:D.hair?0x6a6a66:undefined,gear:D.gear});this.id=id;this.D=D;this.n=D.n;this.ry0=D.ry||0;}
  damage(){}
- update(dt){const d=hyp(P.x-this.x,P.z-this.z);if(d>140||this.hidden){this.ch.root.visible=false;if(this.gun)this.gun.holder.visible=false;return;}this.ch.root.visible=true;if(this.gun)this.gun.holder.visible=true;this._acc=(this._acc||0)+dt;if(IOS&&d>25&&this._acc<.16)return;dt=this._acc;this._acc=0;const want=d<6?Math.atan2(P.x-this.x,P.z-this.z):this.ry0;this.rot+=angDiff(this.rot,want)*Math.min(1,dt*3);
+ update(dt){const d=hyp(P.x-this.x,P.z-this.z);if(d>140||this.hidden){this.ch.root.visible=false;if(this.gun)this.gun.holder.visible=false;return;}this.ch.root.visible=true;humanLOD(this.ch,d);if(this.gun)this.gun.holder.visible=true;this._acc=(this._acc||0)+dt;if(IOS&&d>25&&this._acc<.16)return;dt=this._acc;this._acc=0;const want=d<6?Math.atan2(P.x-this.x,P.z-this.z):this.ry0;this.rot+=angDiff(this.rot,want)*Math.min(1,dt*3);
   setAnim(this.ch,this.gun?'ridle':'idle',.4);this.y=G(this.x,this.z);this.place();this.ch.mixer.update(dt);if(this.gun){const b=this.ch.bones;this.ch.root.updateMatrixWorld(true);poseGun(this.ch,this.gun,0,new V3(Math.sin(this.rot),0,Math.cos(this.rot)),{roll:.3});}}}
 const GUARDS=[];
 function buildNPCs(){for(const id of['marta','eli','rosa','vale','pike','sable'])NPCOBJ[id]=new NPC(id);NPCOBJ.tomas=new NPC('tomas');NPCOBJ.sable2=new NPC('sable2');
@@ -7283,12 +7354,22 @@ JR.settings=()=>`<h3>Settings</h3><div class="it"><div class="row"><div class="g
   <div class="it"><div class="row"><div class="grow"><b>Aim assist</b><small>Gently pulls your aim onto targets.</small></div><button class="btn alt" data-set="aimAssist">${S.set.aimAssist?'On':'Off'}</button></div></div>
   <div class="it"><b>Look sensitivity</b><input type="range" min="0.4" max="2" step="0.1" value="${S.set.sens}" id="sSens" style="width:100%"></div><div class="it"><b>Camera distance</b><input type="range" min="0.7" max="1.5" step="0.05" value="${S.set.cam}" id="sCam" style="width:100%"></div>
   <div class="it"><div class="row"><div class="grow"><b>Graphics</b><small>Lower if the game stutters.</small></div><button class="btn alt" data-set="qual">${['Fast','Balanced','Beautiful'][S.set.qual]}</button></div></div>
+  ${PC?'':`<div class="it"><div class="row"><div class="grow"><b>Memory saver textures</b><small>${ASTCX?'On. Textures stay compressed in video memory.':S.set.astc===0?'Off. Turn on to use much less memory.':'Not available on this device.'} Changing this reloads the game.</small></div><button class="btn alt" data-set="astc">${S.set.astc===0?'Off':'On'}</button></div></div>`}
   <div class="it"><b>Controls</b><small>Left side: move. Right side: look. Big button: shoot. Crosshair button: aim. Arrows: sprint. Circle arrow: reload. Down arrow: crouch. Driving: left stick steers, up arrow drives, down arrow brakes and reverses. Keyboard: WASD, mouse aims, right click to aim, R reload, C crouch, Shift sprint, E use, I pack, J journal, M map.</small></div>
   <div class="it" id="pauseHost"><b>Progress saves automatically.</b></div><div class="it"><button class="btn alt" id="sReset" style="color:#ffb0a0">Erase save and start over</button></div>`;
-JA.settings=B=>{B.querySelectorAll('[data-set]').forEach(b=>b.onclick=()=>{const k=b.dataset.set;if(k==='qual'){S.set.qual=(S.set.qual+1)%3;applyQuality();}else{S.set[k]=S.set[k]?0:1;if(k==='music'){music(S.set.music?curMusic||'desert':null);}if(k==='sfx')setVol();}renderJournal();});
+JA.settings=B=>{B.querySelectorAll('[data-set]').forEach(b=>b.onclick=()=>{const k=b.dataset.set;if(k==='qual'){S.set.qual=(S.set.qual+1)%3;AQ.cap=0;AQ.bad=0;AQ.good=0;RK.QS.q=S.set.qual;setAQ(0);RK.setupPost();}else if(k==='astc'){S.set.astc=S.set.astc===0?1:0;persist();try{__store.flush();}catch(_){}location.reload();return;}else{S.set[k]=S.set[k]?0:1;if(k==='music'){music(S.set.music?curMusic||'desert':null);}if(k==='sfx')setVol();}renderJournal();});
   $('sSens').oninput=e=>S.set.sens=+e.target.value;$('sCam').oninput=e=>S.set.cam=+e.target.value;pauseEl.hidden=false;$('pauseHost').appendChild(pauseEl);
   $('sReset').onclick=()=>choose('Erase save?','All progress in the Basin will be deleted.',[{t:'Yes, erase it',cb:()=>{try{__store.remove(SK);}catch(_){}location.reload();}},{t:'Cancel'}]);};
-function applyQuality(){const q=S.set.qual;renderer.shadowMap.enabled=q>0;sun.castShadow=q>0;RK.QS.max=q;RK.QS.q=Math.min(RK.QS.q,q);try{renderer.setPixelRatio(PC?(q===2?Math.min(devicePixelRatio||1,2):q===1?1.25:1):IOS?(q===2?1:q===1?.85:.7):Math.min(devicePixelRatio||1,q===2?1.5:q===1?1.2:.9));}catch(_){}scene.traverse(o=>{if(o.material&&o.material.needsUpdate!==undefined)o.material.needsUpdate=true;});}
+function setRes(){const q=S.set.qual;try{const base=PC?(q===2?Math.min(devicePixelRatio||1,2):q===1?1.25:1):IOS?(q===2?1:q===1?.85:.7):Math.min(devicePixelRatio||1,q===2?1.5:q===1?1.2:.9);renderer.setPixelRatio(Math.max(.5,base*(!PC&&RK.QS.q===0&&q>0?.9:1)*AQ.pr));}catch(_){}}
+function applyQuality(){const q=S.set.qual,sh=q>0&&AQ.sh,was=renderer.shadowMap.enabled;renderer.shadowMap.enabled=sh;sun.castShadow=sh;RK.QS.max=q;RK.QS.q=Math.min(RK.QS.q,q);setRes();if(was!==sh||!applyQuality.done){applyQuality.done=1;scene.traverse(o=>{if(o.material&&o.material.needsUpdate!==undefined)o.material.needsUpdate=true;});}}
+RK.QS.onQ=setRes;
+const AQL=[{vd:1,gr:1,pr:1,sh:true},{vd:.85,gr:.6,pr:1,sh:true},{vd:.85,gr:.6,pr:.85,sh:true},{vd:.72,gr:.4,pr:.85,sh:false},{vd:.6,gr:.25,pr:.72,sh:false}];
+function setAQ(l){AQ.lvl=l;Object.assign(AQ,AQL[l]);applyQuality();if(l>0)RK.QS.max=0;lastGrass={x:1e9,z:1e9};cullT=0;}
+/* watches the frame rate while you play. The engine first turns off its screen effects; if that is not enough this lowers one step at a time, and climbs back when the game has run smoothly for a while. */
+function autoTune(dt){if(PC||!RK.QS.auto||document.hidden||dt>.2){AQ.t=0;AQ.n=0;return;}AQ.t+=dt;AQ.n=(AQ.n||0)+1;if(AQ.hold>0)AQ.hold-=dt;if(AQ.t<3)return;const fps=AQ.n/AQ.t;AQ.t=0;AQ.n=0;AQ.fps=fps;
+  if(fps<24){AQ.good=0;if(++AQ.bad>=2&&RK.QS.q===0&&AQ.lvl<AQL.length-1){AQ.bad=0;if(AQ.hold>0&&AQ.wasUp)AQ.cap=AQ.lvl+1;AQ.wasUp=false;AQ.hold=45;setAQ(AQ.lvl+1);}}
+  else if(fps>50||(fps>28.5&&fps<31.5)){AQ.bad=0;/* 28 to 31 means the iPad is holding a steady 30 (Low Power Mode), which is also smooth */if(++AQ.good>=(fps>50?6:12)&&AQ.lvl>AQ.cap&&AQ.hold<=0){AQ.good=0;AQ.wasUp=true;AQ.hold=45;setAQ(AQ.lvl-1);}}
+  else{AQ.bad=0;AQ.good=0;}}
 
 /* ================= LIGHT, WEATHER ================= */
 const _sd=new V3(),_c1=new THREE.Color(),_c2=new THREE.Color();let lightT=0,dayK=1,envMats=[],ENVT=null;const WX={dust:0,target:0,t:200};
@@ -7308,7 +7389,7 @@ function updLight(dt,force){lightT-=dt;if(lightT>0&&!force)return;lightT=.2;cons
   stars.material.opacity=smooth(.5,1,night)*(1-st);moon.position.copy(camera.position).addScaledVector(_v.set(-_sd.x,Math.abs(_sd.y)*.6+.3,-_sd.z).normalize(),2000);moon.material.opacity=night*(1-st);
   const ek=lerp(.18,1,dayK)*(1-st*.4);for(const m of envMats)m.envMapIntensity=m.userData.env0*ek;
   for(const f of FIRES){f.L.intensity=lerp(2.4,.6,dayK);}if(TOWERLIGHT)TOWERLIGHT.visible=Math.sin(TT*3)>0;}
-function placeSun(){const t=P.drive&&JEEP?JEEP:P;sun.position.set(t.x+_sd.x*200,(t.y||0)+Math.max(_sd.y,.15)*200,t.z+_sd.z*200);if(dayK<.5)sun.position.set(t.x-_sd.x*200,(t.y||0)+Math.max(-_sd.y,.4)*200,t.z-_sd.z*200);sun.target.position.set(t.x,t.y||0,t.z);}
+function placeSun(){const t=P.drive&&JEEP?JEEP:P,SD=IOS?130:200;sun.position.set(t.x+_sd.x*SD,(t.y||0)+Math.max(_sd.y,.15)*SD,t.z+_sd.z*SD);if(dayK<.5)sun.position.set(t.x-_sd.x*SD,(t.y||0)+Math.max(-_sd.y,.4)*SD,t.z-_sd.z*SD);sun.target.position.set(t.x,t.y||0,t.z);}
 /* blowing dust near the camera */
 let DUST=null;function buildDust(){const N=900,p=new Float32Array(N*3);for(let i=0;i<N*3;i++)p[i]=R();const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.BufferAttribute(p,3));
   DUST=new THREE.Points(g,new THREE.ShaderMaterial({uniforms:{uTime:RK.timeU,uCam:{value:new V3()},uK:{value:0},uCol:{value:new THREE.Color(.75,.6,.42)},tTex:{value:smokeTex}},transparent:true,depthWrite:false,
@@ -7338,7 +7419,7 @@ function frame(now){requestAnimationFrame(frame);let dt=Math.min(.05,(now-last)/
   if(!TITLE.on&&!CINE.on&&!DLG.on&&$('jour').hidden&&$('modal').hidden){S.time+=dt;S.hour+=dt/60;if(S.hour>=24){S.hour-=24;S.day++;}}else if(CINE.on||TITLE.on){S.hour+=dt/240;if(S.hour>=24)S.hour-=24;}
   updTasks(dt);dlgTick(dt);updPlayer(dt);updJeep(dt);for(const a of ACTORS){if(a instanceof Enemy)a.update(dt);else if(a.update)a.update(dt);}updFX(dt);updTumble(dt);
   for(const f of FIRES){const k=.8+Math.sin(TT*13+f.p)*.1+Math.sin(TT*7.3+f.p)*.1;f.f.scale.set(1.3*k,1.7*k,1);f.L.intensity*=1;}
-  updCamera(dt);updCull(dt);updWeather(dt);updLight(dt);placeSun();if(DUST)DUST.material.uniforms.uCam.value.copy(camera.position);
+  updCamera(dt);updCull(dt);if(P.ready&&!TITLE.on)autoTune(dt);updWeather(dt);updLight(dt);placeSun();if(DUST)DUST.material.uniforms.uCam.value.copy(camera.position);
   if(P.ready&&!TITLE.on){grassLOD(P.x,P.z);iT-=dt;if(iT<=0){iT=.15;updInteract();}qT-=dt;if(qT<=0){qT=.5;checkQuests();updDiscovery();updCamps();}cT-=dt;if(cT<=0){cT=10;cleanupDead();persist();}updHUD(dt);drawMini(dt);}
   for(const q of QITEMS)q.mesh.children[0].material.opacity=.45+Math.sin(TT*4)*.25;for(const c of COLLECT)c.g.children[1].material.opacity=.3+Math.sin(TT*3+c.x)*.25;
   drawOverlay(dt);if(bannerT>0){bannerT-=dt;if(bannerT<=0)$('banner').classList.remove('on');}
@@ -7355,9 +7436,9 @@ function boot(){const msg=t=>$('loadM').textContent=t;msg('Loading the Basin');
   cv.addEventListener('webglcontextlost',e=>{e.preventDefault();try{S.set.qual=0;S.set.ultra=1;persist();}catch(_){}$('load').hidden=false;$('loadM').textContent='Your iPad ran out of graphics memory. Close this tab and open Last Light again.';});
   loadAssets(p=>{$('loadP').style.width=(p*70)+'%';}).then(()=>{
     const steps=[['Raising the mesas',()=>{mkMats();buildTerrain();}],['Paving Route 40',()=>{buildRoad();}],['Rusting the cars',()=>{buildSites();scene.traverse(m=>{if(m.isMesh&&m.name==='ICE_ICE_0'){m.material=m.material.clone();m.material.color.setRGB(.5,.48,.43);}if(m.isMesh&&m.material&&m.material.emissive&&/Light_0|Sign_0|Neon|Lamp/.test(m.name)){m.material=m.material.clone();m.material.emissive.setRGB(0,0,0);m.material.emissiveMap=null;}});}],['Scattering scrub',()=>{buildVeg();buildTumble();buildDust();buildCollect();}],
-      ['Waking the Basin',()=>{if(S.set.ultra&&GRASS){GRASS.parent.remove(GRASS);GRASS.geometry.dispose();GRASS=null;}if(AS.hdr&&!S.set.ultra&&!IOS){const pm=new THREE.PMREMGenerator(renderer);ENVT=pm.fromEquirectangular(AS.hdr).texture;scene.environment=ENVT;}buildJeep();buildPlayer();buildNPCs();buildMapCanvas();bindJoy();bindUI();collectEnvMats();applyQuality();updLight(0,true);}]];let i=0;
+      ['Waking the Basin',()=>{if(S.set.ultra&&GRASS){GRASS.parent.remove(GRASS);GRASS.geometry.dispose();GRASS=null;}if(AS.hdr&&!S.set.ultra&&!IOS){const pm=new THREE.PMREMGenerator(renderer);ENVT=pm.fromEquirectangular(AS.hdr).texture;scene.environment=ENVT;try{AS.hdr.dispose();}catch(_){}AS.hdr=null;}prepHumanLo();buildJeep();buildPlayer();buildNPCs();buildMapCanvas();bindJoy();bindUI();collectEnvMats();buildShadowProxies();applyQuality();updLight(0,true);}]];let i=0;
     const next=()=>{if(i>=steps.length){$('load').hidden=true;BOOTED=true;showTitle();crumb('Playing');if(KBM){$('keys').hidden=false;setTimeout(()=>$('keys').hidden=true,25000);}setTimeout(()=>{try{__store.remove('ll-boot');__store.remove('ll-step');}catch(_){}if(SAFEMODE)toast('Graphics were lowered so Last Light fits in memory. You can raise them in Journal, Settings.',7);},60000);return;}msg(steps[i][0]+'...');crumb(steps[i][0]);$('loadP').style.width=(70+i/steps.length*30)+'%';setTimeout(()=>{try{steps[i][1]();}catch(e){msg('Error: '+e.message);console.error(e);return;}i++;next();},30);};next();}).catch(e=>{msg('Could not load: '+e.message);console.error(e);});}
-window.__ll={COL,AS,callJeep,tryFire,lockTarget,dlgNext,WX,LOOK,hurt,respawn,talk,spawnGroup,enterJeep,renderer,scene,sky,get ROADM(){return ROADM;},RPATH,get TERR(){return TERR;},get S(){return S;},P,ACTORS,ENEMIES,NPCOBJ,LOOT,COLLECT,QITEMS,Q,GROUPLIVE,CAM,JOY,JIN,keys,camera,get JEEP(){return JEEP;},get BOSS(){return BOSS;},H,G,teleport,addItem,equipGun,completeStep,stepStart,activeQuests,questStep,checkQuests,doInteract,get curInt(){return curInt;},
+window.__ll={AQ,setAQ,VEG,updVeg,CULL,PXG,PXC,get ASTCX(){return ASTCX;},get STREAMED(){return STREAMED;},streamOut,RK,COL,AS,callJeep,tryFire,lockTarget,dlgNext,WX,LOOK,hurt,respawn,talk,spawnGroup,enterJeep,renderer,scene,sky,get ROADM(){return ROADM;},RPATH,get TERR(){return TERR;},get S(){return S;},P,ACTORS,ENEMIES,NPCOBJ,LOOT,COLLECT,QITEMS,Q,GROUPLIVE,CAM,JOY,JIN,keys,camera,get JEEP(){return JEEP;},get BOSS(){return BOSS;},H,G,teleport,addItem,equipGun,completeStep,stepStart,activeQuests,questStep,checkQuests,doInteract,get curInt(){return curInt;},
   talkNPC,dlgNext,DLG,CINE,cineNext,startGame,enterJeep,leaveJeep,spawnGroup,reload,tryFire,aimSolve,placeJeep,searchLoot,openBench,updLight,WX,
   sim(n,f){for(let i=0;i<n;i++){const dt=1/30;TT+=dt;S.time+=dt;f&&f();updTasks(dt);updPlayer(dt);updJeep(dt);for(const a of ACTORS){if(a.update)a.update(dt);}updFX(dt);updCamera(dt);if(i%5===0){updInteract();checkQuests();updDiscovery();}}}};
 requestAnimationFrame(frame);boot();
