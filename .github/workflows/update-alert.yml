@@ -25,6 +25,6 @@ jobs:
       - name: Send the alert
         run: node .github/notify.js
         env:
-          HAS2: ${{ secrets.VAPID_PRIVATE_2 != '' }}
-          VAPID_PRIVATE: ${{ secrets.VAPID_PRIVATE_2 || secrets.VAPID_PRIVATE }}
+          HAS2: ${{ (secrets.VAPID_PRIVATE_2 || secrets.VAPID_PRIVATE2 || secrets.VAPIDPRIVATE2 || secrets.VAPID_PRIVATE_KEY_2 || vars.VAPID_PRIVATE_2 || vars.VAPID_PRIVATE2) != '' }}
+          VAPID_PRIVATE: ${{ secrets.VAPID_PRIVATE_2 || secrets.VAPID_PRIVATE2 || secrets.VAPIDPRIVATE2 || secrets.VAPID_PRIVATE_KEY_2 || vars.VAPID_PRIVATE_2 || vars.VAPID_PRIVATE2 || secrets.VAPID_PRIVATE }}
           MSG: ${{ github.event.head_commit.message }}
