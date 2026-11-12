@@ -353,7 +353,8 @@ function decoSprite(k){return sprite('d'+k+(G?G.stage:0),80,100,40,92,p=>{if(k==
  if(k===3){const s=P();s.moveTo(-10,0);s.lineTo(-10,-18);s.lineTo(10,-18);s.lineTo(10,0);s.closePath();p.push({p:s,f:'#6a6a70'});const cn=P();cn.moveTo(-4,-18);cn.lineTo(-4,-34);cn.lineTo(4,-34);cn.lineTo(4,-18);cn.closePath();p.push({p:cn,f:'#e8dcc0'});return X=>{X.fillStyle='#ffd27a';X.shadowColor='#ffaa2a';X.shadowBlur=12;X.beginPath();X.moveTo(0,-36);X.quadraticCurveTo(-4,-42,0,-48);X.quadraticCurveTo(4,-42,0,-36);X.fill();X.shadowBlur=0;};}
  const s=P();s.moveTo(-18,0);s.lineTo(-16,-12);s.lineTo(16,-12);s.lineTo(18,0);s.closePath();p.push({p:s,f:'#5a5a60'});return null;});}
 let lightCache=null;
-function frame(){const now=performance.now();let dt=Math.min(.05,(now-(frame.l||now))/1000);frame.l=now;tt+=dt;const c=cx;c.setTransform(PR,0,0,PR,0,0);
+function frame(){requestAnimationFrame(frame);try{frame2();}catch(e){console.warn(e);}}
+function frame2(){const now=performance.now();let dt=Math.min(.05,(now-(frame.l||now))/1000);frame.l=now;tt+=dt;const c=cx;c.setTransform(PR,0,0,PR,0,0);
  if(scr==='play'&&G){if(!window.PAUSED&&$('ov').hidden)step(dt);
   const camX=G.x-VW/2,camY=G.y-VH/2-20;if(!groundTile)groundTile=makeGround();const TS=512;const ox=-((camX%TS)+TS)%TS,oy=-((camY%TS)+TS)%TS;for(let x=ox;x<VW;x+=TS)for(let y=oy;y<VH;y+=TS)c.drawImage(groundTile,x,y,TS,TS);
   // ground items layer
@@ -393,7 +394,7 @@ function frame(){const now=performance.now();let dt=Math.min(.05,(now-(frame.l||
   const ch=CHARS[S.sel];blit(c,psprite(Math.floor(tt*3)%2),540,600,0,2.2);const lg=c.createRadialGradient(560,560,4,560,560,180);lg.addColorStop(0,'rgba(255,190,90,.35)');lg.addColorStop(1,'rgba(255,190,90,0)');c.fillStyle=lg;c.fillRect(340,380,440,360);
   [['ghoul',380,640,1],['skel',700,640,-1],['bat',250,470,1],['wraith',830,500,-1]].forEach(([t,x,y,f])=>blit(c,esprite(t,Math.floor(tt*4)%2),x,y+(ET[t].fly?Math.sin(tt*3)*6:0),f<0,1.6));}
  if(BAN){BAN.l-=dt;c.globalAlpha=Math.min(1,BAN.l);c.font='600 40px "Iowan Old Style",Palatino,Georgia,serif';c.textAlign='center';c.fillStyle='#ffd890';c.shadowColor='#ff9a2a';c.shadowBlur=18;c.fillText(BAN.t,VW/2,190);c.shadowBlur=0;c.globalAlpha=1;c.textAlign='left';if(BAN.l<=0)BAN=null;}
- requestAnimationFrame(frame);}
+ }
 function drawHud(c){// soul chain XP bar
  const bx=100,bw=760,by=22;c.fillStyle='rgba(10,8,20,.75)';c.beginPath();c.roundRect?c.roundRect(bx,by,bw,20,10):c.rect(bx,by,bw,20);c.fill();c.strokeStyle='#8f7fd0';c.lineWidth=2;c.stroke();
  const f=Math.min(1,G.xp/need(G.lv));const g=c.createLinearGradient(bx,0,bx+bw,0);g.addColorStop(0,'#3a6ad0');g.addColorStop(1,'#9fe0ff');c.fillStyle=g;c.fillRect(bx+4,by+4,(bw-8)*f,12);
