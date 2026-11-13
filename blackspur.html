@@ -4332,7 +4332,7 @@ const ROUTE=8000,KMS=100;// 1 "km" on the board = 100 m of track
 const TOWNS=[{s:560,n:'Dust Creek'},{s:1400,n:'Sixgun Flats'},{s:2200,n:'Coyote Wells'},{s:3000,n:'Red Bluff'},{s:3800,n:'Bone Mesa',bank:1},{s:4600,n:'Saltpan'},{s:5400,n:'Widow Gulch'},{s:6200,n:'Hollow Chapel',chapel:1},{s:7000,n:'Last Water'},{s:7800,n:'Fort Mercy',fort:1}];
 const CLASSES={drifter:{n:'Drifter',cost:0,d:'Steady hands. No tricks, no weaknesses.'},engineer:{n:'Engineer',cost:15,d:'The engine burns 35% less fuel.'},gunslinger:{n:'Gunslinger',cost:25,d:'Reloads twice as fast and starts with 24 extra rounds.'},preacher:{n:'Preacher',cost:35,d:'Heals slowly when not hurt for a few seconds.'},undertaker:{n:'Undertaker',cost:45,d:'The dead always leave remains, worth double fuel.'},sheriff:{n:'Sheriff',cost:70,d:'Starts with a shotgun and 120 max health.'}};
 const GUNS={rev:{n:'Revolver',dmg:34,rate:.3,mag:6,rl:1.4,am:'r',rng:70,cone:5,model:'revolver'},sg:{n:'Shotgun',dmg:80,rate:.85,mag:2,rl:1.7,am:'s',rng:24,cone:9,splash:1,model:'shotgun'},rf:{n:'Rifle',dmg:95,rate:.9,mag:5,rl:2,am:'l',rng:130,cone:3,model:'shotgun'}};
-const FOES={walker:{hp:40,sp:3.1,dmg:9,col:'#86e070',sc:1},runner:{hp:26,sp:6.4,dmg:7,col:'#b8d8c8',sc:.95},brute:{hp:150,sp:2.6,dmg:20,col:'#6a9a50',sc:1.35},wolf:{hp:30,sp:8.5,dmg:7,sc:1},baron:{hp:1100,sp:5,dmg:24,sc:1}};
+const FOES={walker:{hp:40,sp:3.1,dmg:9,col:'#86e070',sc:1},runner:{hp:26,sp:6.4,dmg:7,col:'#b8d8c8',sc:.95},brute:{hp:150,sp:2.6,dmg:20,col:'#6a9a50',sc:1.35},wolf:{hp:30,sp:8.5,dmg:7,sc:1},outlaw:{hp:60,sp:3.8,dmg:9,col:'#ffffff',sc:1},baron:{hp:1100,sp:5,dmg:24,sc:1}};
 const S=store('blackspur-v1',()=>({v:1,bonds:0,best:0,wins:0,bm:0,kills:0,baron:0,runs:0,cls:'drifter',own:{drifter:1},opt:{sfx:1,mus:1},run:null,tut:0,km20:0}));
 AU.sfx=S.opt.sfx;AU.mus=S.opt.mus;
 let RUN=null;
@@ -4418,16 +4418,18 @@ function buildTown(i){clearTown();if(i<0)return;const T=TOWNS[i],z0=-T.s,r=seede
   // station platform & water tower vibe
   place('sign',4.5,z0+58,Math.PI,3.6);
  }
- g.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true;}});}
+ g.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true;}});
+ if(RUN&&i>0&&!T.fort&&!RUN.looted['out'+i]){RUN.looted['out'+i]=1;const n=2+Math.floor(i/3)+(RUN.bm?1:0);for(let k=0;k<n;k++){const side=k%2?1:-1;spawnFoe('outlaw',side*(10+R()*8),z0+30-k*14);}msg('Outlaws in '+T.n+'!');}}
 function clearTown(){if(town.g){scene.remove(town.g);}town.loot.forEach(l=>scene.remove(l.o));town.g=null;town.i=-1;town.boxes=[];town.loot=[];town.shop=null;town.bankV=null;}
 function addLoot(k,x,z,key){if(RUN&&RUN.looted[key])return;const o=inst(k);o.scale.setScalar(k==='chest'?2.6:k==='barrel'?2.6:k==='boxL'?2.4:2.6);o.position.set(x,0,z);o.rotation.y=R()*TAU;scene.add(o);town.loot.push({o,k,key,x,z});}
 /* ---------- items (carryable + pickups) ---------- */
 const items=[];// {o,t,x,y,z,car,lx,ly,lz}
-const ITEM={coal:{n:'Coal sack',fuel:28,col:'#2a2a2e'},wood:{n:'Plank bundle',fuel:14},crate:{n:'Crate',fuel:12},remains:{n:'Remains',fuel:9},band:{n:'Bandage',auto:1},ammoR:{n:'Revolver rounds',auto:1},ammoS:{n:'Shells',auto:1},ammoL:{n:'Rifle rounds',auto:1},cash:{n:'Cash',auto:1},bond:{n:'Bond',auto:1}};
+const ITEM={coal:{n:'Coal sack',fuel:28,col:'#2a2a2e'},wood:{n:'Plank bundle',fuel:14},crate:{n:'Crate',fuel:12},remains:{n:'Remains',fuel:9},band:{n:'Bandage',auto:1},ammoR:{n:'Revolver rounds',auto:1},ammoS:{n:'Shells',auto:1},ammoL:{n:'Rifle rounds',auto:1},cash:{n:'Cash',auto:1},bond:{n:'Bond',auto:1},gold:{n:'Gold bar',val:65},silver:{n:'Silver plate',val:25},jewel:{n:'Jewellery box',val:40}};
 function itemMesh(t){let o;
  if(t==='coal'){o=new THREE.Group();const bag=new THREE.Mesh(new THREE.DodecahedronGeometry(.42,0),new THREE.MeshLambertMaterial({color:'#6a5a44'}));bag.scale.set(1,.8,1);bag.position.y=.34;o.add(bag);const lump=new THREE.Mesh(new THREE.DodecahedronGeometry(.25,0),new THREE.MeshLambertMaterial({color:'#1a1a1e'}));lump.position.set(.1,.66,0);o.add(lump);}
  else if(t==='wood'||t==='crate'){o=inst(t==='crate'?'box':'box');o.scale.setScalar(1.6);}
  else if(t==='remains'){o=inst('coffin');o.scale.setScalar(1.3);}
+ else if(t==='gold'||t==='silver'||t==='jewel'){const col={gold:'#f0c040',silver:'#d8dce4',jewel:'#8a3a5a'}[t];o=new THREE.Group();const m=new THREE.Mesh(t==='silver'?new THREE.CylinderGeometry(.32,.32,.06,16):new THREE.BoxGeometry(t==='gold'?.5:.42,t==='gold'?.18:.26,t==='gold'?.22:.3),new THREE.MeshStandardMaterial({color:col,metalness:t==='jewel'?.1:.9,roughness:.3,emissive:col,emissiveIntensity:.15}));m.position.y=.15;o.add(m);}
  else{const col={band:'#f3e2bc',ammoR:'#c8963e',ammoS:'#b8342a',ammoL:'#8a8a90',cash:'#6ab04a',bond:'#cfe0b0'}[t];o=new THREE.Mesh(new THREE.BoxGeometry(.5,.28,.36),new THREE.MeshLambertMaterial({color:col,emissive:col,emissiveIntensity:.35}));o.position.y=.3;const w=new THREE.Group();w.add(o);o=w;}
  o.traverse(m=>{if(m.isMesh)m.castShadow=true;});return o;}
 function spawnItem(t,x,z,car){const o=itemMesh(t);scene.add(o);const it={o,t,x,y:0,z,car:null,spin:ITEM[t].auto?1:0};items.push(it);if(car)stowOn(it,car,x,z);else o.position.set(x,0,z);return it;}
@@ -4445,11 +4447,13 @@ const foes=[];const MAXF=16;
 function spawnFoe(kind,x,z){const F=FOES[kind];let o,an;
  if(kind==='wolf'){o=inst('wolf',true);fitH(o,1.0);an=new Anim(o,'wolf',{run:'AnimalArmature|Gallop',walk:'AnimalArmature|Walk',hit:'AnimalArmature|Attack',die:'AnimalArmature|Death',idle:'AnimalArmature|Idle'});o.traverse(m=>{if(m.isMesh){m.castShadow=true;m.material=m.material.clone();m.material.color.multiply(new THREE.Color('#9a8a7a'));}});}
  else if(kind==='baron'){o=inst('vamp');fitH(o,3.2);an=new Anim(o,'vamp',CHANIM);}
- else{const ck=pick(['cha','chb','chd','che','chf','chk','chp','chq']);o=inst(ck);fitH(o,1.85*F.sc);tintObj(o,F.col,kind==='runner'?'#3a0000':null);an=new Anim(o,ck,CHANIM);}
+ else{const ck=kind==='outlaw'?pick(['chb','chd','chq']):pick(['cha','chb','chd','che','chf','chk','chp','chq']);o=inst(ck);fitH(o,1.85*F.sc);if(kind!=='outlaw')tintObj(o,F.col,kind==='runner'?'#3a0000':null);an=new Anim(o,ck,CHANIM);
+  if(kind==='outlaw'){const arm=o.getObjectByName('arm-right'),g=inst('revolver'),bb=new THREE.Box3().setFromObject(g).getSize(new V3());g.scale.setScalar(.5/Math.max(bb.x,bb.y,bb.z));g.rotation.set(0,0,-Math.PI/2);const w=new THREE.Group();w.add(g);w.position.set(0,-1.05,.12);arm&&arm.add(w);}}
  scene.add(o);o.position.set(x,0,z);const f={o,an,kind,hp:F.hp*(RUN.bm?1.35:1)*(1+RUN.s/ROUTE*.6),sp:F.sp*(RUN.bm?1.12:1),dmg:F.dmg*(RUN.bm?1.3:1),x,y:0,z,car:null,lx:0,lz:0,cool:0,dead:0,climb:0,yaw:0,flash:0};f.mhp=f.hp;
  an.play(kind==='wolf'||kind==='runner'?'run':'walk',.1,false,kind==='walker'?.75:1);foes.push(f);return f;}
 function killFoe(f){f.dead=1.6;f.an.play('die',.1,true);RUN.kills++;S.kills++;AU.tone(110,.3,'sawtooth',.06,60);
  if(f.kind==='baron'){RUN.baron=1;S.baron++;window.__mgt&&__mgt('m','baron');msg('The Night Baron falls');giveBonds(25);RUN.cash+=150;}
+ else if(f.kind==='outlaw'){RUN.cash+=20+Math.floor(R()*20);spawnItem(R()<.6?'ammoR':pick(['band','gold','silver']),f.x,f.z,f.car);}
  else{RUN.cash+=f.kind==='brute'?12:f.kind==='wolf'?3:4;const drop=RUN.cls==='undertaker'?1:R()<.3;if(drop&&f.kind!=='wolf'){const it=spawnItem('remains',f.x,f.z,f.car);if(f.car)it.y=0;}
   if(R()<.18)spawnItem(pick(['ammoR','ammoR','band','cash','ammoS']),f.x+.8,f.z+.4,f.car);}}
 /* ---------- input ---------- */
@@ -4605,6 +4609,13 @@ function updateFoes(dt){const r=RUN;
     const n=carAt(f.lx,-train.s+f.lz);if(n&&n!==f.car){f.car=n;f.y=n.deck;}}
    f.x=f.lx;f.z=-train.s+f.lz;f.y=c.deck;f.yaw=Math.atan2(ddx,ddz);
    if(!PL.car&&dist>4){f.car=null;f.y=0;}}
+  else if(f.kind==='outlaw'){let ddx=PL.x-f.x,ddz=PL.z-f.z;const dd=Math.hypot(ddx,ddz)||1;f.yaw=Math.atan2(ddx,ddz);f.str=(f.str||1);if(R()<dt*.3)f.str*=-1;
+   let vx=0,vz=0;if(dd>16){vx=ddx/dd;vz=ddz/dd;}else if(dd<8){vx=-ddx/dd;vz=-ddz/dd;}else{vx=-ddz/dd*f.str*.6;vz=ddx/dd*f.str*.6;}
+   f.x+=vx*f.sp*dt;f.z+=vz*f.sp*dt;boxPush(f,.4);carPush(f,.4);
+   if(f.cool<=0&&dd<28){f.cool=1.6+R()*.8;f.an.play('shoot',.05,true);f.atkT=.5;AU.noise(.25,.3,1100,.8,0,'lowpass',150);_v.set(f.x,1.4,f.z);flashL.position.copy(_v);flashL.intensity=2;
+    const moving=Math.hypot(CTL.jx,CTL.jy)>.3;if(R()<(moving?.35:.6)-dd/80)hurtPlayer(f.dmg);}
+   f.o.position.set(f.x,0,f.z);f.o.rotation.y=f.yaw;if(f.atkT>0)f.atkT-=dt;else f.an.play(Math.hypot(vx,vz)>.1?'walk':'hold',.2);
+   if(f.flash>0){f.flash-=dt;f.o.visible=f.flash%0.1>0.05;}else f.o.visible=true;continue;}
   else{const tx=PL.x,tz=PL.z;let ddx=tx-f.x,ddz=tz-f.z;const dd=Math.hypot(ddx,ddz)||1;
    const sp=f.sp*(isNight()?1.12:1);
    if(dd>1.1){f.x+=ddx/dd*sp*dt;f.z+=ddz/dd*sp*dt;}
@@ -4639,9 +4650,10 @@ function nearest(list,fn,max){let b=null,bd=max;for(const o of list){const d=fn(
 function ctxUse(){const c=useCtx();$('use').textContent=c?c.l:'Use';$('use').style.opacity=c?1:.45;$('hint').textContent=c&&c.h?c.h:'';}
 function furnaceDist(){const lc=train.cars[0],w=carWorld(lc);const fz=w.z1-1.2;return Math.hypot(PL.x,PL.z-fz);}
 function useCtx(){if(!RUN||PL.dead)return null;
+ if(PL.carry&&ITEM[PL.carry.t].val&&town.shop&&Math.hypot(town.shop.x-PL.x,town.shop.z-PL.z)<4&&PL.y<1)return{l:'Sell $'+ITEM[PL.carry.t].val,a:'sell',h:'The store buys valuables'};
  if(PL.carry){const t=PL.carry.t;if(ITEM[t].fuel&&furnaceDist()<3.4&&(PL.car===train.cars[0]||PL.car===train.cars[1]||PL.y<1))return{l:'Shovel in',a:'burn'};return{l:'Drop',a:'drop'};}
  if(furnaceDist()<3.2&&PL.car&&train.fuel<100){const it=nearest(items.filter(i=>ITEM[i.t].fuel),i=>Math.hypot(i.x-PL.x,i.z-PL.z),2.2);if(it)return{l:'Pick up',a:'pick',it};}
- const it=nearest(items.filter(i=>!ITEM[i.t].auto&&!i.carried),i=>Math.hypot(i.x-PL.x,i.z-PL.z)+Math.abs(i.y-PL.y),2.2);if(it)return{l:'Pick up',a:'pick',it,h:ITEM[it.t].n+(ITEM[it.t].fuel?' · fuel '+ITEM[it.t].fuel:'')};
+ const it=nearest(items.filter(i=>!ITEM[i.t].auto&&!i.carried),i=>Math.hypot(i.x-PL.x,i.z-PL.z)+Math.abs(i.y-PL.y),2.2);if(it)return{l:'Pick up',a:'pick',it,h:ITEM[it.t].n+(ITEM[it.t].fuel?' · fuel '+ITEM[it.t].fuel:'')+(ITEM[it.t].val?' · sells for $'+ITEM[it.t].val:'')};
  if(town.shop&&Math.hypot(town.shop.x-PL.x,town.shop.z-PL.z)<3&&PL.y<1)return{l:'Shop',a:'shop',h:'General store'};
  const lt=nearest(town.loot,l=>Math.hypot(l.x-PL.x,l.z-PL.z),2.6);if(lt&&PL.y<1)return{l:'Search',a:'loot',lt,h:'Search the '+({box:'crate',boxL:'big crate',barrel:'barrel',chest:'chest'}[lt.k])};
  if(town.bankV&&!town.bankV.used&&!RUN.looted['bank'+town.i]&&Math.hypot(town.bankV.x-PL.x,town.bankV.z-PL.z)<4&&PL.y<1)return{l:'Rob vault',a:'bank',h:'The bank vault is open'};
@@ -4650,19 +4662,20 @@ function useCtx(){if(!RUN||PL.dead)return null;
  return null;}
 function doUse(){const c=useCtx();if(!c)return;const r=RUN;
  if(c.a==='burn'){const t=PL.carry.t;train.fuel=Math.min(100,train.fuel+ITEM[t].fuel*(t==='remains'&&r.cls==='undertaker'?2:1));removeItem(PL.carry);PL.carry=null;AU.noise(.6,.3,600,1,0,'lowpass',200);msg('Fuel '+Math.round(train.fuel));}
+ else if(c.a==='sell'){const v=ITEM[PL.carry.t].val;r.cash+=v;removeItem(PL.carry);PL.carry=null;AU.tone(990,.1,'triangle',.1);AU.tone(1320,.15,'triangle',.08,0,.08);msg('Sold for $'+v);}
  else if(c.a==='drop'){const it=PL.carry;PL.carry=null;it.carried=0;const car=carAt(PL.x,PL.z);it.y=PL.car?PL.car.deck:0;it.x=PL.x+Math.sin(PL.yaw)*.9;it.z=PL.z+Math.cos(PL.yaw)*.9;if(PL.car)stowOn(it,PL.car,it.x,it.z);else it.car=null;}
  else if(c.a==='pick'){PL.carry=c.it;c.it.car=null;c.it.carried=1;PL.an.play('pick',.05,true);AU.tone(300,.08,'triangle',.06);}
  else if(c.a==='loot'){openLoot(c.lt);}
  else if(c.a==='shop'){openShop();}
- else if(c.a==='bank'){r.looted['bank'+town.i]=1;town.bankV.used=1;const n=3+Math.floor(R()*3)+(r.bm?3:0);for(let k=0;k<n;k++)spawnItem('bond',PL.x+(R()-.5)*3,PL.z+(R()-.5)*3);r.cash+=120;msg('The vault! +$120');AU.tone(523,.2,'triangle',.1);AU.tone(784,.3,'triangle',.1,0,.12);
+ else if(c.a==='bank'){r.looted['bank'+town.i]=1;town.bankV.used=1;const n=3+Math.floor(R()*3)+(r.bm?3:0);for(let k=0;k<n;k++)spawnItem('bond',PL.x+(R()-.5)*3,PL.z+(R()-.5)*3);r.cash+=60;for(let k=0;k<3;k++)spawnItem('gold',PL.x+(R()-.5)*2,PL.z+1+R());msg('The vault! Gold and bonds');AU.tone(523,.2,'triangle',.1);AU.tone(784,.3,'triangle',.1,0,.12);
   for(let k=0;k<4;k++)spawnFoe('walker',PL.x+(R()-.5)*30,PL.z-20-R()*20);}
  else if(c.a==='climb'){const cc=c.c;PL.car=cc;PL.lx=clamp(PL.x,-cc.w+.4,cc.w-.4);PL.lz=clamp(PL.z+train.s,cc.z0+.5,cc.z1-.5);PL.y=cc.deck;AU.tone(250,.08,'triangle',.05);}
  else if(c.a==='shove'){const f=c.f;hurtFoe(f,12);const a=Math.atan2(f.x-PL.x,f.z-PL.z);if(f.car){f.lx+=Math.sin(a)*2.4;f.lz+=Math.cos(a)*2.4;if(Math.abs(f.lx)>f.car.w){f.car=null;f.y=0;f.x=f.lx+Math.sign(f.lx)*1;}}else{f.x+=Math.sin(a)*2.6;f.z+=Math.cos(a)*2.6;}f.cool=1.2;PL.an.play('hit',.05,true);AU.noise(.12,.3,700,1);}
  hud();}
 function openLoot(l){RUN.looted[l.key]=1;scene.remove(l.o);town.loot.splice(town.loot.indexOf(l),1);AU.noise(.3,.25,900,1);
- const r=R();const drops=[];if(l.k==='chest'){drops.push('cash','ammoR',R()<.5?'band':'ammoS');if(R()<.25)drops.push('bond');if(R()<.4)drops.push('coal');}
+ const r=R();const drops=[];if(l.k==='chest'){drops.push('cash','ammoR',R()<.5?'band':'ammoS');if(R()<.25)drops.push('bond');if(R()<.4)drops.push('coal');if(R()<.4)drops.push('gold');}
  else if(l.k==='barrel'){drops.push(R()<.6?'coal':'wood');if(R()<.4)drops.push('ammoR');}
- else{drops.push(R()<.45?'coal':'wood');if(R()<.5)drops.push(pick(['ammoR','band','cash','ammoS']));}
+ else{drops.push(R()<.45?'coal':'wood');if(R()<.5)drops.push(pick(['ammoR','band','cash','ammoS']));if(R()<.3)drops.push(pick(['silver','jewel','silver']));}
  drops.forEach((t,i)=>spawnItem(t,l.x+(i-1)*.9,l.z+.8));
  if(R()<.3)spawnItem('crate',l.x-1,l.z-.8);}
 /* ---------- shop ---------- */
@@ -4686,6 +4699,7 @@ function help(back){sheet(XB()+`<h2>How to ride the Black Spur</h2>
 <p><b>Move</b> with the left stick (push far to run). <b>Look</b> by dragging on the right side. <b>Fire</b> shoots where the cross points, and it helps aim at the nearest dead.</p>
 <p><b>Drive:</b> stand on the engine or the coal tender and pick a speed on the throttle (top right). Faster burns more fuel.</p>
 <p><b>Fuel:</b> search crates, barrels and chests in towns. Carry coal, planks or crates to the engine and press <b>Shovel in</b>. You can also drop items on the flat cars to keep for later. Remains of the dead burn too.</p>
+<p><b>Loot</b> gold bars, silver and jewellery and carry them to a town's general store to sell them. Watch out for <b>outlaws</b> who shoot from a distance.</p>
 <p><b>Use</b> does whatever is nearby: search, pick up, climb aboard, shop, or shove a zombie away.</p>
 <p><b>Keep going:</b> every 10 km and every bank vault pays <b>bonds</b>. Bonds stay with you after the run and buy new riders at the Depot.</p><div class="row cen"><button class="wb gold" id="hOk">Got it</button></div>`);const f=()=>{if(back)back();else{closeSheet();window.PAUSED=false;}};bind('xC',f);bind('hOk',f);}
 /* ---------- run flow ---------- */
