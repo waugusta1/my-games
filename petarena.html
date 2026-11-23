@@ -314,6 +314,26 @@ function petTheme(name){const a=ac();if(!a)return;let h=0;for(const ch of name)h
   for(let i=0;i<8;i++){const n=root+12+sc[(h>>(i*2))%5]+((h>>(i+5))&1?12:0);tone(440*Math.pow(2,(n-69)/12),.14,'square',.07,null,i*.13);if(i%2===0)tone(440*Math.pow(2,(root-69)/12),.22,'triangle',.1,null,i*.13);}}
 function speak(text,pet,rate){if(!S.voice||!window.speechSynthesis)return;try{if(speechSynthesis.pending)return;const u=new SpeechSynthesisUtterance(text);u.pitch=pet?(PET_PITCH[pet]||1):.85;u.rate=rate||1.05;u.volume=.9;speechSynthesis.speak(u);}catch(e){}}
 
+
+// ---------- your voice as the commentator (assets/arena-voice/NNN.m4a) ----------
+const VTXT=["Ladies and gentlemen, welcome to the yard!", "The crowd goes wild!", "This is the fight of the century!", "Both fighters look hungry today!", "Who will rule the patio?", "Let's get ready to rumble!", "Fight!", "What a hit!", "Oh my goodness!", "Critical! Did you see that?", "That one's going on the highlight reel!", "Unbelievable power!", "Somebody call the vet!", "Huge damage!", "Ouch! That's gotta hurt!", "What a combo!", "The crowd is on its feet!", "Whiffed it!", "So close!", "Too slow!", "Not even close!", "Back in the game!", "A sneaky heal!", "That stare is terrifying!", "Mind games!", "It's not over yet!", "One more hit!", "What a comeback!", "The underdog strikes back!", "It's all over!", "And that's the fight!", "Time's up! The judges decide!", "Welcome to the Gauntlet!", "Next challenger!", "Here comes the Shadow!", "The Gauntlet is cleared! What a champion!", "Knocked out of the Gauntlet!", "In this corner, the man of the house\u2026 Buster!", "Buster is busting out the big moves!", "Buster is bulldozing through!", "Buster is going to need an ice pack after that!", "Buster slides away like he's dodging bath time!", "Nice try! Buster read that like a book!", "Buster stretches out on the couch to recharge!", "Look at Buster, he's lost his swagger!", "Buster is holding on by one claw!", "Buster says not today!", "Never count out Buster!", "Buster is busted!", "Lights out for Buster!", "Buster is the king of the house!", "Everyone bow down to Buster!", "The crown stays with the man of the house!", "From a galaxy far, far away\u2026 Galaxy!", "Galaxy is going supernova!", "Galaxy hits like a meteor!", "Galaxy is seeing stars!", "Galaxy floats away like she's in zero gravity!", "Galaxy saw that coming from light years away!", "Galaxy recharges with a little stardust!", "Galaxy's stars are fading!", "Galaxy is hanging on by a comet's tail!", "Galaxy won't fall out of orbit!", "Galaxy is shooting back into the sky!", "Galaxy crash lands!", "Galaxy's light goes out!", "Galaxy is the brightest star in the yard!", "Bow down to the queen of the cosmos!", "Galaxy is out of this world!", "Here comes the storm\u2026 Cloudy!", "Cloudy brings the thunder!", "Cloudy strikes like lightning!", "Cloudy just got rained on!", "Cloudy drifts away like a cloud in the wind!", "Cloudy saw that storm coming!", "Cloudy takes a nap in the sunshine!", "Cloudy's storm is getting weaker!", "Cloudy is down to a drizzle!", "Cloudy keeps on rumbling!", "The storm is back! Cloudy is not done yet!", "Cloudy evaporates!", "Clear skies for Cloudy!", "Cloudy rules over the yard!", "Bow down to the queen of the storm!", "Cloudy rains on everyone's parade!", "She raised them all\u2026 Mama Man!", "Mama Man is not playing around!", "That's a mama-sized smackdown!", "Even Mama felt that one!", "Mama dodges like she's done this a hundred times!", "You can't surprise a mother! Man saw that coming!", "Mama Man takes a well-deserved nap!", "Mama is losing her patience!", "Mama Man is running on her last nerve!", "Mama doesn't quit!", "Never mess with a mother! Man is back!", "Mama goes down!", "Even Mama needs her sleep! Goodnight, Man!", "Mama Man rules the house!", "Everybody bow down to Mama!", "Mama knows best! Man takes the crown!", "The good girl herself\u2026 Bella!", "Bella is off the leash!", "Bella hits harder than a chew toy!", "Bella just got knocked off her paws!", "Bella dodges like she's chasing her tail!", "Bella sniffed that one out!", "Bella curls up for a belly rub nap!", "Bella's tail is between her legs!", "Bella is down to her last bark!", "Bella refuses to roll over!", "Who's a good comeback girl? Bella is!", "Bella plays dead!", "Bella goes back to her doghouse!", "Bella is the top dog!", "Everybody bow down to the good girl!", "Bella fetches the crown!"]; // line number -> text (1-based)
+const VHAVE=new Set([1, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117]);
+const VGEN={start:[1,2,3,4,5,6],fight:[7],crit:[8,9,10,11,12,13],big:[14,15,16,17],miss:[18,19,20,21],heal:[22,23],debuff:[24,25],low:[26,27],comeback:[28,29],ko:[30,31],time:[32],gWelcome:[33],gNext:[34],gShadow:[35],gClear:[36],gOut:[37]};
+const VPET={Buster:38,Galaxy:54,Cloudy:70,Man:86,Bella:102};
+// per pet, in recording order: 0 intro, 1 crit, 2 big hit, 3 got hurt, 4-5 dodged, 6 heal, 7 shaking, 8-9 almost out, 10 comeback, 11-12 KO, 13-15 wins
+const VROLE={intro:[[0,'a']],crit:[[1,'a']],big:[[2,'a'],[3,'b']],miss:[[4,'b'],[5,'b']],heal:[[6,'a']],debuff:[[7,'b']],low:[[8,'b'],[9,'b']],comeback:[[10,'a']],ko:[[11,'b'],[12,'b']],win:[[13,'a'],[14,'a'],[15,'a']]};
+const VBUF={};let VLOAD=null,VBUSY=0;
+function loadVoice(){if(VLOAD)return VLOAD;const a=ac();if(!a)return Promise.resolve();
+  VLOAD=Promise.all([...VHAVE].map(n=>fetch('assets/arena-voice/'+String(n).padStart(3,'0')+'.m4a').then(r=>r.ok?r.arrayBuffer():null).then(b=>b&&new Promise(res=>a.decodeAudioData(b,buf=>{VBUF[n]=buf;res();},()=>res()))).catch(()=>{})));return VLOAD;}
+function vplay(n,force){const a=ac();if(!S.voice||!a||!VBUF[n])return 0;const now=a.currentTime;if(VBUSY>now+.05&&!force)return 0;
+  const s=a.createBufferSource(),g=a.createGain();s.buffer=VBUF[n];g.gain.value=1.5;s.connect(g);g.connect(MASTER);const t=Math.max(now,force?VBUSY:now);s.start(t);VBUSY=t+VBUF[n].duration;return VBUSY-now;}
+// pick a line for what just happened. a = attacker/winner name, b = target name. Shows it and says it in your voice.
+function vline(tag,a,b,force){
+  const opts=[];(VGEN[tag]||[]).forEach(n=>opts.push(n));
+  (VROLE[tag]||[]).forEach(([k,who])=>{const nm=who==='a'?a:b;if(VPET[nm]!=null)for(let i=0;i<2;i++)opts.push(VPET[nm]+k);}); // pet lines twice as likely
+  const ok=opts.filter(n=>VHAVE.has(n)&&VTXT[n-1]);if(!ok.length)return null;const n=pick(ok);return{n,text:VTXT[n-1]};}
+function voiceSay(tag,a,b,col,dur,force){const L=vline(tag,a,b,force);if(!L)return 0;banner(L.text.replace('…','...'),col,dur);
+  const d=vplay(L.n,force);if(!d&&!VBUF[L.n])speak(L.text.replace('…',','));return d;}
 // ---------- canvas ----------
 const cv=$('cv'),cx=cv.getContext('2d');let W=0,H=0,DPR=1;
 let SAFE_TOP=0;function resize(){const pr=$('safe');SAFE_TOP=pr?pr.offsetHeight:0;DPR=Math.min(2,window.devicePixelRatio||1);W=innerWidth;H=innerHeight;cv.width=W*DPR;cv.height=H*DPR;cv.style.width=W+'px';cv.style.height=H+'px';cx.setTransform(DPR,0,0,DPR,0,0);BGC=null;}
@@ -556,16 +576,20 @@ async function startBattle(cfg){
   showBattleUI();crowdOn(true);
   // intros
   F0.alpha=0;F1.alpha=0;F0.dx=-W*.4;F1.dx=W*.4;
-  banner(pick(SAY.start),'#ffd34a',2.2);speak(pick(SAY.start));sfx('bell');
-  await tween(.6,k=>{F0.dx=-W*.4*(1-eback(k));F0.alpha=k;});petTheme(F0.name);speak(pick(CATCH[F0.name]||['Let\'s go!']),F0.name);await wait(.9);
-  await tween(.6,k=>{F1.dx=W*.4*(1-eback(k));F1.alpha=k;});petTheme(F1.name);speak(cfg.shadow?'I am your shadow.':pick(CATCH[F1.name]||['Let\'s go!']),F1.name);await wait(.9);
-  banner('FIGHT!','#ff5a3a',1.2);sfx('cheer');await wait(.6);
+  await Promise.race([loadVoice(),wait(4)]);sfx('bell');
+  const g0=cfg.mode==='gauntlet'?(cfg.shadow?'gShadow':cfg.g&&cfg.g.i>0?'gNext':'gWelcome'):'start';
+  let vd=voiceSay(g0,F0.name,F1.name,'#ffd34a',2.4,true);await wait(Math.max(1.2,vd));
+  await tween(.6,k=>{F0.dx=-W*.4*(1-eback(k));F0.alpha=k;});petTheme(F0.name);vd=voiceSay('intro',F0.name,F1.name,F0.p.color,2,true);await wait(Math.max(.4,vd));
+  if(!vd||!S.voice)speak(pick(CATCH[F0.name]||['Let\'s go!']),F0.name);await wait(.6);
+  await tween(.6,k=>{F1.dx=W*.4*(1-eback(k));F1.alpha=k;});petTheme(F1.name);vd=cfg.shadow?0:voiceSay('intro',F1.name,F0.name,F1.p.color,2,true);await wait(Math.max(.4,vd));
+  if(!vd)speak(cfg.shadow?'I am your shadow.':pick(CATCH[F1.name]||['Let\'s go!']),F1.name);await wait(.6);
+  banner('FIGHT!','#ff5a3a',1.2);if(!vplay(7,true))speak('Fight!');sfx('cheer');await wait(.7);
   loopRounds();
 }
 async function loopRounds(){
   while(B&&!B.over){
     B.round++;
-    if(B.round>30){const w=B.f[0].hp/B.f[0].max>=B.f[1].hp/B.f[1].max?0:1;banner('TIME! JUDGES DECIDE','#ffd34a',1.6);await wait(1.4);return endBattle(w);}
+    if(B.round>30){const w=B.f[0].hp/B.f[0].max>=B.f[1].hp/B.f[1].max?0:1;const d=voiceSay('time','','','#ffd34a',1.8,true);if(!d)banner('TIME! JUDGES DECIDE','#ffd34a',1.6);await wait(Math.max(1.4,d));return endBattle(w);}
     const picks=[];
     for(const F of B.f){const O=B.f[1-F.side];if(B.human[F.side]){picks[F.side]=await askMove(F,O);if(!B)return;}else picks[F.side]=cpuPick(F,O,B.smart);}
     hideMoves();
@@ -579,7 +603,7 @@ async function loopRounds(){
       let tag=null;if(O.hp<=0)tag='ko';else if(res.crit)tag='crit';else if(res.miss&&Math.random()<.6)tag='miss';else if(mv.kind==='heal')tag='heal';else if(mv.kind==='debuff'&&!res.miss)tag='debuff';
       else if(O.hp/O.max<.2&&O.lowest>=.2)tag='low';else if(A.lowest<.25&&A.hp/A.max<.3&&res.dmg>=20&&Math.random()<.7)tag='comeback';else if(res.dmg>=28&&Math.random()<.6)tag='big';
       O.lowest=Math.min(O.lowest,O.hp/O.max);
-      if(tag){const line=sayLine(tag,A.name,O.name);banner(line,tag==='ko'?'#ff5a3a':tag==='heal'?'#7dff9a':'#ffd34a',1.6);if(tag==='crit'||tag==='ko'||tag==='comeback'){speak(line);sfx('cheer');}}
+      if(tag){const big=tag==='crit'||tag==='ko'||tag==='comeback';const col=tag==='ko'?'#ff5a3a':tag==='heal'?'#7dff9a':'#ffd34a';const d=voiceSay(tag,A.name,O.name,col,1.6,tag==='ko');if(big)sfx('cheer');if(d&&tag==='ko')await wait(d);}
       if(O.hp<=0){sfx('ko');FLASH=.6;FLASHC='#fff';await tween(.9,k=>{O.dy=k*40;O.rot=(O.side?1:-1)*k*.5;O.alpha=1-k*.6;});return endBattle(A.side);}
       await wait(.35);}
   }
@@ -600,9 +624,9 @@ function askMove(F,O){return new Promise(res=>{
 });}
 async function endBattle(winSide){
   if(!B||B.over)return;B.over=true;hideMoves();crowdOn(false);
-  const Wf=B.f[winSide],L=B.f[1-winSide],line=pick(SAY.win).replace('{w}',Wf.name);
-  sfx('win');sfx('cheer');banner(line,'#ffd34a',2.6);speak(line);for(let i=0;i<6;i++)setTimeout(()=>burst(rnd(W*.2,W*.8),rnd(H*.2,H*.5),pick(['#ffd34a','#ff5a3a','#5ad8ff','#7dff9a','#fff']),30,500),i*220);
-  await tween(.8,k=>{Wf.sc=1+.15*eout(k);});setTimeout(()=>speak(pick(WINS[Wf.name]||['Too easy!']),Wf.name),900);await wait(1.6);
+  const Wf=B.f[winSide],L=B.f[1-winSide];
+  sfx('win');sfx('cheer');const wd=Wf.shadow?0:voiceSay('win',Wf.name,L.name,'#ffd34a',2.8,true);if(!wd){const line=pick(SAY.win).replace('{w}',Wf.shadow?'The Shadow':Wf.name);banner(line,'#ffd34a',2.6);speak(line);}for(let i=0;i<6;i++)setTimeout(()=>burst(rnd(W*.2,W*.8),rnd(H*.2,H*.5),pick(['#ffd34a','#ff5a3a','#5ad8ff','#7dff9a','#fff']),30,500),i*220);
+  await tween(.8,k=>{Wf.sc=1+.15*eout(k);});const wwait=Math.max(1.6,wd+.4);setTimeout(()=>speak(pick(WINS[Wf.name]||['Too easy!']),Wf.name),wwait*1000-600);await wait(wwait);
   // results
   const mode=B.mode,human=B.human,cfg=B.cfg;let gain=0,msg='',youWon=null;
   if(mode==='quick'||mode==='gauntlet'){youWon=winSide===0;const me=B.f[0].name,opp=B.f[1].name;S.fights++;
@@ -615,9 +639,9 @@ async function endBattle(winSide){
   S.history.unshift({t:Date.now(),a:B.f[0].name,b:B.f[1].label,w:Wf.label||Wf.name,mode});S.history=S.history.slice(0,40);save();
   const hpLeft=Math.max(0,Math.round(B.f[0].hp));
   if(mode==='gauntlet'){const g=B.g;if(youWon){g.i++;if(g.i>=g.list.length){S.gauntClears++;petRec(cfg.a.name).gt=Math.max(petRec(cfg.a.name).gt,g.tier+1);S.ap+=150;mgt('m','gaunt');save();
-      B=null;return resultScreen({title:'GAUNTLET CLEARED',sub:cfg.a.name+' beat everyone, even the Shadow!',pet:cfg.a,gain:gain+150,rankUp:before!==rankOf(S.ap).name?rankOf(S.ap).name:null,buttons:[['Fighters','roster'],['Arena home','home']]});}
+      if(!vplay(36,true))speak('The Gauntlet is cleared! What a champion!');B=null;return resultScreen({title:'GAUNTLET CLEARED',sub:cfg.a.name+' beat everyone, even the Shadow!',pet:cfg.a,gain:gain+150,rankUp:before!==rankOf(S.ap).name?rankOf(S.ap).name:null,buttons:[['Fighters','roster'],['Arena home','home']]});}
       const heal=Math.round(B.f[0].max*.4);g.hp=Math.min(B.f[0].max,hpLeft+heal);B=null;return gauntletScreen(g,'+'+heal+' HP rest between fights');}
-    B=null;return resultScreen({title:'KNOCKED OUT',sub:cfg.a.name+' made it to fight '+(g.i+1)+' of '+g.list.length,pet:L.p,gain,lose:true,buttons:[['Try again','gauntlet:'+cfg.a.name],['Arena home','home']]});}
+    if(!vplay(37,true))speak('Knocked out of the Gauntlet!');B=null;return resultScreen({title:'KNOCKED OUT',sub:cfg.a.name+' made it to fight '+(g.i+1)+' of '+g.list.length,pet:L.p,gain,lose:true,buttons:[['Try again','gauntlet:'+cfg.a.name],['Arena home','home']]});}
   const rematch=JSON.stringify({mode,a:cfg.a.name,b:cfg.b.name,arena:cfg.arena,human});B=null;
   resultScreen({title:mode==='quick'?(youWon?'YOU WIN':'YOU LOSE'):'WINNER',sub:msg||(youWon?Wf.name+' beat '+L.name+'!':L.name+' lost to '+Wf.name+'.'),pet:Wf.p,gain:mode==='quick'?gain:null,lose:youWon===false,
     rankUp:before!==after?after:null,buttons:[['Rematch','re:'+rematch],['New fight',mode==='quick'?'fight':mode],['Arena home','home']]});
@@ -741,7 +765,7 @@ function records(){
 function openPause(inBattle){
   const m=$('pause');m.hidden=false;
   m.innerHTML=`<div class="pbox"><h3>PAUSED</h3><button class="big gold" id="pRes"><b>Resume</b></button>
-   <button class="tg" id="pSnd">${icon('sound',16)} Sound: ${S.sound?'On':'Off'}</button><button class="tg" id="pVoc">Announcer voice: ${S.voice?'On':'Off'}</button>
+   <button class="tg" id="pSnd">${icon('sound',16)} Sound: ${S.sound?'On':'Off'}</button><button class="tg" id="pVoc">Commentator voice: ${S.voice?'On':'Off'}</button>
    <button class="tg" id="pRef">${icon('cam',16)} Get the newest pet data</button>
    ${inBattle?'<button class="tg" id="pQuit">Leave this fight</button>':''}
    <button class="big red" id="pExit"><b>Go back to games</b></button><button class="xb" id="pX" aria-label="Close">${icon('x',18)}</button></div>`;
