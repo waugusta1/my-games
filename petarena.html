@@ -305,7 +305,7 @@ function sfx(k){switch(k){
  case'cheer':crowdSwell(1.6,.35);break;
  case'win':[523,659,784,1047].forEach((f,i)=>tone(f,.35,'square',.11,null,i*.12));tone(1047,.9,'triangle',.12,null,.5);break;
  case'lose':[392,330,262].forEach((f,i)=>tone(f,.4,'triangle',.12,null,i*.18));break;}}
-function crowdSwell(d,vol){const a=ac();if(!a)return;for(let i=0;i<3;i++)noise(d*rnd(.6,.9),250+i*200,600+i*250,vol*.45*rnd(.6,1),i*.05);}
+function crowdSwell(d,vol){} // crowd sounds are off until the recorded crowd is added
 function crowdOn(on){const a=ac();if(!a)return;if(on&&!CROWD&&false){const s=a.createBufferSource(),f=a.createBiquadFilter(),g=a.createGain();s.buffer=noiseBuf();s.loop=true;f.type='bandpass';f.frequency.value=700;f.Q.value=.6;g.gain.value=.045;s.connect(f);f.connect(g);g.connect(MASTER);s.start();CROWD={s,g};}
   if(!on&&CROWD){try{CROWD.s.stop();}catch(e){}CROWD=null;}}
 // each pet has its own little theme (scale + rhythm from its name)
