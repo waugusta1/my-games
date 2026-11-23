@@ -106,6 +106,7 @@ h1,h2,h3,h4,.big b,.rt,.mvhead,.mv b{font-family:"Avenir Next Condensed","Futura
 .xb{position:absolute;right:10px;top:10px;width:38px;height:38px;border-radius:12px;background:rgba(255,255,255,.08);display:grid;place-items:center}
 @media (max-width:560px){.menu{grid-template-columns:1fr}.mvgrid{grid-template-columns:1fr 1fr}.mv b{font-size:16px}.mv span{font-size:11px}}
 .dbtn .big,.rb .big{width:100%}
+.albm{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:8px}.albm img{width:100%;aspect-ratio:1;object-fit:cover;border-radius:12px;border:2px solid var(--pc)}
 </style></head><body>
 <div id="safe"></div><canvas id="cv"></canvas><div id="ui"></div><div id="hud" hidden></div><div id="pause" hidden></div>
 <script>
@@ -140,6 +141,7 @@ function fixFeed(d){
     if(!p.moves||!p.moves.length)p.moves=(DEMO.pets.find(x=>x.name===n)||DEMO.pets[0]).moves;
     ['hours24','by_hour'].forEach(k=>{if(!Array.isArray(p[k])||p[k].length!==24)p[k]=Array(24).fill(0);});
     if(!Array.isArray(p.days7)||p.days7.length!==7)p.days7=Array(7).fill(0);
+    if(!Array.isArray(p.album))p.album=[];
     return p;});
   return d;
 }
@@ -165,6 +167,10 @@ function petPhoto(p,which){ // which: 'photo' | 'latest'
   im.src=FEED_BASE+path+'?v='+encodeURIComponent(p[(which||'photo')+'_time']||p.photo_time||'');
   im.onerror=()=>{im._bad=1;};PHOTOS[k]=im;return im;
 }
+function randomPhoto(p){ // a different real photo each time (best photo + the album)
+  const opts=[p.photo?{path:p.photo,time:p.photo_time}:null].concat(p.album||[]).filter(Boolean);if(!opts.length)return null;
+  const a=pick(opts);if(PHOTOS[a.path])return PHOTOS[a.path];const im=new Image();im.crossOrigin='anonymous';im.decoding='async';
+  im.src=FEED_BASE+a.path+'?v='+encodeURIComponent(a.time||'');im.onerror=()=>{im._bad=1;};return PHOTOS[a.path]=im;}
 function photoReady(im){return im&&im.complete&&im.naturalWidth>0&&!im._bad;}
 function agoText(iso){if(!iso)return 'not seen yet';const s=(Date.now()-new Date(iso).getTime())/1000;
   if(s<90)return 'just now';if(s<3600)return Math.round(s/60)+' min ago';if(s<86400){const h=Math.floor(s/3600);return h+(h===1?' hour':' hours')+' ago';}
@@ -425,7 +431,7 @@ function drawScene(t){
 function eff(p,mult,shadow){const st={},fm=petForm(p);for(const k of['hp','atk','def','spd','spc']){let v=p.stats[k]||40;for(const f of fm)if(f.stat===k)v*=f.m;st[k]=Math.round(v*(mult||1));}if(shadow){for(const k in st)st[k]=Math.round(st[k]*shadow);}return st;}
 function mkFighter(p,side,opts){opts=opts||{};const st=eff(p,opts.mult,opts.shadow);
   const moves=p.moves.slice(0,4).map(m=>Object.assign({},m,{uses:m.sig?2:m.kind==='heal'?1:m.kind==='debuff'?3:99,max:m.sig?2:m.kind==='heal'?1:m.kind==='debuff'?3:99}));
-  return{p,name:p.name,side,st,hp:opts.hp!=null?Math.min(opts.hp,st.hp):st.hp,max:st.hp,atkMod:1,moves,shadow:!!opts.shadow,img:petPhoto(p,'photo'),
+  return{p,name:p.name,side,st,hp:opts.hp!=null?Math.min(opts.hp,st.hp):st.hp,max:st.hp,atkMod:1,moves,shadow:!!opts.shadow,img:randomPhoto(p)||petPhoto(p,'photo'),
     x:0,y:0,dx:0,dy:0,rot:0,sc:1,alpha:1,flash:0,shake:0,shownHp:0,lowest:1,label:opts.label||p.name};}
 let B=null; // current battle
 function fighterPos(F){const s=Math.min(W*.3,H*.36,330);const y=Math.min(H*.56,H-250-s*.5)+(F.side?-H*.03:H*.01);return{x:F.side?W*.72:W*.28,y,s};}
@@ -707,6 +713,7 @@ function petDetail(p){
    <h4>STATS AND WHERE THEY COME FROM</h4><div class="stats">${statBars(p,true)}</div>
    <h4>MOVES</h4><div class="mlist">${p.moves.map(m=>`<div class="ml" style="--mc:${m.color}"><b>${esc(m.name)}</b><span>${m.kind==='hit'?'Power '+m.power+' · '+Math.round(m.acc*100)+'% · uses '+STAT_NAME[m.stat]:m.kind==='heal'?'Heals 22-32% HP · once a fight':'Lowers attack · 3 per fight'}</span><i>${m.sig?'Signature move · 2 per fight':m.why?'Earned from '+esc(m.why):''}</i></div>`).join('')}</div>
    <h4>WHEN ${esc(p.name.toUpperCase())} COMES OUT (LAST 7 DAYS)</h4><div class="hours">${hrs.map((v,h)=>`<i style="height:${Math.round(v/mx*100)}%" title="${h}:00"></i>`).join('')}</div><div class="hl"><span>12 AM</span><span>6 AM</span><span>12 PM</span><span>6 PM</span><span>11 PM</span></div>
+   ${(p.album||[]).length?`<h4>PHOTOS FROM THE CAMERA</h4><div class="albm">${p.album.map(x=>`<img src="${FEED_BASE+x.path}?v=${encodeURIComponent(x.time)}" alt="" loading="lazy">`).join('')}</div>`:''}
    ${p.latest?`<h4>LATEST PHOTO FROM THE CAMERA</h4><div class="latest">${photoTag(p,'',  'latest')}<span>${agoText(p.latest_time)}</span></div>`:''}
    ${p.achievements.length?`<h4>REAL-LIFE BADGES</h4><div class="achs">${p.achievements.map(a=>`<div class="ach">${icon('trophy',16)}<b>${esc(a.name)}</b><span>${esc(a.desc)}</span></div>`).join('')}</div>`:''}
    <div class="dbtn"><button class="big red" id="fightAs"><b>Fight as ${esc(p.name)}</b></button></div></div>`);
