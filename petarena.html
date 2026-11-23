@@ -112,6 +112,7 @@ h1,h2,h3,h4,.big b,.rt,.mvhead,.mv b{font-family:"Avenir Next Condensed","Futura
 // ===== Real pet data from the security camera (shared by Pet Arena + Pet Life) =====
 const FEED_BASE='https://raw.githubusercontent.com/waugusta1/my-games/pet-data/';
 const FEED_CACHE='mg_petfeed';
+const FEED_API='https://api.github.com/repos/waugusta1/my-games/contents/pets.json?ref=pet-data';
 const PET_ORDER=['Buster','Galaxy','Cloudy','Man','Bella'];
 const COLLAR_HEX={red:'#d6332a',turquoise:'#2ec4c4',green:'#3a9a48',gray:'#8d939a',brown:'#7a4a28'};
 function demoPet(name,o){const dog=name==='Bella';return Object.assign({name,species:dog?'dog':'cat',color:{Buster:'#F4A261',Galaxy:'#E76F51',Cloudy:'#E9C46A',Man:'#C77DFF',Bella:'#90BE6D'}[name],
@@ -146,9 +147,12 @@ function feedCached(){try{return fixFeed(JSON.parse(localStorage.getItem(FEED_CA
 // state: 'live' (fresh from the camera), 'cached' (offline, last copy), 'demo' (camera hasn't sent anything yet)
 async function loadFeed(){
   let d=null,state='demo';
-  try{const ctl=new AbortController(),t=setTimeout(()=>ctl.abort(),9000);
-    const r=await fetch(FEED_BASE+'pets.json?t='+Date.now(),{cache:'no-store',signal:ctl.signal});clearTimeout(t);
-    if(r.ok){d=fixFeed(await r.json());if(d){state='live';try{localStorage.setItem(FEED_CACHE,JSON.stringify(d));}catch(e){}}}}catch(e){}
+  // 1) GitHub API: always the newest copy (right after /games update). 2) raw file: can be up to 5 min old.
+  const tries=[[FEED_API,{headers:{Accept:'application/vnd.github.raw+json'},cache:'no-store'}],[FEED_BASE+'pets.json?t='+Date.now(),{cache:'no-store'}]];
+  for(const[url,opt]of tries){if(d)break;
+    try{const ctl=new AbortController(),t=setTimeout(()=>ctl.abort(),9000);
+      const r=await fetch(url,Object.assign({signal:ctl.signal},opt));clearTimeout(t);
+      if(r.ok){d=fixFeed(await r.json());if(d){state='live';try{localStorage.setItem(FEED_CACHE,JSON.stringify(d));}catch(e){}}}}catch(e){}}
   if(!d){d=feedCached();if(d)state='cached';}
   if(!d){d=fixFeed(JSON.parse(JSON.stringify(DEMO)));state='demo';}
   d.state=state;return d;
