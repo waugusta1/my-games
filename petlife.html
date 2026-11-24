@@ -53,6 +53,12 @@ h1,h2,h3,h4,.pt b,.acts b,.coins b{font-family:"Arial Rounded MT Bold","Avenir N
 .poor{opacity:.45}.it.own{background:#e6f2e0}.it.own em{color:var(--sage)}
 .coinsrow{text-align:center;margin:0 0 6px;font-size:14px}
 .sbox h4{margin:18px 4px 8px;color:#9a6a3a;font-size:16px}
+.snd{display:grid;gap:10px}.snd .vrow{display:grid;grid-template-columns:1fr 46%;align-items:center;gap:12px;background:var(--paper);border-radius:16px;padding:12px 14px}
+.snd .vrow span,.snd .tog span{display:flex;flex-direction:column;text-align:left}.snd small{font-weight:600;opacity:.6;font-size:12px}
+.snd input[type=range]{width:100%;accent-color:#e8884a;height:28px}
+.snd .tog{display:flex;justify-content:space-between;align-items:center;padding:13px 14px;border-radius:16px;background:var(--paper);font-weight:800}
+.snd .tog i{width:46px;height:28px;border-radius:14px;background:#cfc6bb;position:relative;flex:none;transition:background .2s}.snd .tog i:after{content:'';position:absolute;left:3px;top:3px;width:22px;height:22px;border-radius:50%;background:#fff;transition:left .2s;box-shadow:0 1px 3px rgba(0,0,0,.25)}
+.snd .tog.on i{background:#5bb85f}.snd .tog.on i:after{left:21px}.snd .wide:not(.go){padding:13px;border-radius:16px;font-weight:800;background:var(--paper)}.snd .cred{font-size:11px;opacity:.55;margin:2px 4px;line-height:1.35}
 .menu{display:grid;gap:10px}.menu button{padding:15px;border-radius:16px;background:var(--paper);font-weight:800;display:flex;gap:8px;justify-content:center;align-items:center;box-shadow:0 3px 10px rgba(60,40,20,.08)}
 .menu .exit{background:#c8442a;color:#fff}
 .help{font-size:15px;line-height:1.5}.help ul{padding-left:20px}.go.wide{width:100%;padding:15px;border-radius:16px;font-weight:800;margin-top:10px}
@@ -243,26 +249,77 @@ const cv=$('cv'),cx=cv.getContext('2d');let W=0,H=0,DPR=1,SAFE_TOP=0,SAFE_BOT=0,
 function resize(){SAFE_TOP=$('safe').offsetHeight;SAFE_BOT=$('safeb').offsetHeight;DPR=Math.min(2,window.devicePixelRatio||1);W=innerWidth;H=innerHeight;cv.width=W*DPR;cv.height=H*DPR;cv.style.width=W+'px';cv.style.height=H+'px';cx.setTransform(DPR,0,0,DPR,0,0);BG=null;}
 addEventListener('resize',resize);
 
-// ---------- audio ----------
-let AC=null,MASTER=null,PURR=null;
-function ac(){if(!S.sound)return null;try{if(!AC){AC=new (window.AudioContext||window.webkitAudioContext)();MASTER=AC.createGain();MASTER.gain.value=.5;MASTER.connect(AC.destination);}if(AC.state==='suspended')AC.resume();}catch(e){return null;}return AC;}
-function tone(f,d,type,vol,slide,at){const a=ac();if(!a)return;const t=a.currentTime+(at||0),o=a.createOscillator(),g=a.createGain();o.type=type||'sine';o.frequency.setValueAtTime(f,t);if(slide)o.frequency.exponentialRampToValueAtTime(Math.max(30,f*slide),t+d);
-  g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(vol||.12,t+.01);g.gain.exponentialRampToValueAtTime(.0008,t+d);o.connect(g);g.connect(MASTER);o.start(t);o.stop(t+d+.05);}
-let NB=null;function nbuf(){const a=ac();if(!a)return null;if(!NB){NB=a.createBuffer(1,a.sampleRate*2,a.sampleRate);const d=NB.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=Math.random()*2-1;}return NB;}
-function noise(d,f,q,vol,at){const a=ac();if(!a)return;const t=a.currentTime+(at||0),s=a.createBufferSource(),fl=a.createBiquadFilter(),g=a.createGain();s.buffer=nbuf();fl.type='bandpass';fl.frequency.value=f;fl.Q.value=q||1;g.gain.setValueAtTime(vol||.15,t);g.gain.exponentialRampToValueAtTime(.001,t+d);s.connect(fl);fl.connect(g);g.connect(MASTER);s.start(t,Math.random());s.stop(t+d+.05);}
-function sfx(k){switch(k){case'tap':tone(660,.07,'triangle',.07);break;case'coin':tone(988,.08,'square',.06);tone(1319,.18,'square',.06,null,.07);break;
- case'eat':for(let i=0;i<5;i++)noise(.05,1800,3,.18,i*.16);break;case'meow':tone(700,.35,'sawtooth',.06,1.5);tone(1050,.3,'sine',.05,.7,.12);break;
- case'woof':tone(220,.12,'sawtooth',.14,.6);noise(.1,600,2,.2);tone(200,.14,'sawtooth',.12,.6,.18);noise(.1,600,2,.2,.18);break;
- case'pop':tone(880,.06,'sine',.08,1.6);break;case'splash':noise(.5,900,.7,.35);noise(.3,2400,1,.15,.05);break;case'throw':noise(.18,1500,1,.12);break;
- case'happy':[523,659,784].forEach((f,i)=>tone(f,.18,'triangle',.08,null,i*.08));break;case'zap':tone(1200,.1,'square',.05,.5);break;}}
-function purr(on){const a=ac();if(!a)return;if(on&&!PURR){const s=a.createBufferSource(),f=a.createBiquadFilter(),g=a.createGain(),lfo=a.createOscillator(),lg=a.createGain();s.buffer=nbuf();s.loop=true;f.type='lowpass';f.frequency.value=180;g.gain.value=.0;
-  lfo.frequency.value=24;lg.gain.value=.12;lfo.connect(lg);lg.connect(g.gain);s.connect(f);f.connect(g);g.connect(MASTER);s.start();lfo.start();PURR={s,lfo};}
-  if(!on&&PURR){try{PURR.s.stop();PURR.lfo.stop();}catch(e){}PURR=null;}}
+// ---------- audio: real recorded sounds (assets/petlife-sfx, see CREDITS.md there) ----------
+const SFX_DIR='assets/petlife-sfx/';
+const SFX_LIST={tap:1,back:1,coin:1,'coin-small':1,chime:1,kibble:1,whoosh:1,pounce:1,whine:1,rinse:1,splash:1,purr:1,'yard-day':1,'yard-night':1,
+  crunch:4,stroke:3,brush:3,bubble:5,bounce:2,bark:7,'meow-buster':5,'meow-man':5,'meow-galaxy':4,'meow-cloudy':5};
+const LOOPS={purr:1,'yard-day':1,'yard-night':1};
+// each cat has its own real voice (one recorded cat each); slight pitch so they don't sound alike
+const VOICE={Buster:{set:'meow-buster',rate:.96},Man:{set:'meow-man',rate:1},Galaxy:{set:'meow-galaxy',rate:1.03},Cloudy:{set:'meow-cloudy',rate:1.05}};
+let AC=null,MASTER=null,BUS={},BUF={},PURR=null,AMB=null,SFX_LOADING=false;const LASTP={},CD={};
+S.vol=Object.assign({fx:.7,pets:.8,amb:.35},S.vol||{});if(S.ambOn==null)S.ambOn=false;
+function ac(){if(!S.sound)return null;try{if(!AC){AC=new (window.AudioContext||window.webkitAudioContext)();
+  const comp=AC.createDynamicsCompressor();comp.threshold.value=-16;comp.ratio.value=4;comp.attack.value=.004;comp.release.value=.2;
+  MASTER=AC.createGain();MASTER.gain.value=.9;MASTER.connect(comp);comp.connect(AC.destination);
+  ['fx','pets','amb'].forEach(k=>{BUS[k]=AC.createGain();BUS[k].gain.value=S.vol[k];BUS[k].connect(MASTER);});loadSfx();}
+  if(AC.state==='suspended')AC.resume();}catch(e){return null;}return AC;}
+function setVol(k,v){S.vol[k]=v;if(BUS[k])BUS[k].gain.setTargetAtTime(v,AC.currentTime,.05);}
+function decode(ab){return new Promise((ok,no)=>{try{const p=AC.decodeAudioData(ab,ok,no);if(p&&p.then)p.then(ok,no);}catch(e){no(e);}});}
+// AAC adds a few silent samples at the ends; trim them and cross-fade so loops never click
+function loopify(b){const sr=b.sampleRate,trim=Math.floor(sr*.03),xf=Math.floor(sr*.25),src=b.getChannelData(0),n=src.length-2*trim-xf;if(n<sr*.5)return b;
+  const nb=AC.createBuffer(1,n,sr),d=nb.getChannelData(0);for(let i=0;i<n;i++)d[i]=src[trim+i];
+  for(let i=0;i<xf;i++){const t=i/xf;d[i]=d[i]*Math.sqrt(t)+src[trim+n+i]*Math.sqrt(1-t);}return nb;}
+async function loadOne(name){try{const r=await fetch(SFX_DIR+name+'.m4a');if(!r.ok)return;let b=await decode(await r.arrayBuffer());BUF[name]=b;}catch(e){}}
+async function loadSfx(){if(SFX_LOADING)return;SFX_LOADING=true;const names=[];
+  // the sounds you hear first load first
+  for(const k in SFX_LIST){if(SFX_LIST[k]===1)names.push(k);else for(let i=1;i<=SFX_LIST[k];i++)names.push(k+'-'+i);}
+  names.sort((a,b)=>(/^(tap|meow|bark|purr|kibble|crunch)/.test(b)?1:0)-(/^(tap|meow|bark|purr|kibble|crunch)/.test(a)?1:0));
+  for(let i=0;i<names.length;i+=6)await Promise.all(names.slice(i,i+6).map(loadOne));
+  for(const k in LOOPS)if(BUF[k])BUF[k]=loopify(BUF[k]);ambience();}
+// pick a random take, never the same one twice in a row
+function pick(set){const n=SFX_LIST[set];if(!n)return null;if(n===1)return set;let i;do{i=1+Math.floor(Math.random()*n);}while(n>1&&i===LASTP[set]);LASTP[set]=i;return set+'-'+i;}
+function play(name,o){o=o||{};const a=ac();if(!a||!BUF[name])return null;const t=a.currentTime+(o.at||0),s=a.createBufferSource(),g=a.createGain();s.buffer=BUF[name];
+  s.playbackRate.value=(o.rate||1)*(1+(o.vary==null?.04:o.vary)*(Math.random()*2-1));g.gain.value=(o.vol==null?1:o.vol)*(.88+Math.random()*.12);
+  if(o.pan&&a.createStereoPanner){const p=a.createStereoPanner();p.pan.value=clamp(o.pan,-1,1);s.connect(g);g.connect(p);p.connect(BUS[o.bus||'fx']);}else{s.connect(g);g.connect(BUS[o.bus||'fx']);}
+  s.start(t);return{s,g};}
+function cool(k,sec){const n=performance.now();if(CD[k]&&n-CD[k]<sec*1000)return false;CD[k]=n;return true;}
+function panOf(A){return A?clamp((A.x/W-.5)*1.2,-.8,.8):0;}
+// the pet talks: cats meow in their own voice, Bella barks (once or twice)
+function voice(p,o){o=o||{};if(!p||!cool('v'+p.name,o.cd==null?1.2:o.cd))return;const A=actorOf(p.name),pan=panOf(A);
+  if(p.species==='dog'){play(pick('bark'),{bus:'pets',pan,vol:o.vol||.9});if(!o.one&&Math.random()<.5)play(pick('bark'),{bus:'pets',pan,vol:.8,at:.32+Math.random()*.1});return;}
+  const v=VOICE[p.name]||{set:'meow-man',rate:1};play(pick(v.set),{bus:'pets',pan,rate:v.rate,vary:.03,vol:o.vol||.85});}
+function sfx(k,o){o=o||{};switch(k){
+  case'tap':if(cool('tap',.07))play('tap',{vol:.55,vary:.02});break;case'back':play('back',{vol:.5});break;
+  case'coin':play('coin',{vol:.7});break;case'coins':play('coin-small',{vol:.6});break;
+  case'chime':case'happy':if(cool('chime',.8))play('chime',{vol:.45,vary:0});break;
+  case'kibble':play('kibble',{vol:.8});break;
+  case'eat':{play('kibble',{vol:.75});let t=.75;for(let i=0;i<9;i++){play(pick('crunch'),{at:t,vol:.55+Math.random()*.4,vary:.08,pan:o.pan});t+=.2+Math.random()*.17+(i%3===2?.18:0);}break;}
+  case'stroke':if(cool('stroke',.38))play(pick('stroke'),{vol:.6,vary:.08});break;
+  case'brush':if(cool('brush',.3))play(pick('brush'),{vol:.55,vary:.06});break;
+  case'pop':if(cool('pop',.06))play(pick('bubble'),{vol:.55,vary:.12});break;
+  case'rinse':play('rinse',{vol:.8,vary:.02});break;case'splash':if(cool('splash',.25))play('splash',{vol:.75,pan:o.pan});break;
+  case'throw':play('whoosh',{vol:.6});break;case'bounce':play(pick('bounce'),{vol:.7,pan:o.pan});break;
+  case'zap':case'pounce':play('pounce',{vol:.6,pan:o.pan});break;case'whine':if(cool('whine',4))play('whine',{bus:'pets',vol:.5,pan:o.pan});break;}}
+// a real cat purr that fades in and out instead of switching on like a buzzer
+function purr(on,vol){const a=ac();if(!a||!BUF.purr){if(!on&&PURR){try{PURR.s.stop();}catch(e){}PURR=null;}return;}const t=a.currentTime;
+  if(on&&!PURR){const s=a.createBufferSource(),g=a.createGain();s.buffer=BUF.purr;s.loop=true;s.playbackRate.value=.97+Math.random()*.06;g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(vol||.9,t+.6);s.connect(g);g.connect(BUS.pets);s.start(t,Math.random()*BUF.purr.duration);PURR={s,g};}
+  else if(on&&PURR&&vol)PURR.g.gain.setTargetAtTime(vol,t,.3);
+  if(!on&&PURR){const P=PURR;PURR=null;P.g.gain.cancelScheduledValues(t);P.g.gain.setValueAtTime(P.g.gain.value,t);P.g.gain.linearRampToValueAtTime(0,t+.7);try{P.s.stop(t+.8);}catch(e){}}}
+// a short purr when a cat curls up for a nap
+function napPurr(){purr(true,.6);clearTimeout(napPurr.t);napPurr.t=setTimeout(()=>{if(!MODE)purr(false);},3200);}
+// yard sounds: birds in the day, crickets at night (off unless turned on in Sound)
+function ambience(){const a=AC;if(!a)return;const want=S.sound&&S.ambOn?(isNightNow()?'yard-night':'yard-day'):null;
+  if(AMB&&AMB.name===want)return;const t=a.currentTime;
+  if(AMB){const P=AMB;AMB=null;P.g.gain.setTargetAtTime(0,t,.6);try{P.s.stop(t+3);}catch(e){}}
+  if(want&&BUF[want]){const s=a.createBufferSource(),g=a.createGain();s.buffer=BUF[want];s.loop=true;g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(1,t+2.5);s.connect(g);g.connect(BUS.amb);s.start(t,Math.random()*BUF[want].duration);AMB={s,g,name:want};}}
+function soundOff(){purr(false);if(AMB){try{AMB.s.stop();}catch(e){}AMB=null;}if(AC&&AC.state==='running')AC.suspend();}
+// iPad only allows sound after a touch, so wake the audio on the first one
+['pointerdown','touchend','keydown'].forEach(ev=>addEventListener(ev,()=>{if(S.sound){ac();if(AC&&AC.state==='suspended')AC.resume();}},{passive:true}));
 
 // ---------- care state ----------
 function care(n){const c=S.pets[n]=S.pets[n]||{food:70,fun:60,love:60,clean:80,energy:70,bond:0,fed:{},petted:0,acc:null,fur:null};return c;}
 function bondLevel(c){let lv=1,need=60,x=c.bond;while(x>=need&&lv<10){x-=need;lv++;need=Math.round(need*1.35);}return{lv,into:x,need};}
-function addBond(n,v){const c=care(n),b0=bondLevel(c).lv;c.bond+=v;const b1=bondLevel(c).lv;if(b1>b0){toast(`${n} bond level ${b1}!`,'heart');sfx('happy');if(b1>=5)mgt('m','bond5');}}
+function addBond(n,v){const c=care(n),b0=bondLevel(c).lv;c.bond+=v;const b1=bondLevel(c).lv;if(b1>b0){toast(`${n} bond level ${b1}!`,'heart');sfx('chime');if(b1>=5)mgt('m','bond5');}}
 function mood(c){return(c.food+c.fun+c.love+c.clean+c.energy)/5;}
 function moodWord(m){return m>=80?'Over the moon':m>=62?'Happy':m>=45?'Okay':m>=28?'Grumpy':'Sad';}
 function bump(n,k,v){const c=care(n);c[k]=clamp(c[k]+v,0,100);}
@@ -575,7 +632,7 @@ function frame(now){const dt=Math.min(.05,(now-last)/1000);last=now;NOW+=dt;
 function actorAt(x,y){let best=null,bd=1e9;for(const A of ACT){const s=A.scale,w=(A.p.species==='dog'?80:66)*s,h=(A.p.species==='dog'?120:100)*s;if(x>A.x-w&&x<A.x+w&&y>A.y-h&&y<A.y+14*s){const d=Math.abs(A.y-y);if(d<bd){bd=d;best=A;}}}return best;}
 let DRAG=null;
 cv.addEventListener('pointerdown',e=>{ac();const x=e.clientX,y=e.clientY;if(MODE&&MODE.down){MODE.down(x,y);DRAG={x,y};return;}
-  const A=actorAt(x,y);if(A){select(A.p.name);sfx('tap');A.happy=1.2;if(A.state==='sleep'){}else{A.state='idle';A.pose='idle';A.timer=3;A.dir=x>A.x?1:-1;}}else if(SEL){select(null);}});
+  const A=actorAt(x,y);if(A){select(A.p.name);if(A.state!=='sleep'&&Math.random()<.45)voice(A.p,{cd:5,one:1,vol:.7});A.happy=1.2;if(A.state==='sleep'){}else{A.state='idle';A.pose='idle';A.timer=3;A.dir=x>A.x?1:-1;}}else if(SEL){select(null);}});
 cv.addEventListener('pointermove',e=>{if(MODE&&MODE.move&&(DRAG||MODE.hover)){MODE.move(e.clientX,e.clientY,DRAG);if(DRAG){DRAG.x=e.clientX;DRAG.y=e.clientY;}}});
 addEventListener('pointerup',()=>{if(MODE&&MODE.up)MODE.up();DRAG=null;});
 function actorOf(n){return ACT.find(A=>A.p.name===n);}
@@ -636,12 +693,12 @@ function foodIcon(id){const m={kibble:'<ellipse cx="16" cy="20" rx="12" ry="5" f
   treat:'<path d="M6 12h20v10H6z" fill="#e8b84a" rx="3"/><path d="M6 12l4-4h12l4 4" fill="#f2c14e"/><circle cx="16" cy="17" r="3" fill="#d8686a"/>',
   bone:'<path d="M9 13l14 6" stroke="#f2ead6" stroke-width="5" stroke-linecap="round"/><circle cx="7" cy="11" r="3" fill="#f2ead6"/><circle cx="9" cy="15" r="3" fill="#f2ead6"/><circle cx="23" cy="17" r="3" fill="#f2ead6"/><circle cx="25" cy="21" r="3" fill="#f2ead6"/>'};
   return`<svg width="40" height="40" viewBox="0 0 32 32">${m[id]||m.kibble}</svg>`;}
-function feed(p,f){const A=actorOf(p.name);BOWL=1;select(p.name);
-  goTo(A,LAY.bowl.x-30*A.scale,LAY.bowl.y+2,()=>{A.dir=1;A.state='eat';A.pose='eat';A.timer=3.5;sfx('eat');
+function feed(p,f){const A=actorOf(p.name);BOWL=1;select(p.name);sfx('kibble');if(p.species==='dog')sfx('whine',{pan:panOf(A)});else voice(p,{cd:0,vol:.7});
+  goTo(A,LAY.bowl.x-30*A.scale,LAY.bowl.y+2,()=>{A.dir=1;A.state='eat';A.pose='eat';A.timer=3.5;sfx('eat',{pan:panOf(A)});
     setTimeout(()=>{bump(p.name,'food',f.food);if(f.fun)bump(p.name,'fun',f.fun);if(f.love)bump(p.name,'love',f.love);const c=care(p.name);c.fed[f.id]=(c.fed[f.id]||0)+1;S.stats.feeds++;
-      addBond(p.name,6);BOWL=0;A.happy=2;hearts(A.x,A.y-60*A.scale,4);p.species==='dog'?sfx('woof'):sfx('meow');mgt('m','feed');checkAllHappy();refreshAll();},3400);},110);
+      addBond(p.name,6);BOWL=0;A.happy=2;hearts(A.x,A.y-60*A.scale,4);voice(p,{cd:0});mgt('m','feed');checkAllHappy();refreshAll();},3400);},110);
 }
-function napNow(p){const A=actorOf(p.name);goTo(A,A.bed.x,A.bed.y+2,()=>{A.state='sleep';A.pose='sleep';A.timer=8;toast(p.name+' is taking a nap','');refreshAll();},90);}
+function napNow(p){const A=actorOf(p.name);goTo(A,A.bed.x,A.bed.y+2,()=>{A.state='sleep';A.pose='sleep';A.timer=8;if(p.species==='cat')napPurr();toast(p.name+' is taking a nap','');refreshAll();},90);}
 function checkAllHappy(){if(PETS.every(p=>mood(care(p.name))>=62)){mgt('m','allhappy');}}
 
 // ---------- petting / brushing / bath ----------
@@ -651,12 +708,12 @@ function startStroke(p,kind){
   const A=actorOf(p.name);A.state='idle';A.pose=kind==='pet'?'sit':'idle';A.timer=999;select(p.name);$('care').classList.remove('on');$('tray').hidden=true;
   let dist=0,gained=0;const max=kind==='pet'?30:40;
   MODE={kind,down(){},move(x,y,d){if(!d)return;const s=A.scale,w=(p.species==='dog'?80:66)*s,h=(p.species==='dog'?110:90)*s;
-      if(x>A.x-w&&x<A.x+w&&y>A.y-h&&y<A.y){const dd=Math.hypot(x-d.x,y-d.y);dist+=dd;A.happy=1;if(kind==='pet'&&p.species==='cat')purr(true);
+      if(x>A.x-w&&x<A.x+w&&y>A.y-h&&y<A.y){const dd=Math.hypot(x-d.x,y-d.y);dist+=dd;A.happy=1;if(kind==='pet'&&p.species==='cat')purr(true);sfx(kind==='pet'?'stroke':'brush');
         if(dist>70&&gained<max){dist=0;gained+=3;if(kind==='pet'){bump(p.name,'love',3);hearts(x,y,1);S.stats.pets++;}else{bump(p.name,'clean',4);puffs(x,y,3,shade(furOf(p).base,.2));}
           overlayBar(kind==='pet'?`Petting ${esc(p.name)}... ${Math.min(100,Math.round(gained/max*100))}%`:`Brushing ${esc(p.name)}... ${Math.min(100,Math.round(gained/max*100))}%`,[['Done','mDone','go']]);$('mDone').onclick=finish;
           if(gained>=max)finish();}}},
     up(){purr(false);},end(){A.timer=2;A.state='idle';A.pose='idle';}};
-  const finish=()=>{if(gained>0){addBond(p.name,Math.round(gained/2));A.happy=2;hearts(A.x,A.y-70*A.scale,6);p.species==='dog'?sfx('woof'):sfx('meow');if(kind==='pet')mgt('m','pet');}checkAllHappy();endMode();};
+  const finish=()=>{if(gained>0){addBond(p.name,Math.round(gained/2));A.happy=2;hearts(A.x,A.y-70*A.scale,6);voice(p,{cd:0,one:1});if(kind==='pet')mgt('m','pet');}checkAllHappy();endMode();};
   overlayBar(kind==='pet'?`Stroke ${esc(p.name)} with your finger`:`Brush ${esc(p.name)}'s fur with your finger`,[['Done','mDone','go']]);$('mDone').onclick=finish;
 }
 function startBath(p){
@@ -668,7 +725,7 @@ function startBath(p){
       cx.fillStyle='#c0c8d0';cx.fillRect(tx-80*s,ty+6,10*s,8);cx.fillRect(tx+70*s,ty+6,10*s,8);},
     down(){},move(x,y,d){if(!d||rinsed)return;const s=A.scale;if(Math.abs(x-A.x)<90*s&&y<A.y&&y>A.y-130*s&&Math.hypot(x-d.x,y-d.y)>6){if(Math.random()<.35){bubbles++;puffs(x,y,1,'#fff','bub');sfx('pop');}
         if(bubbles===25){overlayBar('So soapy! Now rinse her off',[['Rinse','mRinse','go']]);$('mRinse').onclick=rinse;}}},up(){},end(){A.state='idle';A.timer=1;}};
-  const rinse=()=>{rinsed=true;rinseT=1.6;sfx('splash');setTimeout(()=>{puffs(A.x,A.y-60*A.scale,26,'#8ad0f0','drop');sfx('splash');A.happy=3;bump(p.name,'clean',100);bump(p.name,'fun',-5);addBond(p.name,8);sfx('woof');toast('Bella is squeaky clean','');endMode();},1700);};
+  const rinse=()=>{rinsed=true;rinseT=1.6;sfx('rinse');setTimeout(()=>{puffs(A.x,A.y-60*A.scale,26,'#8ad0f0','drop');sfx('splash',{pan:panOf(A)});A.happy=3;bump(p.name,'clean',100);bump(p.name,'fun',-5);addBond(p.name,8);setTimeout(()=>voice(p,{cd:0}),500);toast('Bella is squeaky clean','');endMode();},1700);};
   overlayBar('Scrub Bella with your finger to make bubbles',[['Stop','mStop','']]);$('mStop').onclick=()=>{A.state='idle';endMode();};
 }
 
@@ -682,7 +739,7 @@ function startLaser(p){
   MODE={hide:B=>B!==A,step(dt){time-=dt;A.scale=depthScale(A.y)*clamp(H/820,.7,1.4);const wet=inPool(dot.x,dot.y,6),tg=wet?poolEdge(dot.x):dot,dx=tg.x-A.x,dy=tg.y-A.y,d=Math.hypot(dx,dy);if(Math.abs(dx)>4)A.dir=dx>0?1:-1;still+=dt;if(wet)still=0;
       if(rest>0){rest-=dt;A.pose='sit';A.happy=1;}
       else if(pounce>0){pounce-=dt;A.pose='walk';A.walkT+=dt*14;const v=Math.min(d,700*dt);A.x+=dx/(d||1)*v;A.y+=dy/(d||1)*v;
-        if(d<20*A.scale&&!wet){catches++;sfx('zap');sfx('happy');puffs(dot.x,dot.y,10,'#ff3a3a');hearts(A.x,A.y-70*A.scale,2);pounce=0;rest=1.1;}
+        if(d<20*A.scale&&!wet){catches++;sfx('pounce',{pan:panOf(A)});if(Math.random()<.25)voice(p,{cd:4,vol:.6});puffs(dot.x,dot.y,10,'#ff3a3a');hearts(A.x,A.y-70*A.scale,2);pounce=0;rest=1.1;}
         else if(pounce<=0){A.pose='sit';rest=.4;}}
       else if(d>30*A.scale){A.pose='walk';const v=Math.min(d,(170+catches*6)*dt*A.scale);A.x+=dx/d*v;A.y+=dy/d*v;run+=v/(55*A.scale);A.walkT+=dt*10;
         if(still>.6&&d<260*A.scale)pounce=.45;}
@@ -692,26 +749,26 @@ function startLaser(p){
     down(x,y){dot={x,y:clamp(y,LAY.floorTop,LAY.floorBot)};still=0;},move(x,y,d){if(!d)return;const ny=clamp(y,LAY.floorTop,LAY.floorBot);if(Math.hypot(x-dot.x,ny-dot.y)>3)still=0;dot={x,y:ny};},up(){},
     end(){$('ghud').classList.remove('on');A.x=ox;A.y=oy;A.state='idle';A.pose='idle';A.timer=2;}};
   const done=()=>{const score=pts(),bonus=hasItem('wand')?1.2:1,fun=Math.round(Math.min(60,10+score*1.5)*bonus),coins=Math.min(40,score);bump(p.name,'fun',fun);bump(p.name,'energy',-Math.min(25,8+run/10));S.coins+=coins;addBond(p.name,4+catches);
-    S.stats.plays++;if(score>S.best.laser)S.best.laser=score;if(catches>=8)mgt('m','play20');mgt('e','Laser',score);sfx('happy');const c=catches,r=Math.round(run);endMode();toast(`${c} pounces, ${r} m run! +${fun} fun, +${coins} coins`,'coin');};
+    S.stats.plays++;if(score>S.best.laser)S.best.laser=score;if(catches>=8)mgt('m','play20');mgt('e','Laser',score);sfx('coins');const c=catches,r=Math.round(run);endMode();toast(`${c} pounces, ${r} m run! +${fun} fun, +${coins} coins`,'coin');};
   overlayBar('Move the laser to make '+esc(p.name)+' run. Hold it still and she pounces!'.replace('she',p.name==='Buster'?'he':'she'),[['Stop','mStop','']]);$('mStop').onclick=done;
 }
 function startFetch(p){
   const A=actorOf(p.name);select(p.name);$('care').classList.remove('on');$('tray').hidden=true;if(A.state==='sleep'){A.state='idle';A.pose='idle';}
   const home={x:W*.62,y:LAY.floorBot-6};A.x=home.x;A.y=home.y;let ball=null,score=0,throws=8,phase='ready',wet=0;const ox=A.x,oy=A.y;
   MODE={hide:B=>B!==A,step(dt){A.scale=depthScale(A.y)*clamp(H/820,.7,1.4)*1.18;
-      if(ball&&ball.fly){ball.t+=dt/ball.d;const k=Math.min(1,ball.t);ball.x=ball.x0+(ball.x1-ball.x0)*k;ball.y=ball.y0+(ball.y1-ball.y0)*k;ball.h=Math.sin(k*Math.PI)*ball.d*260;if(k>=1){ball.fly=false;phase='run';sfx('pop');
-        const P=LAY.pool;if(ball.x>P.x&&ball.x<P.x+P.w&&ball.y>P.y&&ball.y<P.y+P.h){ball.pool=1;sfx('splash');puffs(ball.x,ball.y,14,'#8ad0f0','drop');}}}
+      if(ball&&ball.fly){ball.t+=dt/ball.d;const k=Math.min(1,ball.t);ball.x=ball.x0+(ball.x1-ball.x0)*k;ball.y=ball.y0+(ball.y1-ball.y0)*k;ball.h=Math.sin(k*Math.PI)*ball.d*260;if(k>=1){ball.fly=false;phase='run';sfx('bounce',{pan:(ball.x/W-.5)});
+        const P=LAY.pool;if(ball.x>P.x&&ball.x<P.x+P.w&&ball.y>P.y&&ball.y<P.y+P.h){ball.pool=1;sfx('splash',{pan:(ball.x/W-.5)});puffs(ball.x,ball.y,14,'#8ad0f0','drop');}}}
       if(phase==='run'||phase==='back'){const tg=phase==='run'?ball:home,dx=tg.x-A.x,dy=tg.y-A.y,d=Math.hypot(dx,dy);A.dir=dx>0?1:-1;A.pose='walk';A.walkT+=dt*14;const v=380*dt;
         if(d>6){A.x+=dx/d*Math.min(v,d);A.y+=dy/d*Math.min(v,d);if(ball.pool&&phase==='run'){const P=LAY.pool;if(A.x>P.x&&A.x<P.x+P.w&&A.y>P.y&&A.y<P.y+P.h&&Math.random()<.3)puffs(A.x,A.y,2,'#8ad0f0','drop');}}
-        else if(phase==='run'){phase='back';ball.held=1;if(ball.pool){wet++;sfx('splash');}sfx('woof');}else{phase='ready';score++;A.happy=1.5;hearts(A.x,A.y-90*A.scale,2);ball=null;A.pose='sit';if(throws<=0)done();}}
+        else if(phase==='run'){phase='back';ball.held=1;if(ball.pool){wet++;sfx('splash',{pan:panOf(A)});}if(Math.random()<.35)voice(p,{cd:3,one:1,vol:.7});}else{phase='ready';score++;A.happy=1.5;hearts(A.x,A.y-90*A.scale,2);ball=null;A.pose='sit';if(throws<=0)done();}}
       if(ball&&ball.held){ball.x=A.x+A.dir*60*A.scale;ball.y=A.y;ball.h=58*A.scale;}
       gameHUD(`<b>${score}</b> fetched · ${throws} balls left`);},
     draw(){if(!ball)return;cx.fillStyle='rgba(0,0,0,.25)';cx.beginPath();cx.ellipse(ball.x,ball.y,8,3,0,0,7);cx.fill();cx.fillStyle='#d8e84a';cx.beginPath();cx.arc(ball.x,ball.y-ball.h-7,8,0,7);cx.fill();cx.strokeStyle='#fff';cx.lineWidth=1.5;cx.beginPath();cx.arc(ball.x-6,ball.y-ball.h-7,7,-.9,.9);cx.stroke();},
-    down(x,y){if(phase!=='ready'||throws<=0)return;y=clamp(y,LAY.floorTop+4,LAY.floorBot);x=clamp(x,W*.47,W*.97);throws--;sfx('throw');const d=clamp(Math.hypot(x-home.x,y-home.y)/600,.35,1);
+    down(x,y){if(phase!=='ready'||throws<=0)return;y=clamp(y,LAY.floorTop+4,LAY.floorBot);x=clamp(x,W*.47,W*.97);throws--;sfx('throw');if(Math.random()<.4)voice(p,{cd:3,one:1,vol:.8});const d=clamp(Math.hypot(x-home.x,y-home.y)/600,.35,1);
       ball={x0:home.x,y0:home.y,x1:x,y1:y,x:home.x,y:home.y,h:0,t:0,d,fly:true};phase='wait';},up(){},
     end(){$('ghud').classList.remove('on');A.x=ox;A.y=oy;A.state='idle';A.pose='idle';A.timer=2;}};
   const done=()=>{const bonus=hasItem('ball')?1.2:1,fun=Math.round(Math.min(60,10+score*6)*bonus),coins=score*3;bump(p.name,'fun',fun);bump(p.name,'energy',-15);if(wet)bump(p.name,'clean',-10*wet);S.coins+=coins;addBond(p.name,4+score*2);
-    S.stats.plays++;if(score>S.best.fetch)S.best.fetch=score;if(score>=8)mgt('m','play20');mgt('e','Fetch',score);sfx('happy');const s=score;endMode();toast(`${s} fetched! +${fun} fun, +${coins} coins${wet?' (and a wet dog)':''}`,'coin');};
+    S.stats.plays++;if(score>S.best.fetch)S.best.fetch=score;if(score>=8)mgt('m','play20');mgt('e','Fetch',score);sfx('coins');const s=score;endMode();toast(`${s} fetched! +${fun} fun, +${coins} coins${wet?' (and a wet dog)':''}`,'coin');};
   overlayBar('Tap the yard to throw the ball',[['Stop','mStop','']]);$('mStop').onclick=done;
 }
 
@@ -771,11 +828,21 @@ function shopIcon(id){const m={bed_basket:'<ellipse cx="18" cy="24" rx="15" ry="
 
 // ---------- menus ----------
 function openMenu(){
-  sheet(sheetHead('Menu')+`<div class="menu"><button class="go" data-close>Resume</button><button id="mSnd">${icon('sound',16)} Sound: ${S.sound?'On':'Off'}</button>
+  sheet(sheetHead('Menu')+`<div class="menu"><button class="go" data-close>Resume</button><button id="mSnd">${icon('sound',16)} Sound${S.sound?'':': Off'}</button>
    <button id="mRef">${icon('cam',16)} Get the newest camera data</button><button id="mHelp">How it works</button><button class="exit" id="mExit">Go back to games</button></div>`,'small');
-  $('mSnd').onclick=()=>{S.sound=!S.sound;save();if(!S.sound)purr(false);openMenu();};$('mExit').onclick=()=>location.href='index.html';
+  $('mSnd').onclick=()=>openSound();$('mExit').onclick=()=>location.href='index.html';
   $('mRef').onclick=async()=>{$('mRef').textContent='Asking the camera...';await boot(true);closeSheet();};$('mHelp').onclick=()=>openHelp();
 }
+function openSound(){const sl=(k,label,sub)=>`<label class="vrow"><span><b>${label}</b><small>${sub}</small></span><input type="range" min="0" max="100" value="${Math.round(S.vol[k]*100)}" data-v="${k}"></label>`;
+  sheet(sheetHead('Sound')+`<div class="snd"><button class="tog${S.sound?' on':''}" id="sOn"><span>All sound</span><i></i></button>
+   ${sl('pets','Pet voices','Real meows, barks and purring')}${sl('fx','Sound effects','Eating, bath, toys, coins')}
+   <button class="tog${S.ambOn?' on':''}" id="sAmb"><span>Yard sounds<small>Birds in the day, crickets at night</small></span><i></i></button>${sl('amb','Yard volume','')}
+   <button class="go wide" id="sTest">Test: hear your pets</button><button class="wide" data-close>Done</button>
+   <p class="cred">Real recordings: cats, Bella, water and brushing from the ESC-50 set (Freesound.org recordists, CC BY-NC); toys, food and buttons by Kenney (CC0).</p></div>`,'small');
+  $('sheet').querySelectorAll('[data-v]').forEach(r=>{r.oninput=()=>{ac();setVol(r.dataset.v,r.value/100);};r.onchange=()=>{save();if(r.dataset.v==='pets')voice(PETS[Math.floor(Math.random()*PETS.length)],{cd:0,one:1});else if(r.dataset.v==='fx')sfx('coins');};});
+  $('sOn').onclick=()=>{S.sound=!S.sound;save();if(!S.sound)soundOff();else{ac();ambience();}openSound();};
+  $('sAmb').onclick=()=>{S.ambOn=!S.ambOn;save();ac();ambience();openSound();};
+  $('sTest').onclick=()=>{if(!S.sound){S.sound=true;save();}ac();PETS.forEach((p,i)=>setTimeout(()=>voice(p,{cd:0,one:1}),300+i*1100));};}
 function openHelp(){sheet(sheetHead('How Pet Life works')+`<div class="help"><p>Your five pets live here, and the security camera keeps them real. Every hour it sends what it saw:</p>
   <ul><li>A pet the camera saw in the last hour is <b>out in the yard</b> here too.</li><li>Every real visit since you last played gives that pet fun (and makes it a bit dirtier and more tired) and gives you <b>5 coins</b>.</li>
   <li>Real zoomies burn energy. Night owls stay up at night.</li><li>The <b>Diary</b> has each pet's real photos, visits, favourite hours and badges.</li><li>Each pet is drawn to look like the real one. You can change how they look in the Diary.</li></ul>
@@ -802,6 +869,8 @@ resize();layout();requestAnimationFrame(frame);
 boot();
 setInterval(()=>{if(document.hidden||MODE)return;const m=1/60;for(const p of PETS){const c=care(p.name);c.food=clamp(c.food-5*m,0,100);c.fun=clamp(c.fun-4*m,0,100);c.love=clamp(c.love-2.5*m,0,100);c.clean=clamp(c.clean-1.5*m,0,100);
   const A=actorOf(p.name);if(!A||A.state!=='sleep')c.energy=clamp(c.energy-3*m,0,100);}save();careUI();trayUI();},60000);
+setInterval(()=>{if(document.hidden||MODE||!S.sound||!AC)return;ambience();const hungry=PETS.filter(p=>{const A=actorOf(p.name);return A&&A.state!=='sleep'&&care(p.name).food<25;});
+  if(hungry.length&&Math.random()<.5)voice(hungry[Math.floor(Math.random()*hungry.length)],{cd:40,one:1,vol:.65});},30000); // a hungry pet asks for food now and then
 setInterval(()=>{if(!document.hidden)boot(true);},20*60000); // new camera data comes every hour
-document.addEventListener('visibilitychange',()=>{if(document.hidden){purr(false);save();}});
+document.addEventListener('visibilitychange',()=>{if(document.hidden){purr(false);if(AC&&AC.state==='running')AC.suspend();save();}else if(S.sound&&AC){AC.resume();ambience();}});
 </script></body></html>
