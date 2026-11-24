@@ -341,7 +341,11 @@ function vplay(n,force){const a=ac();if(!S.voice||!a||!VBUF[n])return 0;const no
 function vline(tag,a,b,force){
   const opts=[];(VGEN[tag]||[]).forEach(n=>opts.push(n));
   (VROLE[tag]||[]).forEach(([k,who])=>{const nm=who==='a'?a:b;if(VPET[nm]!=null)for(let i=0;i<2;i++)opts.push(VPET[nm]+k);}); // pet lines twice as likely
-  const ok=opts.filter(n=>VHAVE.has(n)&&VTXT[n-1]);if(!ok.length)return null;const n=pick(ok);return{n,text:VTXT[n-1]};}
+  const ok=[...new Set(opts.filter(n=>VHAVE.has(n)&&VTXT[n-1]))];if(!ok.length)return null;
+  S.vused=S.vused||{};const age=n=>S.vused[n]||0,pet=ok.filter(n=>n>=38),gen=ok.filter(n=>n<38);
+  // half the time a line about the pet itself, the rest of the time the general ones; always the least recently heard
+  let pool=pet.length&&(Math.random()<.55||!gen.length)?pet:gen.length?gen:pet;const oldest=Math.min(...pool.map(age));
+  const n=pick(pool.filter(x=>age(x)===oldest));S.vused[n]=Date.now();save();return{n,text:VTXT[n-1]};}
 function voiceSay(tag,a,b,col,dur,force){const L=vline(tag,a,b,force);if(!L)return 0;banner(L.text.replace('…','...'),col,dur);
   const d=vplay(L.n,force);if(!d&&!VBUF[L.n])speak(L.text.replace('…',','));return d;}
 // ---------- canvas ----------
@@ -611,9 +615,10 @@ async function loopRounds(){
       if(mv.kind==='heal'){A.hp=res.hpAfter;}else if(mv.kind==='hit'&&!res.miss)O.hp=res.hpAfter;
       // commentary
       let tag=null;if(O.hp<=0)tag='ko';else if(res.crit)tag='crit';else if(res.miss&&Math.random()<.6)tag='miss';else if(mv.kind==='heal')tag='heal';else if(mv.kind==='debuff'&&!res.miss)tag='debuff';
-      else if(O.hp/O.max<.2&&O.lowest>=.2)tag='low';else if(A.lowest<.25&&A.hp/A.max<.3&&res.dmg>=20&&Math.random()<.7)tag='comeback';else if(res.dmg>=28&&Math.random()<.6)tag='big';
+      else if(res.miss)tag='miss';
+      else if(O.hp/O.max<.35&&O.lowest>=.35)tag='low';else if(A.lowest<.35&&A.hp/A.max<.4&&res.dmg>=14)tag='comeback';else if(res.dmg>=10)tag='big';
       O.lowest=Math.min(O.lowest,O.hp/O.max);
-      if(tag){const big=tag==='crit'||tag==='ko'||tag==='comeback';const col=tag==='ko'?'#ff5a3a':tag==='heal'?'#7dff9a':'#ffd34a';const d=voiceSay(tag,A.name,O.name,col,1.6,tag==='ko');if(big)sfx('cheer');if(d&&tag==='ko')await wait(d);}
+      if(tag){const big=tag==='crit'||tag==='ko'||tag==='comeback';const col=tag==='ko'?'#ff5a3a':tag==='heal'?'#7dff9a':'#ffd34a';const d=voiceSay(tag,A.name,O.name,col,1.6,true);if(big)sfx('cheer');if(d)await wait(d+.15);}
       if(O.hp<=0){sfx('ko');FLASH=.6;FLASHC='#fff';await tween(.9,k=>{O.dy=k*40;O.rot=(O.side?1:-1)*k*.5;O.alpha=1-k*.6;});return endBattle(A.side);}
       await wait(.35);}
   }
