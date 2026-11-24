@@ -107,6 +107,16 @@ h1,h2,h3,h4,.big b,.rt,.mvhead,.mv b{font-family:"Avenir Next Condensed","Futura
 @media (max-width:560px){.menu{grid-template-columns:1fr}.mvgrid{grid-template-columns:1fr 1fr}.mv b{font-size:16px}.mv span{font-size:11px}}
 .dbtn .big,.rb .big{width:100%}
 .albm{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:8px}.albm img{width:100%;aspect-ratio:1;object-fit:cover;border-radius:12px;border:2px solid var(--pc)}
+.ultb{width:100%;margin-bottom:8px;padding:10px 14px;border-radius:16px;text-align:left;display:flex;flex-direction:column;gap:2px;background:linear-gradient(90deg,rgba(26,22,48,.96),rgba(12,10,28,.96));border:2px dashed rgba(255,255,255,.2);opacity:.85}
+.ultb b{font-size:18px;font-weight:900;color:#ddd}.ultb span{font-size:12px;opacity:.8}
+.ultb.ready{opacity:1;border:3px solid var(--mc);background:linear-gradient(90deg,color-mix(in srgb,var(--mc) 55%,#1a1630),rgba(12,10,28,.96));animation:ultp 1s ease-in-out infinite;box-shadow:0 0 24px var(--mc)}
+.ultb.ready b{color:#fff;font-size:22px;letter-spacing:.04em}
+@keyframes ultp{50%{box-shadow:0 0 44px var(--mc);transform:scale(1.015)}}
+.mv{position:relative}.best{position:absolute;top:-8px;right:10px;background:#ffd34a;color:#2a1606;font-style:normal;font-weight:900;font-size:11px;padding:2px 8px;border-radius:8px}
+.tip{position:fixed;left:50%;top:50%;transform:translate(-50%,-60%);width:min(420px,88vw);background:#120f24;border:2px solid #f2c14e;border-radius:20px;padding:16px 18px;z-index:30;box-shadow:0 20px 60px rgba(0,0,0,.6)}
+.tip b{color:#f2c14e}.tip p{margin:8px 0;font-size:15px;line-height:1.4}.tip em{background:#ffd34a;color:#2a1606;font-style:normal;font-weight:900;font-size:11px;padding:1px 6px;border-radius:6px}
+.tip button{width:100%;margin-top:8px;padding:12px;border-radius:12px;background:linear-gradient(180deg,#f6cf5a,#c8902a);color:#2a1606;font-weight:900}
+.pow{background:rgba(255,255,255,.06);border-radius:12px;padding:8px 10px;margin-top:8px;text-align:left;border-left:4px solid var(--pc)}.pow b{display:block;font-size:13px}.pow span{font-size:12px;opacity:.8;display:block}
 </style></head><body>
 <div id="safe"></div><canvas id="cv"></canvas><div id="ui"></div><div id="hud" hidden></div><div id="pause" hidden></div>
 <script>
@@ -288,6 +298,21 @@ const SAY={start:["Ladies and gentlemen, welcome to the yard!","The crowd goes w
  ko:["It's all over!","Down goes {b}!","Goodnight, {b}!","And that's the fight!"],
  win:["{w} is the champion of the yard!","A legendary performance by {w}!","{w} wins! What a battle!","Bow down to {w}!","{w} takes the crown!","Nobody can stop {w} today!"]};
 
+// ---------- each pet's super powers ----------
+const POWERS={
+ Buster:{title:'Man of the House',color:'#ff7a2a',passive:'House Rules',pd:'Takes 20% less damage, and every hit he lands makes the next one 6% stronger (up to +36%).',
+   ult:'BULLDOZER BLITZ',ud:'Three unstoppable charges that never miss, then the foe is stunned and loses a turn.'},
+ Galaxy:{title:'Cosmic Queen',color:'#b45ae6',passive:'Zero Gravity',pd:'Floats away from 20% more attacks.',
+   ult:'SUPERNOVA',ud:'A giant star beam that never misses, then the foe burns for 3 rounds.'},
+ Cloudy:{title:'Storm Bringer',color:'#5ad8ff',passive:'Static Charge',pd:'Every hit has a 30% chance to zap for 40% extra damage.',
+   ult:'THUNDERSTORM',ud:'Four lightning strikes, then the foe is soaked and slowed for 3 rounds.'},
+ Man:{title:'Mama Bear',color:'#c77dff',passive:"Mother's Care",pd:'Heals 6% of her HP at the end of every round.',
+   ult:"MAMA'S WRATH",ud:'A huge smackdown from above, then she heals 35% and shakes off every bad effect.'},
+ Bella:{title:'Alpha Shepherd',color:'#7ddc4a',passive:'Loyal Guard',pd:'When she is below 40% HP, her attacks hit 35% harder.',
+   ult:'ALPHA HOWL',ud:'A howl that stuns the foe, a mighty bite, and her attack goes up 40% for 3 rounds.'}};
+function powerOf(n){return POWERS[n]||{title:'Challenger',color:'#ffd34a',passive:'Tough Cookie',pd:'Takes 10% less damage.',ult:'MEGA STRIKE',ud:'A giant hit that never misses.'};}
+const ULT={ult:true,name:'SUPER',kind:'ult'};
+const DMG_BOOST=1.3,HP_BOOST=1.15,PW_FULL=100;
 let FEED=null,PETS=[];
 const $=id=>document.getElementById(id);
 const ui=()=>$('ui');
@@ -435,7 +460,8 @@ function drawScene(t){
 function eff(p,mult,shadow){const st={},fm=petForm(p);for(const k of['hp','atk','def','spd','spc']){let v=p.stats[k]||40;for(const f of fm)if(f.stat===k)v*=f.m;st[k]=Math.round(v*(mult||1));}if(shadow){for(const k in st)st[k]=Math.round(st[k]*shadow);}return st;}
 function mkFighter(p,side,opts){opts=opts||{};const st=eff(p,opts.mult,opts.shadow);
   const moves=p.moves.slice(0,4).map(m=>Object.assign({},m,{uses:m.sig?2:m.kind==='heal'?1:m.kind==='debuff'?3:99,max:m.sig?2:m.kind==='heal'?1:m.kind==='debuff'?3:99}));
-  return{p,name:p.name,side,st,hp:opts.hp!=null?Math.min(opts.hp,st.hp):st.hp,max:st.hp,atkMod:1,moves,shadow:!!opts.shadow,img:randomPhoto(p)||petPhoto(p,'photo'),
+  st.hp=Math.round(st.hp*HP_BOOST);
+  return{p,name:p.name,side,st,hp:opts.hp!=null?Math.min(opts.hp,st.hp):st.hp,max:st.hp,atkMod:1,moves,pw:opts.pw||0,fx:{stun:0,burn:0,slow:0,rage:0},mom:0,shadow:!!opts.shadow,img:randomPhoto(p)||petPhoto(p,'photo'),
     x:0,y:0,dx:0,dy:0,rot:0,sc:1,alpha:1,flash:0,shake:0,shownHp:0,lowest:1,label:opts.label||p.name};}
 let B=null; // current battle
 function fighterPos(F){const s=Math.min(W*.3,H*.36,330);const y=Math.min(H*.56,H-250-s*.5)+(F.side?-H*.03:H*.01);return{x:F.side?W*.72:W*.28,y,s};}
@@ -467,16 +493,24 @@ function hpColor(f){return f>.5?'#3ee07a':f>.2?'#ffc43a':'#ff4a3a';}
 function drawHUD(t){
   if(!B)return;const bw=Math.min(420,(W-140)/2-50),top=SAFE_TOP+14,narrow=W-140-2*bw<150;
   B.f.forEach(F=>{F.shownHp+=(F.hp-F.shownHp)*.12;const left=F.side===0,x=left?70:W-70-bw,f=clamp(F.shownHp/F.max,0,1),f2=clamp(F.hp/F.max,0,1);
-    cx.fillStyle='rgba(8,8,20,.78)';rr(cx,x-6,top-4,bw+12,46,12);cx.fill();
+    cx.fillStyle='rgba(8,8,20,.78)';rr(cx,x-6,top-4,bw+12,70,12);cx.fill();
     cx.fillStyle='#2a0a10';rr(cx,x,top+16,bw,18,8);cx.fill();
     cx.fillStyle='#ffd0a0';const w1=bw*f;rr(cx,left?x:x+bw-w1,top+16,w1,18,8);cx.fill();
     cx.fillStyle=hpColor(f2);const w2=bw*f2;rr(cx,left?x:x+bw-w2,top+16,w2,18,8);cx.fill();
     cx.fillStyle='rgba(255,255,255,.25)';rr(cx,left?x:x+bw-w2,top+16,w2,6,4);cx.fill();
     cx.fillStyle='#fff';cx.font='800 15px "Avenir Next Condensed","Futura",sans-serif';cx.textBaseline='alphabetic';cx.textAlign=left?'left':'right';
     cx.fillText((F.shadow?'SHADOW ':'')+F.name.toUpperCase(),left?x:x+bw,top+11);cx.textAlign=left?'right':'left';cx.fillStyle='#ffe9a8';cx.fillText(Math.ceil(F.hp)+' / '+F.max,left?x+bw:x,top+11);
-    if(B.human[F.side]&&B.mode==='duo'){cx.fillStyle=F.side?'#ff7a7a':'#7ab8ff';cx.font='800 11px sans-serif';cx.textAlign=left?'left':'right';cx.fillText(F.side?'PLAYER 2':'PLAYER 1',left?x:x+bw,top+52);}});
-  cx.textAlign='center';cx.fillStyle='#ffd34a';cx.font='900 22px "Avenir Next Condensed","Futura",sans-serif';cx.fillText('ROUND '+Math.max(1,B.round),W/2,narrow?top+70:top+24);
-  if(B.mode==='gauntlet'){cx.font='700 12px sans-serif';cx.fillStyle='#d8c8ff';cx.fillText('GAUNTLET  '+(B.g.i+1)+' / '+B.g.list.length,W/2,narrow?top+88:top+42);}
+    // power bar: full = super move
+    const pc=powerOf(F.name).color,pf=clamp(F.pw/PW_FULL,0,1),pw=bw*pf,full=pf>=1;
+    cx.fillStyle='#1a1430';rr(cx,x,top+39,bw,9,5);cx.fill();cx.fillStyle=full?(Math.sin(t*10)>0?'#fff':pc):pc;rr(cx,left?x:x+bw-pw,top+39,pw,9,5);cx.fill();
+    if(full){cx.shadowColor=pc;cx.shadowBlur=14;cx.strokeStyle=pc;cx.lineWidth=2;rr(cx,x,top+39,bw,9,5);cx.stroke();cx.shadowBlur=0;}
+    const tags=[];if(full)tags.push(['SUPER READY',pc]);if(F.fx.stun>0)tags.push(['STUNNED','#ffd34a']);if(F.fx.burn>0)tags.push(['BURN '+F.fx.burn,'#ff9a4a']);
+    if(F.fx.slow>0)tags.push(['SLOW '+F.fx.slow,'#5ad8ff']);if(F.fx.rage>0)tags.push(['RAGE '+F.fx.rage,'#7ddc4a']);if(F.mom>0)tags.push(['MOMENTUM +'+Math.round(F.mom*100)+'%','#ff9a4a']);
+    if(F.atkMod<.99)tags.push(['ATK x'+F.atkMod.toFixed(2),'#c8a0ff']);if(B.human[F.side]&&B.mode==='duo')tags.unshift([F.side?'PLAYER 2':'PLAYER 1',F.side?'#ff7a7a':'#7ab8ff']);
+    cx.font='800 11px "Avenir Next",sans-serif';cx.textAlign=left?'left':'right';let tx=left?x:x+bw;
+    for(const[tt,tc]of tags){const w=cx.measureText(tt).width;cx.fillStyle=tc;cx.fillText(tt,tx,top+61);tx+=left?w+10:-(w+10);}});
+  cx.textAlign='center';cx.fillStyle='#ffd34a';cx.font='900 22px "Avenir Next Condensed","Futura",sans-serif';cx.fillText('ROUND '+Math.max(1,B.round),W/2,narrow?top+92:top+24);
+  if(B.mode==='gauntlet'){cx.font='700 12px sans-serif';cx.fillStyle='#d8c8ff';cx.fillText('GAUNTLET  '+(B.g.i+1)+' / '+B.g.list.length,W/2,narrow?top+110:top+42);}
 }
 // commentary banner
 let BANNER=null;function banner(text,col,dur){BANNER={text:text.toUpperCase(),col:col||'#ffd34a',t:NOW,dur:dur||1.8};}
@@ -527,6 +561,7 @@ async function animMove(A,Bf,mv,res){
   const a=centerOf(A),b=centerOf(Bf),dir=Bf.side?1:-1,col=mv.color||'#fff';A.front=true;Bf.front=false;
   const hit=async()=>{ // impact on the target
     if(res.miss){sfx('miss');const s=dir;await tween(.22,k=>{Bf.dx=Math.sin(k*Math.PI)*90*s;Bf.dy=-Math.sin(k*Math.PI)*30;});Bf.dx=0;Bf.dy=0;floatText(b.x,b.y-b.s*.4,'MISS','#cfd8ff');return;}
+    if(mv.kind==='fx'){sfx('debuff');Bf.shake=12;await tween(.4,k=>{Bf.sc=1-.06*Math.sin(k*Math.PI);});Bf.shake=0;Bf.sc=1;return;}
     if(mv.kind==='debuff'){sfx('debuff');Bf.shake=8;floatText(b.x,b.y-b.s*.4,'ATTACK DOWN','#c8a0ff');await tween(.4,k=>{Bf.sc=1-.08*Math.sin(k*Math.PI);});Bf.shake=0;Bf.sc=1;return;}
     sfx(res.crit?'crit':'hit');Bf.flash=1;Bf.shake=res.crit?18:10;SHAKE=res.crit?16:8;burst(b.x,b.y,col,res.crit?46:26,res.crit?600:420);burst(b.x,b.y,'#fff',10,300,3);
     if(res.crit){FLASH=.5;FLASHC='#fff';floatText(b.x,b.y-b.s*.62,'CRITICAL!','#ffd34a',true);}
@@ -557,19 +592,69 @@ async function animMove(A,Bf,mv,res){
   A.dx=0;A.dy=0;A.rot=0;A.sc=1;
 }
 
+// ---------- super moves (fill the power bar) ----------
+async function ultIntro(A){
+  const P=powerOf(A.name),col=P.color;sfx('crit');FLASH=.35;FLASHC=col;let k0=0;
+  const cine=()=>{cx.fillStyle=`rgba(0,0,0,${.55*k0})`;cx.fillRect(0,0,W,H);const c=centerOf(A);
+    for(let i=0;i<14;i++){const a=i/14*Math.PI*2+NOW*1.5;cx.strokeStyle=rgba(col,.35*k0);cx.lineWidth=6;cx.beginPath();cx.moveTo(c.x+Math.cos(a)*c.s*.5,c.y+Math.sin(a)*c.s*.5);cx.lineTo(c.x+Math.cos(a)*c.s*1.4,c.y+Math.sin(a)*c.s*1.4);cx.stroke();}
+    cx.save();cx.globalAlpha=k0;cx.textAlign='center';cx.font='900 '+Math.round(clamp(W*.07,34,72))+'px "Avenir Next Condensed","Futura","Impact",sans-serif';cx.lineWidth=8;cx.strokeStyle='#000';
+    const y=H*.36;cx.strokeText(P.ult,W/2,y);const g=cx.createLinearGradient(0,y-50,0,y+10);g.addColorStop(0,'#fff');g.addColorStop(1,col);cx.fillStyle=g;cx.fillText(P.ult,W/2,y);
+    cx.font='800 16px "Avenir Next",sans-serif';cx.fillStyle='#fff';cx.fillText(A.name.toUpperCase()+'\'S SUPER MOVE',W/2,y+30);cx.restore();};
+  FXDRAW.push(cine);A.front=true;
+  await tween(.45,k=>{k0=eout(k);A.sc=1+.25*eout(k);});for(let i=0;i<30;i++)burst(centerOf(A).x,centerOf(A).y,col,1,300,5);
+  voiceSay('crit',A.name,'',col,1.4,true);await wait(.9);
+  await tween(.3,k=>{k0=1-k;A.sc=1.25-.25*k;});FXDRAW.splice(FXDRAW.indexOf(cine),1);A.sc=1;}
+async function ultHit(A,O,power,anim,sure,col){ // one hit of a super move, with its own animation
+  const h=hitDamage(A,O,power,'atk',{sure});const res=Object.assign({hpBefore:A.hp},h,{hpAfter:Math.max(0,O.hp-(h.dmg||0))});
+  await animMove(A,O,{anim,color:col,kind:'hit'},res);if(!res.miss){O.hp=res.hpAfter;charge(O,res.dmg*.6);}return res;}
+async function doUltimate(A,O){
+  A.pw=0;await ultIntro(A);const col=powerOf(A.name).color;let total=0,crit=false;
+  const add=r=>{total+=r.dmg||0;crit=crit||r.crit;};
+  switch(A.name){
+   case'Buster':for(let i=0;i<3&&O.hp>0;i++){add(await ultHit(A,O,24,'dash',true,col));SHAKE=14;}if(O.hp>0){O.fx.stun=1;floatText(centerOf(O).x,centerOf(O).y-centerOf(O).s*.7,'STUNNED','#ffd34a',true);}break;
+   case'Galaxy':{const big={anim:'beam'};add(await ultHit(A,O,58,'beam',true,col));FLASH=.7;FLASHC='#f0d8ff';for(let i=0;i<40;i++)PARTS.push({x:centerOf(O).x+rnd(-80,80),y:centerOf(O).y+rnd(-80,80),vx:rnd(-60,60),vy:rnd(-160,-40),life:rnd(.6,1.3),age:0,col:pick([col,'#fff','#ffd34a']),r:rnd(2,6),g:0,star:1});
+     if(O.hp>0){O.fx.burn=3;floatText(centerOf(O).x,centerOf(O).y-centerOf(O).s*.7,'BURNING','#ff9a4a',true);}break;}
+   case'Cloudy':for(let i=0;i<4&&O.hp>0;i++){LIGHTNING=1;add(await ultHit(A,O,17,'shock',true,col));}if(O.hp>0){O.fx.slow=3;floatText(centerOf(O).x,centerOf(O).y-centerOf(O).s*.7,'SLOWED','#5ad8ff',true);}break;
+   case'Man':{add(await ultHit(A,O,44,'pounce',true,col));const heal=Math.round(A.max*.35),before=A.hp;await animMove(A,O,{anim:'glow',color:'#7dff9a',kind:'heal'},{heal:Math.min(heal,A.max-A.hp),hpBefore:before,hpAfter:Math.min(A.max,A.hp+heal)});
+     A.hp=Math.min(A.max,before+heal);A.fx.burn=0;A.fx.slow=0;A.fx.stun=0;A.atkMod=Math.max(1,A.atkMod);break;}
+   case'Bella':{await animMove(A,O,{anim:'stare',color:col,kind:'fx'},{miss:false});O.fx.stun=1;floatText(centerOf(O).x,centerOf(O).y-centerOf(O).s*.7,'STUNNED','#ffd34a',true);
+     add(await ultHit(A,O,40,'dash',true,col));A.fx.rage=3;floatText(centerOf(A).x,centerOf(A).y-centerOf(A).s*.7,'ATTACK UP','#7ddc4a',true);break;}
+   default:add(await ultHit(A,O,55,'beam',true,col));}
+  if(total)floatText(W/2,H*.42,total+' TOTAL','#ffd34a',true);
+  return{dmg:total,crit,ult:true};}
+// end of a round: burns, Mama's healing, effects wear off, power bars fill a little
+async function roundEnd(){
+  for(const F of B.f){if(F.hp<=0)continue;const c=centerOf(F);
+    if(F.fx.burn>0){const d=Math.max(2,Math.round(F.max*.05));F.hp=Math.max(1,F.hp-d);floatText(c.x,c.y-c.s*.3,'-'+d+' BURN','#ff9a4a');burst(c.x,c.y,'#ff7a2a',12,200,4);F.fx.burn--;}
+    if(F.name==='Man'&&F.hp<F.max){const h=Math.min(F.max-F.hp,Math.round(F.max*.06));if(h>0){F.hp+=h;floatText(c.x,c.y-c.s*.5,'+'+h,'#7dff9a');}}
+    if(F.fx.slow>0)F.fx.slow--;if(F.fx.rage>0)F.fx.rage--;charge(F,8);}
+  await wait(.3);}
+
 // ---------- battle rules (same as the camera's /battle) ----------
+function spdOf(F){return F.st.spd*(F.fx.slow>0?.7:1);}
+function hitDamage(A,Bf,power,stat,opts){ // one hit with all the powers applied
+  opts=opts||{};const r={miss:false,crit:false,zap:false,dmg:0};
+  if(!opts.sure){let dodge=Math.max(0,(spdOf(Bf)-spdOf(A))/350);if(Bf.name==='Galaxy')dodge+=.2;if(Math.random()>(opts.acc||1)-dodge){r.miss=true;return r;}}
+  const At=(A.st[stat]||A.st.atk)*A.atkMod,D=Bf.st.def;let dmg=power*2.3*DMG_BOOST*(At/(At+D))*rnd(.8,1.2);
+  if(A.name==='Buster')dmg*=1+A.mom;if(A.name==='Bella'&&A.hp/A.max<.4)dmg*=1.35;if(A.fx.rage>0)dmg*=1.4;
+  if(A.name==='Cloudy'&&Math.random()<.3){dmg*=1.4;r.zap=true;}
+  if(Math.random()<.10+spdOf(A)/600){dmg*=1.8;r.crit=true;}
+  if(Bf.name==='Buster')dmg*=.8;
+  r.dmg=Math.max(3,Math.round(dmg));return r;}
+function charge(F,v){F.pw=Math.min(PW_FULL,F.pw+v);}
 function resolve(A,Bf,mv){
   const r={miss:false,crit:false,dmg:0,heal:0,hpBefore:A.hp};
   if(mv.uses<99)mv.uses--;
-  if(mv.kind==='heal'){r.heal=Math.round(A.max*rnd(.22,.32));r.hpAfter=Math.min(A.max,A.hp+r.heal);r.heal=r.hpAfter-A.hp;return r;}
-  if(mv.kind==='debuff'){if(Math.random()<mv.acc)Bf.atkMod*=.8;else r.miss=true;return r;}
-  const dodge=Math.max(0,(Bf.st.spd-A.st.spd)/350);
-  if(Math.random()>mv.acc-dodge){r.miss=true;r.hpAfter=Bf.hp;return r;}
-  const At=(A.st[mv.stat]||A.st.atk)*A.atkMod,D=Bf.st.def;let dmg=mv.power*2.3*(At/(At+D))*rnd(.75,1.25);
-  if(Math.random()<.10+A.st.spd/600){dmg*=1.7;r.crit=true;}
-  r.dmg=Math.max(3,Math.round(dmg));r.hpAfter=Math.max(0,Bf.hp-r.dmg);return r;
+  if(mv.kind==='heal'){r.heal=Math.round(A.max*rnd(.25,.35));r.hpAfter=Math.min(A.max,A.hp+r.heal);r.heal=r.hpAfter-A.hp;charge(A,10);return r;}
+  if(mv.kind==='debuff'){if(Math.random()<mv.acc){Bf.atkMod*=.8;charge(A,12);}else r.miss=true;return r;}
+  const h=hitDamage(A,Bf,mv.power,mv.stat,{acc:mv.acc});Object.assign(r,h);
+  if(r.miss){r.hpAfter=Bf.hp;charge(Bf,6);return r;}
+  if(A.name==='Buster')A.mom=Math.min(.36,A.mom+.06);
+  charge(A,r.dmg*1.4);charge(Bf,r.dmg*1.1);
+  r.hpAfter=Math.max(0,Bf.hp-r.dmg);return r;
 }
 function cpuPick(A,Bf,smart){
+  if(A.pw>=PW_FULL&&Math.random()<.85)return ULT;
   const ok=A.moves.filter(m=>m.uses>0),heal=ok.filter(m=>m.kind==='heal'),deb=ok.filter(m=>m.kind==='debuff'),hits=ok.filter(m=>m.kind==='hit');
   if(heal.length&&A.hp/A.max<.35&&Math.random()<.65+.25*smart)return heal[0];
   if(deb.length&&Bf.atkMod>.8&&Math.random()<.14)return deb[0];
@@ -607,10 +692,14 @@ async function loopRounds(){
     const picks=[];
     for(const F of B.f){const O=B.f[1-F.side];if(B.human[F.side]){picks[F.side]=await askMove(F,O);if(!B)return;}else picks[F.side]=cpuPick(F,O,B.smart);}
     hideMoves();
-    const sp=B.f.map(F=>F.st.spd+rnd(0,18));const order=sp[0]>=sp[1]?[0,1]:[1,0];
+    const sp=B.f.map(F=>spdOf(F)+rnd(0,18));const order=picks[0]===ULT&&picks[1]!==ULT?[0,1]:picks[1]===ULT&&picks[0]!==ULT?[1,0]:sp[0]>=sp[1]?[0,1]:[1,0];
     for(const i of order){if(!B)return;const A=B.f[i],O=B.f[1-i];if(A.hp<=0||O.hp<=0)break;const mv=picks[i];
+      if(A.fx.stun>0){A.fx.stun--;banner(A.name+' is stunned!','#ffd34a',1.3);floatText(centerOf(A).x,centerOf(A).y-centerOf(A).s*.62,'ZZZ...','#ffd34a');await tween(.6,k=>{A.rot=Math.sin(k*Math.PI*4)*.08;});A.rot=0;continue;}
+      if(mv===ULT){const r=await doUltimate(A,O);if(!B)return;if(B.human[i])B.crits++;if(!B.human[i]&&B.human[1-i])B.dmgTaken+=r.dmg;
+        if(O.hp<=0){const d=voiceSay('ko',A.name,O.name,'#ff5a3a',1.6,true);if(d)await wait(d+.15);sfx('ko');FLASH=.6;FLASHC='#fff';await tween(.9,k=>{O.dy=k*40;O.rot=(O.side?1:-1)*k*.5;O.alpha=1-k*.6;});return endBattle(A.side);}
+        O.lowest=Math.min(O.lowest,O.hp/O.max);await wait(.35);continue;}
       B.say=null;floatText(centerOf(A).x,centerOf(A).y-centerOf(A).s*.62,mv.name.toUpperCase(),mv.color||'#fff');
-      const res=resolve(A,O,mv);if(res.crit)B.crits+= (B.human[i]?1:0);if(!B.human[i]&&B.human[1-i]&&res.dmg)B.dmgTaken+=res.dmg;
+      const res=resolve(A,O,mv);if(res.zap){floatText(centerOf(O).x+40,centerOf(O).y-centerOf(O).s*.1,'ZAP!','#5ad8ff');LIGHTNING=.6;}if(res.crit)B.crits+= (B.human[i]?1:0);if(!B.human[i]&&B.human[1-i]&&res.dmg)B.dmgTaken+=res.dmg;
       await animMove(A,O,mv,res);
       if(mv.kind==='heal'){A.hp=res.hpAfter;}else if(mv.kind==='hit'&&!res.miss)O.hp=res.hpAfter;
       // commentary
@@ -621,6 +710,7 @@ async function loopRounds(){
       if(tag){const big=tag==='crit'||tag==='ko'||tag==='comeback';const col=tag==='ko'?'#ff5a3a':tag==='heal'?'#7dff9a':'#ffd34a';const d=voiceSay(tag,A.name,O.name,col,1.6,true);if(big)sfx('cheer');if(d)await wait(d+.15);}
       if(O.hp<=0){sfx('ko');FLASH=.6;FLASHC='#fff';await tween(.9,k=>{O.dy=k*40;O.rot=(O.side?1:-1)*k*.5;O.alpha=1-k*.6;});return endBattle(A.side);}
       await wait(.35);}
+    if(B&&!B.over)await roundEnd();
   }
 }
 function showBattleUI(){
@@ -628,14 +718,28 @@ function showBattleUI(){
   $('hud').hidden=false;$('pzBtn').onclick=()=>openPause(true);
 }
 function hideMoves(){const m=$('moves');if(m){m.innerHTML='';m.className='';}}
+const MVICON={hit:'<svg class="ic" width="16" height="16" viewBox="0 0 18 18"><path d="M3 15L13 5M11 3l4 4M2 13l3 3" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg>',
+ heal:'<svg class="ic" width="16" height="16" viewBox="0 0 18 18"><path d="M7 2h4v5h5v4h-5v5H7v-5H2V7h5z" fill="currentColor"/></svg>',
+ debuff:'<svg class="ic" width="16" height="16" viewBox="0 0 18 18"><path d="M1 9s3-5 8-5 8 5 8 5-3 5-8 5-8-5-8-5z" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="9" cy="9" r="2.6" fill="currentColor"/></svg>'};
+function estDmg(F,O,mv){if(mv.kind!=='hit')return 0;const At=(F.st[mv.stat]||F.st.atk)*F.atkMod;let d=mv.power*2.3*DMG_BOOST*At/(At+O.st.def);
+  if(F.name==='Buster')d*=1+F.mom;if(F.name==='Bella'&&F.hp/F.max<.4)d*=1.35;if(F.fx.rage>0)d*=1.4;if(O.name==='Buster')d*=.8;return Math.round(d);}
 function askMove(F,O){return new Promise(res=>{
-  const m=$('moves');m.className='on '+(F.side?'right':'left');
-  const kindName={hit:'Attack',heal:'Heal',debuff:'Lower attack'};
-  m.innerHTML=`<div class="mvhead">${B.mode==='duo'?(F.side?'PLAYER 2':'PLAYER 1')+' · ':''}${esc(F.name.toUpperCase())}, PICK A MOVE</div><div class="mvgrid">`+F.moves.map((mv,i)=>{
-    const dis=mv.uses<=0;const est=mv.kind==='hit'?Math.round(mv.power*2.3*((F.st[mv.stat]||F.st.atk)*F.atkMod/((F.st[mv.stat]||F.st.atk)*F.atkMod+O.st.def))):0;
-    return`<button class="mv${dis?' dis':''}${mv.sig?' sig':''}" data-i="${i}" style="--mc:${mv.color||'#888'}"><b>${esc(mv.name)}</b><span>${kindName[mv.kind]||''}${mv.kind==='hit'?' · ~'+est+' dmg · '+Math.round(mv.acc*100)+'%':mv.kind==='heal'?' · 22-32% HP':' · '+Math.round(mv.acc*100)+'%'}</span>
+  const m=$('moves');m.className='on '+(F.side?'right':'left');const P=powerOf(F.name);
+  const kindName={hit:'Attack',heal:'Heal 25-35%',debuff:'Lower their attack'};
+  const ests=F.moves.map(mv=>mv.uses>0?estDmg(F,O,mv)*mv.acc:0),bestI=ests.indexOf(Math.max(...ests));
+  const ready=F.pw>=PW_FULL;
+  m.innerHTML=`<div class="mvhead">${B.mode==='duo'?(F.side?'PLAYER 2':'PLAYER 1')+' · ':''}${esc(F.name.toUpperCase())}, PICK A MOVE</div>`+
+   `<button class="ultb${ready?' ready':''}" style="--mc:${P.color}" ${ready?'':'disabled'}><b>${ready?'SUPER: '+P.ult:'SUPER MOVE · '+Math.round(F.pw)+'%'}</b><span>${ready?esc(P.ud):F.pw>=70?'Almost ready! One more good hit.':'Fills up when you hit and when you get hit.'}</span></button>`+
+   `<div class="mvgrid">`+F.moves.map((mv,i)=>{
+    const dis=mv.uses<=0,est=estDmg(F,O,mv);
+    return`<button class="mv${dis?' dis':''}${mv.sig?' sig':''}" data-i="${i}" style="--mc:${mv.color||'#888'}">${i===bestI&&!dis&&mv.kind==='hit'?'<em class="best">BEST</em>':''}<b>${MVICON[mv.kind]||''} ${esc(mv.name)}</b><span>${kindName[mv.kind]||''}${mv.kind==='hit'?' · about '+est+' damage · '+Math.round(mv.acc*100)+'% hit':mv.kind==='debuff'?' · '+Math.round(mv.acc*100)+'% hit':''}</span>
      <i>${[mv.uses<99?mv.uses+'/'+mv.max+' left':'',mv.why?'from '+esc(mv.why):mv.sig?'signature':''].filter(Boolean).join(' · ')}</i></button>`;}).join('')+'</div>';
-  m.querySelectorAll('.mv').forEach(b=>b.onclick=()=>{const mv=F.moves[+b.dataset.i];if(mv.uses<=0)return;sfx('tap');m.innerHTML='';m.className='';res(mv);});
+  const pick_=mv=>{sfx('tap');m.innerHTML='';m.className='';res(mv);};
+  m.querySelectorAll('.mv').forEach(b=>b.onclick=()=>{const mv=F.moves[+b.dataset.i];if(mv.uses<=0)return;pick_(mv);});
+  const ub=m.querySelector('.ultb');if(ready)ub.onclick=()=>pick_(ULT);
+  if(!S.tipSeen&&!B.human[1]){S.tipSeen=1;save();const t=document.createElement('div');t.className='tip';
+    t.innerHTML=`<b>How to fight</b><p>Tap a move. <em>BEST</em> marks the one that should hurt most.</p><p>Hitting and getting hit fills the <b>power bar</b> under your HP. When it's full, tap <b>SUPER</b> for ${esc(F.name)}'s super move: ${esc(P.ult)}!</p><p>${esc(F.name)}'s power: <b>${esc(P.passive)}</b>. ${esc(P.pd)}</p><button>Got it</button>`;
+    document.body.appendChild(t);t.querySelector('button').onclick=()=>t.remove();}
 });}
 async function endBattle(winSide){
   if(!B||B.over)return;B.over=true;hideMoves();crowdOn(false);
@@ -670,6 +774,7 @@ function photoTag(p,cls,which){const path=p[which||'photo']||p.photo;const fb=po
 function feedPill(){const f=FEED;if(!f)return'';
   if(f.state==='demo')return`<div class="pill demo">${icon('cam',14)} Demo pets: the camera hasn't sent its first update yet</div>`;
   const when=f.updated?agoText(f.updated):'';return`<div class="pill ${f.state}">${icon('cam',14)} ${f.state==='live'?'Live from the camera':'Offline copy'} · updated ${when}</div>`;}
+function powBox(p,short){const P=powerOf(p.name);return`<div class="pow" style="--pc:${P.color}"><b>${esc(P.title)} · Power: ${esc(P.passive)}</b>${short?'':`<span>${esc(P.pd)}</span>`}<b>Super: ${esc(P.ult)}</b>${short?'':`<span>${esc(P.ud)}</span>`}</div>`;}
 function formChips(p){return petForm(p).map(f=>`<span class="chip">${icon(f.k,13)}${esc(f.t)}</span>`).join('');}
 function statBars(p,showFrom){const mx={hp:220,atk:70,def:70,spd:70,spc:70};return['hp','atk','def','spd','spc'].map(k=>`<div class="sb"><label>${STAT_NAME[k]}</label><div class="bar"><i style="width:${clamp(p.stats[k]/mx[k]*100,4,100)}%"></i></div><b>${p.stats[k]}</b>${showFrom?`<em>${STAT_FROM[k]}</em>`:''}</div>`).join('');}
 function topbar(title,back){return`<div class="top"><button class="ib" data-go="${back||'home'}" aria-label="Back">${icon('back',20)}</button><h2>${title}</h2><button class="ib" id="menuBtn" aria-label="Menu">${icon('pause',18)}</button></div>`;}
@@ -703,7 +808,7 @@ function roster(){
   TITLEPETS=null;
   setScreen(topbar('FIGHTERS')+`<div class="wrap">${feedPill()}<div class="cards">`+PETS.map(p=>`<button class="card" data-go="pet:${esc(p.name)}" style="--pc:${p.color}">
     <div class="ph">${photoTag(p)}<div class="lv">LV ${p.level}</div><div class="cls">${esc(p.cls)}</div></div>
-    <div class="cb"><h3>${esc(p.name)}</h3><div class="ti">${esc(p.title)}</div><div class="chips">${formChips(p)}</div>${statBars(p)}
+    <div class="cb"><h3>${esc(p.name)}</h3><div class="ti">${esc(p.title)}</div><div class="chips">${formChips(p)}</div>${powBox(p)}${statBars(p)}
     <div class="rec">Camera battles ${p.wins}-${p.losses} · Arena ${petRec(p.name).w}-${petRec(p.name).l}</div></div></button>`).join('')+`</div></div>`);
 }
 function petDetail(p){
@@ -715,6 +820,7 @@ function petDetail(p){
      <div class="chips">${formChips(p)}</div>
      <div class="kv"><span>Class</span><b>${esc(p.cls)}</b><span>Last seen</span><b>${agoText(p.last_seen)}</b><span>Visits</span><b>${p.passes} (${p.today} today)</b><span>Streak</span><b>${p.streak} days (best ${p.best_streak})</b>
       <span>Camera battles</span><b>${p.wins} won · ${p.losses} lost</b><span>Arena</span><b>${rec.w} won · ${rec.l} lost${rec.gt?' · Gauntlet x'+rec.gt:''}</b>${p.best_friend?`<span>Best friend</span><b>${esc(p.best_friend)}</b>`:''}</div></div></div>
+   <h4>SUPER POWERS</h4>${powBox(p)}
    <h4>STATS AND WHERE THEY COME FROM</h4><div class="stats">${statBars(p,true)}</div>
    <h4>MOVES</h4><div class="mlist">${p.moves.map(m=>`<div class="ml" style="--mc:${m.color}"><b>${esc(m.name)}</b><span>${m.kind==='hit'?'Power '+m.power+' · '+Math.round(m.acc*100)+'% · uses '+STAT_NAME[m.stat]:m.kind==='heal'?'Heals 22-32% HP · once a fight':'Lowers attack · 3 per fight'}</span><i>${m.sig?'Signature move · 2 per fight':m.why?'Earned from '+esc(m.why):''}</i></div>`).join('')}</div>
    <h4>WHEN ${esc(p.name.toUpperCase())} COMES OUT (LAST 7 DAYS)</h4><div class="hours">${hrs.map((v,h)=>`<i style="height:${Math.round(v/mx*100)}%" title="${h}:00"></i>`).join('')}</div><div class="hl"><span>12 AM</span><span>6 AM</span><span>12 PM</span><span>6 PM</span><span>11 PM</span></div>
@@ -728,13 +834,13 @@ let PICK={};
 function pickFighter(mode){
   TITLEPETS=null;const t={quick:'PICK YOUR FIGHTER',watch:'PICK THE FIRST FIGHTER',duo:'PLAYER 1, PICK A FIGHTER',gauntlet:'WHO RUNS THE GAUNTLET?'}[mode];
   setScreen(topbar(t)+`<div class="wrap"><div class="picks">`+PETS.map(p=>`<button class="pk" data-n="${esc(p.name)}" style="--pc:${p.color}">${photoTag(p)}<b>${esc(p.name)}</b><span>LV ${p.level} · ${esc(p.cls)}</span>
-   ${mode==='gauntlet'&&petRec(p.name).gt?`<em>Cleared x${petRec(p.name).gt}</em>`:''}<div class="chips">${formChips(p)}</div></button>`).join('')+
+   ${mode==='gauntlet'&&petRec(p.name).gt?`<em>Cleared x${petRec(p.name).gt}</em>`:''}<div class="chips">${formChips(p)}</div>${powBox(p,1)}</button>`).join('')+
    (mode!=='gauntlet'?`<button class="pk rnd" data-n="?"><div class="q">?</div><b>Random</b><span>Let the camera decide</span></button>`:'')+`</div></div>`);
   ui().querySelectorAll('.pk').forEach(b=>b.onclick=()=>{sfx('tap');const p=b.dataset.n==='?'?pick(PETS):petByName(b.dataset.n);mode==='gauntlet'?startGauntlet(p):pickOpponent(mode,p);});
 }
 function pickOpponent(mode,a){
   const t={quick:'PICK THE OPPONENT',watch:'PICK THE SECOND FIGHTER',duo:'PLAYER 2, PICK A FIGHTER'}[mode];const others=PETS.filter(p=>p.name!==a.name);
-  setScreen(topbar(t,mode==='quick'?'fight':mode)+`<div class="wrap"><div class="vs">${photoTag(a)}<b>${esc(a.name)}</b><span>VS</span></div><div class="picks">`+others.map(p=>`<button class="pk" data-n="${esc(p.name)}" style="--pc:${p.color}">${photoTag(p)}<b>${esc(p.name)}</b><span>LV ${p.level} · ${esc(p.cls)}</span><div class="chips">${formChips(p)}</div></button>`).join('')+
+  setScreen(topbar(t,mode==='quick'?'fight':mode)+`<div class="wrap"><div class="vs">${photoTag(a)}<b>${esc(a.name)}</b><span>VS</span></div><div class="picks">`+others.map(p=>`<button class="pk" data-n="${esc(p.name)}" style="--pc:${p.color}">${photoTag(p)}<b>${esc(p.name)}</b><span>LV ${p.level} · ${esc(p.cls)}</span><div class="chips">${formChips(p)}</div>${powBox(p,1)}</button>`).join('')+
    `<button class="pk rnd" data-n="?"><div class="q">?</div><b>Random</b><span>Surprise me</span></button></div>
    ${mode==='quick'?`<div class="diff"><span>CPU level</span>${DIFFS.map((d,i)=>`<button class="${S.diff===i?'on':''}" data-d="${i}">${d.n}</button>`).join('')}</div>`:''}</div>`);
   ui().querySelectorAll('.diff button').forEach(b=>b.onclick=()=>{S.diff=+b.dataset.d;save();sfx('tap');ui().querySelectorAll('.diff button').forEach(x=>x.classList.toggle('on',x===b));});
