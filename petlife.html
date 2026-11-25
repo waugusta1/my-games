@@ -477,7 +477,7 @@ function layout(){LAY.door=W*.44;LAY.floorTop=H*.66;LAY.floorBot=H-Math.max(120,
   LAY.bowl={x:W*.09,y:LAY.floorTop+(LAY.floorBot-LAY.floorTop)*.35};LAY.beds=[];const n=PETS.length,bx=[.06,.125,.19,.31,.375];for(let i=0;i<n;i++)LAY.beds.push({x:W*(bx[i%5]||.06+i*.06),y:LAY.floorTop+16+(i%2)*10});
   LAY.pool={x:W*.6,y:LAY.floorTop+(LAY.floorBot-LAY.floorTop)*.1,w:W*.24,h:(LAY.floorBot-LAY.floorTop)*.32};}
 function drawWorld(){
-  const hr=new Date().getHours(),key=W+'x'+H+':'+hr+':'+S.decor.join(',')+S.owned.length+':'+PETS.length;if(BG&&BGK===key)return BG;BGK=key;layout();
+  const hr=new Date().getHours(),key=W+'x'+H+':'+hr+':'+S.decor.join(',')+S.owned.length+':'+PETS.length;if(BG&&BGK===key)return BG;BGK=key;layout();if(typeof ACT!=='undefined'&&ACT&&!MODE)ACT.forEach(keepOutOfPool); // e.g. after turning the iPad
   const c=document.createElement('canvas');c.width=W*DPR;c.height=H*DPR;const g=c.getContext('2d');g.setTransform(DPR,0,0,DPR,0,0);
   const night=hr>=19||hr<5,ft=LAY.floorTop,door=LAY.door;
   // yard sky
@@ -559,14 +559,25 @@ function bowl(g,x,y,col,inside,kibble){ // a real bowl: sloped side + rim + what
 
 // ---------- actors ----------
 function inPool(x,y,m){const P=LAY.pool;m=m||0;return x>P.x-m&&x<P.x+P.w+m&&y>P.y-m&&y<P.y+P.h+m;}
+// path around the pool: the pool is solid for walking (only Bella swims, and only after a ball in the water)
+function segHitsPool(x1,y1,x2,y2,m){for(let k=0;k<=30;k++){const q=k/30;if(inPool(x1+(x2-x1)*q,y1+(y2-y1)*q,m))return true;}return false;}
+function routeAround(x1,y1,x2,y2){if(!segHitsPool(x1,y1,x2,y2,14))return[];const P=LAY.pool,m=30,l=P.x-m,r=P.x+P.w+m,top=Math.max(LAY.floorTop+3,P.y-m),bot=P.y+P.h+m,mid=P.y+P.h/2;let best=null;
+  for(const sx of [l,r]){const pts=[{x:sx,y:y1<mid?top:bot}];if((y1<mid)!==(y2<mid))pts.push({x:sx,y:y2<mid?top:bot});
+    let L=0,px=x1,py=y1;for(const q of pts){L+=Math.hypot(q.x-px,q.y-py);px=q.x;py=q.y;}L+=Math.hypot(x2-px,y2-py);if(!best||L<best.L)best={pts,L};}
+  return best.pts.map(q=>({x:clamp(q.x,W*.03,W*.97),y:q.y}));}
+// if a walker ends up on the water, step it back out to the closest edge
+function keepOutOfPool(A){const P=LAY.pool;if(!inPool(A.x,A.y,6))return;const opts=[{x:A.x,y:P.y+P.h+14},{x:P.x-14,y:A.y},{x:P.x+P.w+14,y:A.y}];
+  if(P.y-10>LAY.floorTop)opts.push({x:A.x,y:P.y-10});let b=opts[0];for(const o of opts)if(Math.hypot(o.x-A.x,o.y-A.y)<Math.hypot(b.x-A.x,b.y-A.y))b=o;A.x=b.x;A.y=b.y;}
+// where to head next: straight at the goal, or to the next corner around the pool
+function nextStep(A,gx,gy){const w=routeAround(A.x,A.y,gx,gy);return w.length?w[0]:{x:gx,y:gy};}
 function poolEdge(x){const P=LAY.pool;return{x:clamp(x,P.x+10,P.x+P.w-10),y:P.y+P.h+16};}
 function depthScale(y){return .78+.42*(y-LAY.floorTop)/(LAY.floorBot-LAY.floorTop);}
 function inYardNow(p){return hoursSince(p.last_seen)<1;}
 function zoneOf(p){return inYardNow(p)?[LAY.yA,LAY.yB]:[LAY.inA,LAY.inB];}
-function makeActors(){layout();ACT=PETS.map((p,i)=>{const z=zoneOf(p);return{p,x:rnd(z[0],z[1]),y:rnd(LAY.floorTop+20,LAY.floorBot),dir:Math.random()<.5?-1:1,pose:'idle',state:'idle',timer:rnd(1,4),seed:i*1.7,walkT:0,scale:1,happy:0,bed:LAY.beds[i]};});}
+function makeActors(){layout();ACT=PETS.map((p,i)=>{const z=zoneOf(p);return{p,x:rnd(z[0],z[1]),y:rnd(LAY.floorTop+20,LAY.floorBot),dir:Math.random()<.5?-1:1,pose:'idle',state:'idle',timer:rnd(1,4),seed:i*1.7,walkT:0,scale:1,happy:0,bed:LAY.beds[i]};});ACT.forEach(keepOutOfPool);}
 function goTo(A,x,y,then,speed){A.state='walk';A.tx=clamp(x,W*.03,W*.97);A.ty=clamp(y,LAY.floorTop+6,LAY.floorBot);
   if(inPool(A.tx,A.ty,14)){const e=poolEdge(A.tx);A.tx=e.x;A.ty=e.y;}
-  A.wp=null;for(let k=1;k<20;k++){const q=k/20;if(inPool(A.x+(A.tx-A.x)*q,A.y+(A.ty-A.y)*q,14)){A.wp={x:(A.x+A.tx)/2,y:LAY.pool.y+LAY.pool.h+22};break;}} // walk around the pool
+  A.wp=null; // walk around the pool (see nextStep)
   A.then=then||null;A.speed=speed||rnd(60,90);}
 function sleepyNow(p,c){const h=new Date().getHours(),night=h>=22||h<5;return c.energy<25||(night&&!nightOwl(p));}
 function think(A){
@@ -581,9 +592,9 @@ function think(A){
 }
 function stepActors(dt){
   for(const A of ACT){A.scale=depthScale(A.y)*clamp(H/820,.7,1.4)*(A.p.species==='dog'?1.18:1);A.happy=Math.max(0,A.happy-dt);
-    if(A.state==='walk'){const gx=A.wp?A.wp.x:A.tx,gy=A.wp?A.wp.y:A.ty,dx=gx-A.x,dy=gy-A.y,d=Math.hypot(dx,dy);A.pose='walk';if(Math.abs(dx)>2)A.dir=dx>0?1:-1;
-      if(A.wp&&d<6){A.wp=null;continue;}
-      if(d<4){A.state='idle';A.pose='idle';A.timer=rnd(1,3);const th=A.then;A.then=null;if(th)th();}else{const v=A.speed*dt*A.scale;A.x+=dx/d*Math.min(v,d);A.y+=dy/d*Math.min(v,d);A.walkT+=dt*A.speed/22;}}
+    if(A.state==='walk'){const ns=nextStep(A,A.tx,A.ty),corner=ns.x!==A.tx||ns.y!==A.ty,gx=ns.x,gy=ns.y,dx=gx-A.x,dy=gy-A.y,d=Math.hypot(dx,dy);A.pose='walk';if(Math.abs(dx)>2)A.dir=dx>0?1:-1;
+      if(corner&&d<6){A.x=gx;A.y=gy;continue;}
+      if(!corner&&d<4){A.state='idle';A.pose='idle';A.timer=rnd(1,3);const th=A.then;A.then=null;if(th)th();}else{const v=A.speed*dt*A.scale;A.x+=dx/d*Math.min(v,d);A.y+=dy/d*Math.min(v,d);A.walkT+=dt*A.speed/22;keepOutOfPool(A);}}
     else if(A.state==='eat'){A.timer-=dt;if(A.timer<=0){A.state='idle';A.pose='idle';A.timer=1;}}
     else if(A.state==='idle'&&!MODE){A.timer-=dt;if(A.timer<=0)think(A);}
     else if(A.state==='sleep'){const c=care(A.p.name);const bedK=S.owned.includes(A.p.species==='dog'?'bed_doghouse':'bed_igloo')?1.5:S.owned.includes('bed_basket')?1.25:1;c.energy=clamp(c.energy+dt*.6*bedK,0,100);A.timer-=dt;if(A.timer<=0){A.timer=6;think(A);}}}
@@ -620,8 +631,9 @@ function frame(now){const dt=Math.min(.05,(now-last)/1000);last=now;NOW+=dt;
   if(MODE&&MODE.step)MODE.step(dt);else stepActors(dt);
   const order=ACT.slice().sort((a,b)=>a.y-b.y);
   for(const A of order){if(MODE&&MODE.hide&&MODE.hide(A))continue;
-    if(inPool(A.x,A.y)){const wl=A.y-26*A.scale;cx.save();cx.beginPath();cx.rect(0,0,W,wl);cx.clip();cx.translate(0,22*A.scale);drawPet(cx,A,NOW);cx.restore();
-      cx.strokeStyle='rgba(255,255,255,.7)';cx.lineWidth=2;cx.beginPath();cx.ellipse(A.x,wl,(40+Math.sin(NOW*6)*4)*A.scale,6*A.scale,0,0,7);cx.stroke();}
+    if(A.p.species==='dog'&&inPool(A.x,A.y,-4)){const P=LAY.pool,wl=clamp(A.y-4*A.scale,P.y+5,P.y+P.h-4),bob=Math.sin(NOW*3)*1.5;cx.save();cx.beginPath();cx.rect(0,0,W,wl);cx.clip();cx.translate(0,30*A.scale+bob);drawPet(cx,A,NOW);cx.restore();
+      cx.fillStyle='rgba(50,170,220,.55)';cx.beginPath();cx.ellipse(A.x,wl+1,46*A.scale,5*A.scale,0,0,7);cx.fill();
+      cx.strokeStyle='rgba(255,255,255,.75)';cx.lineWidth=2;cx.beginPath();cx.ellipse(A.x,wl,(44+Math.sin(NOW*6)*4)*A.scale,6*A.scale,0,0,7);cx.stroke();}
     else drawPet(cx,A,NOW);drawZ(A,NOW);if(!MODE)drawBubble(A,NOW);
     if(SEL===A.p.name&&!MODE){cx.strokeStyle='rgba(255,255,255,.9)';cx.lineWidth=3;cx.setLineDash([6,6]);cx.lineDashOffset=-NOW*20;cx.beginPath();cx.ellipse(A.x,A.y+2,(A.p.species==='dog'?78:62)*A.scale,12*A.scale,0,0,7);cx.stroke();cx.setLineDash([]);}}
   if(MODE&&MODE.draw)MODE.draw(NOW);
@@ -736,13 +748,14 @@ function startLaser(p){
   // move the dot to make the cat run (metres), hold it still so it pounces (catches)
   let dot={x:W*.7,y:(LAY.floorTop+LAY.floorBot)/2},catches=0,run=0,time=30,still=0,pounce=0,rest=0;const ox=A.x,oy=A.y;
   const pts=()=>catches*5+Math.floor(run/4);
-  MODE={hide:B=>B!==A,step(dt){time-=dt;A.scale=depthScale(A.y)*clamp(H/820,.7,1.4);const wet=inPool(dot.x,dot.y,6),tg=wet?poolEdge(dot.x):dot,dx=tg.x-A.x,dy=tg.y-A.y,d=Math.hypot(dx,dy);if(Math.abs(dx)>4)A.dir=dx>0?1:-1;still+=dt;if(wet)still=0;
+  MODE={hide:B=>B!==A,step(dt){time-=dt;A.scale=depthScale(A.y)*clamp(H/820,.7,1.4);const wet=inPool(dot.x,dot.y,6),goal=wet?poolEdge(dot.x):dot,tg=nextStep(A,goal.x,goal.y),detour=tg!==goal&&(tg.x!==goal.x||tg.y!==goal.y),dx=tg.x-A.x,dy=tg.y-A.y,d=Math.hypot(dx,dy);if(Math.abs(dx)>4)A.dir=dx>0?1:-1;still+=dt;if(wet)still=0;
       if(rest>0){rest-=dt;A.pose='sit';A.happy=1;}
-      else if(pounce>0){pounce-=dt;A.pose='walk';A.walkT+=dt*14;const v=Math.min(d,700*dt);A.x+=dx/(d||1)*v;A.y+=dy/(d||1)*v;
-        if(d<20*A.scale&&!wet){catches++;sfx('pounce',{pan:panOf(A)});if(Math.random()<.25)voice(p,{cd:4,vol:.6});puffs(dot.x,dot.y,10,'#ff3a3a');hearts(A.x,A.y-70*A.scale,2);pounce=0;rest=1.1;}
+      else if(pounce>0){pounce-=dt;A.pose='walk';A.walkT+=dt*14;const v=Math.min(d,700*dt);A.x+=dx/(d||1)*v;A.y+=dy/(d||1)*v;keepOutOfPool(A);
+        if(d<20*A.scale&&!wet&&!detour){catches++;sfx('pounce',{pan:panOf(A)});if(Math.random()<.25)voice(p,{cd:4,vol:.6});puffs(dot.x,dot.y,10,'#ff3a3a');hearts(A.x,A.y-70*A.scale,2);pounce=0;rest=1.1;}
         else if(pounce<=0){A.pose='sit';rest=.4;}}
-      else if(d>30*A.scale){A.pose='walk';const v=Math.min(d,(170+catches*6)*dt*A.scale);A.x+=dx/d*v;A.y+=dy/d*v;run+=v/(55*A.scale);A.walkT+=dt*10;
-        if(still>.6&&d<260*A.scale)pounce=.45;}
+      else if(d>30*A.scale){A.pose='walk';const v=Math.min(d,(170+catches*6)*dt*A.scale);A.x+=dx/d*v;A.y+=dy/d*v;keepOutOfPool(A);run+=v/(55*A.scale);A.walkT+=dt*10;
+        if(still>.6&&d<260*A.scale&&!detour)pounce=.45;}
+      else if(detour){A.x=tg.x;A.y=tg.y;}
       else{A.pose='sit';if(still>.6){/* sitting right on the dot: no pounce, move it away */}}
       gameHUD(`<b>${catches}</b> pounces · ${Math.round(run)} m run · ${Math.max(0,Math.ceil(time))} s`);if(time<=0)done();},
     draw(t){cx.fillStyle='rgba(255,40,40,.25)';cx.beginPath();cx.arc(dot.x,dot.y,16,0,7);cx.fill();cx.fillStyle='#ff2a2a';cx.beginPath();cx.arc(dot.x,dot.y,6+Math.sin(t*20),0,7);cx.fill();cx.fillStyle='#fff';cx.beginPath();cx.arc(dot.x,dot.y,2.2,0,7);cx.fill();},
@@ -757,8 +770,8 @@ function startFetch(p){
   const home={x:W*.62,y:LAY.floorBot-6};A.x=home.x;A.y=home.y;let ball=null,score=0,throws=8,phase='ready',wet=0;const ox=A.x,oy=A.y;
   MODE={hide:B=>B!==A,step(dt){A.scale=depthScale(A.y)*clamp(H/820,.7,1.4)*1.18;
       if(ball&&ball.fly){ball.t+=dt/ball.d;const k=Math.min(1,ball.t);ball.x=ball.x0+(ball.x1-ball.x0)*k;ball.y=ball.y0+(ball.y1-ball.y0)*k;ball.h=Math.sin(k*Math.PI)*ball.d*260;if(k>=1){ball.fly=false;phase='run';sfx('bounce',{pan:(ball.x/W-.5)});
-        const P=LAY.pool;if(ball.x>P.x&&ball.x<P.x+P.w&&ball.y>P.y&&ball.y<P.y+P.h){ball.pool=1;sfx('splash',{pan:(ball.x/W-.5)});puffs(ball.x,ball.y,14,'#8ad0f0','drop');}}}
-      if(phase==='run'||phase==='back'){const tg=phase==='run'?ball:home,dx=tg.x-A.x,dy=tg.y-A.y,d=Math.hypot(dx,dy);A.dir=dx>0?1:-1;A.pose='walk';A.walkT+=dt*14;const v=380*dt;
+        const P=LAY.pool;if(ball.x>P.x&&ball.x<P.x+P.w&&ball.y>P.y-6&&ball.y<P.y+P.h){ball.pool=1;ball.y=clamp(ball.y,P.y+P.h*.5,P.y+P.h*.8);ball.x=clamp(ball.x,P.x+P.w*.08,P.x+P.w*.92);sfx('splash',{pan:(ball.x/W-.5)});puffs(ball.x,ball.y,14,'#8ad0f0','drop');}}}
+      if(phase==='run'||phase==='back'){const goal=phase==='run'?ball:home,swimTo=phase==='run'&&ball.pool,tg=swimTo||inPool(A.x,A.y,2)?goal:nextStep(A,goal.x,goal.y),dx=tg.x-A.x,dy=tg.y-A.y,d=Math.hypot(dx,dy);A.dir=dx>0?1:-1;A.pose='walk';A.walkT+=dt*14;const v=380*dt;
         if(d>6){A.x+=dx/d*Math.min(v,d);A.y+=dy/d*Math.min(v,d);if(ball.pool&&phase==='run'){const P=LAY.pool;if(A.x>P.x&&A.x<P.x+P.w&&A.y>P.y&&A.y<P.y+P.h&&Math.random()<.3)puffs(A.x,A.y,2,'#8ad0f0','drop');}}
         else if(phase==='run'){phase='back';ball.held=1;if(ball.pool){wet++;sfx('splash',{pan:panOf(A)});}if(Math.random()<.35)voice(p,{cd:3,one:1,vol:.7});}else{phase='ready';score++;A.happy=1.5;hearts(A.x,A.y-90*A.scale,2);ball=null;A.pose='sit';if(throws<=0)done();}}
       if(ball&&ball.held){ball.x=A.x+A.dir*60*A.scale;ball.y=A.y;ball.h=58*A.scale;}
