@@ -1949,7 +1949,7 @@ function brStep(dt){const R=BRW;if(!R.on||R.paused)return;
     else if(F.state==='ko'){F.vx*=Math.pow(.02,dt);}
     // gravity + floor + platforms
     if(F.state!=='super'||!F.hover){F.vy+=2600*BRW.k*dt;}
-    const ny=F.y+F.vy*dt;let land=null;if(F.vy>=0)land=brLand(F.x,F.y,ny,F.dropT>0);
+    const ny=F.y+F.vy*dt;let land=null;if(F.vy>=0)land=brLand(F.x,F.y,ny,F.dropT>0,F.passAbove);
     if(land!=null){if(!F.ground&&F.vy>500*BRW.k){puffs2(F.x,land,'#e8d8c0',5);if(F.vy>900*BRW.k)sfx('land',{O:F});}F.y=land;F.vy=0;F.ground=true;F.jumps=0;}
     else{F.y=ny;F.ground=false;}
     if(F.ground&&!brOnSomething(F.x,F.y)){F.ground=false;}
@@ -1970,7 +1970,7 @@ function brStep(dt){const R=BRW;if(!R.on||R.paused)return;
 }
 function brOnSomething(x,y){if(Math.abs(y-BRW.gy)<1)return true;return BRW.plats.some(p=>x>=p.x1&&x<=p.x2&&Math.abs(y-p.y)<1);}
 // returns the y to land on if moving from y0 to y1 crosses the floor or a platform top
-function brLand(x,y0,y1,drop){if(y1>=BRW.gy)return BRW.gy;if(drop)return null;let best=null;for(const p of BRW.plats){if(x>=p.x1&&x<=p.x2&&y0<=p.y+.5&&y1>=p.y){if(best==null||p.y<best)best=p.y;}}return best;}
+function brLand(x,y0,y1,drop,pass){if(y1>=BRW.gy)return BRW.gy;if(drop)return null;let best=null;for(const p of BRW.plats){if(pass&&p.y<pass-1)continue;if(x>=p.x1&&x<=p.x2&&y0<=p.y+.5&&y1>=p.y){if(best==null||p.y<best)best=p.y;}}return best;}
 function brAttack(F,O){const air=!F.ground,k=BRW.k;
   if(F.ammo){const kind=F.ammo;F.ammo=null;F.state='attack';F.stT=0;F.atk={t:0,act:[9,9],end:.28,throw:1};F.cd=.3;
     const big=kind==='chinela';BRW.shots.push({side:F.side,x:F.x+F.dir*40*F.scale,y:F.y-60*F.scale,vx:F.dir*(big?950:780)*k,vy:big?-260*k:-120*k,g:big?900*k:600*k,spin:F.dir*(big?14:9),a:0,t:0,dmg:big?15:9,kb:big?520:300,big,kind,col:BR_ITEMS[kind].col});
@@ -2036,8 +2036,8 @@ function brSuper(F,O){const R=BRW,kind=BR_SUPER[F.name]||'blitz',P=powerOf(F.nam
         if(Math.random()<.5)puffs2(F.x,F.y,'#e8d8c0',2);if(!hit[pass]&&Math.abs(O.x-F.x)<80*F.scale&&Math.abs(O.y-F.y)<100*k){hit[pass]=1;brDamage(O,F,14,{kb:600,up:420,dir:F.dir,big:1,sup:1,col:P.color});}},
       done(){F.vx=0;done();if(O.state!=='ko'){O.state='stun';O.stT=0;O.stunFor=1;floatText(O.x,O.y-130*O.scale,'STUNNED','#ffd34a');}}});
     F.dir=O.x>F.x?1:-1;}
-  else if(kind==='nova'){F.hover=1;F.vy=-500*k;F.dir=O.x>F.x?1:-1;
-    R.fx.push({t:0,d:2.2,step(dt){if(this.t>.35)F.vy*=Math.pow(.001,dt);F.state='super';if(this.t>1&&!this.fired){this.fired=1;sfx('supernova');SHAKE=16;const by=F.y-50*F.scale;
+  else if(kind==='nova'){F.dir=O.x>F.x?1:-1;
+    R.fx.push({t:0,d:2.2,step(dt){F.state='super';if(F.ground)F.vx=0;if(this.t>1&&!this.fired){this.fired=1;sfx('supernova');SHAKE=16;const by=F.y-50*F.scale;
         if((O.x-F.x)*F.dir>0&&Math.abs(O.y-50*O.scale-by)<110*k)brDamage(O,F,30,{kb:700,up:300,dir:F.dir,big:1,sup:1,col:P.color}),O.burn=3,O.burnT=.8;}},
       draw(){const t=this.t;const bx=F.x+F.dir*50*F.scale,by=F.y-50*F.scale;cx.save();
         if(t<1){const r=10+t*40;const g=cx.createRadialGradient(bx,by,0,bx,by,r*2);g.addColorStop(0,'#fff');g.addColorStop(.3,P.color);g.addColorStop(1,'rgba(180,90,230,0)');cx.fillStyle=g;cx.beginPath();cx.arc(bx,by,r*2,0,7);cx.fill();
@@ -2051,11 +2051,11 @@ function brSuper(F,O){const R=BRW,kind=BR_SUPER[F.name]||'blitz',P=powerOf(F.nam
           if(Math.abs(O.x-s.x)<70*k)brDamage(O,F,10,{kb:200,up:520,dir:O.x>s.x?1:-1,big:1,sup:1,col:'#5ad8ff'});}}},
       draw(){cx.save();cx.fillStyle='rgba(20,30,50,.35)';cx.fillRect(0,0,W,H);for(const s of strikes){if(!s)continue;if(s.warn){const a=.5+.5*Math.sin(NOW*30);cx.strokeStyle=`rgba(120,220,255,${a})`;cx.lineWidth=4;cx.beginPath();cx.ellipse(s.x,R.gy,70*k,14*k,0,0,7);cx.stroke();}}
         for(let i=0;i<5;i++){cx.fillStyle='rgba(40,50,70,.85)';cx.beginPath();cx.ellipse(W*(.1+i*.2)+Math.sin(NOW+i)*20,H*.08,W*.14,H*.06,0,0,7);cx.fill();}cx.restore();},done});}
-  else if(kind==='wrath'){F.dir=O.x>F.x?1:-1;const tx=O.x;
-    R.fx.push({t:0,d:2,step(dt){const t=this.t;F.state='super';if(t<.9){F.hover=1;F.vy=0;const kk=eout(t/.9);F.y+=(H*.12-F.y)*kk*.12;F.x+=(tx-F.x)*.06;}else if(!this.slam){this.slam=1;F.hover=0;F.vy=2400*k;}
-        if(this.slam&&F.ground&&!this.boom){this.boom=1;SHAKE=22;sfx('crit',{O});puffs2(F.x,F.y,'#e8d8c0',24);this.wx=F.x;if(Math.abs(O.x-F.x)<220*k&&O.y>R.gy-160*k)brDamage(O,F,26,{kb:560,up:520,dir:O.x>F.x?1:-1,big:1,sup:1,col:P.color});
+  else if(kind==='wrath'){F.dir=O.x>F.x?1:-1;const y0=F.y,pl=F.ground?R.plats.find(p=>Math.abs(p.y-F.y)<2&&F.x>=p.x1&&F.x<=p.x2):null;const tx=pl?clamp(O.x,pl.x1+20*k,pl.x2-20*k):O.x;
+    R.fx.push({t:0,d:2,step(dt){const t=this.t;F.state='super';if(t<.9){F.hover=1;F.vy=0;const kk=eout(t/.9);F.y+=(H*.12-F.y)*kk*.12;F.x+=(tx-F.x)*.06;}else if(!this.slam){this.slam=1;F.hover=0;F.vy=2400*k;F.passAbove=y0;}
+        if(this.slam&&F.ground&&!this.boom){this.boom=1;F.passAbove=0;SHAKE=22;sfx('crit',{O});puffs2(F.x,F.y,'#e8d8c0',24);this.wx=F.x;this.wy=F.y;if(Math.abs(O.x-F.x)<220*k&&Math.abs(O.y-F.y)<160*k)brDamage(O,F,26,{kb:560,up:520,dir:O.x>F.x?1:-1,big:1,sup:1,col:P.color});
           const h=Math.round(F.max*.25);F.hp=Math.min(F.max,F.hp+h);floatText(F.x,F.y-130*F.scale,'+'+h,'#7dff9a');sfx('heal',{A:F});F.burn=0;}},
-      draw(){if(!this.boom)return;const kk=(this.t-this.tb)||0;const r=(this.t-1)*900*k;cx.save();cx.strokeStyle=P.color;cx.globalAlpha=Math.max(0,1-(this.t-1)*1.2);cx.lineWidth=8;cx.beginPath();cx.ellipse(this.wx,R.gy,r,r*.18,0,0,7);cx.stroke();cx.restore();},done});}
+      draw(){if(!this.boom)return;const kk=(this.t-this.tb)||0;const r=(this.t-1)*900*k;cx.save();cx.strokeStyle=P.color;cx.globalAlpha=Math.max(0,1-(this.t-1)*1.2);cx.lineWidth=8;cx.beginPath();cx.ellipse(this.wx,this.wy,r,r*.18,0,0,7);cx.stroke();cx.restore();},done(){F.passAbove=0;done();}});}
   else if(kind==='howl'){F.dir=O.x>F.x?1:-1;
     R.fx.push({t:0,d:2.1,step(){const t=this.t;F.state='super';if(t>.4&&!this.stun){this.stun=1;sfx('debuff',{A:F});if(Math.abs(O.x-F.x)<W*.5&&O.state!=='ko'){O.state='stun';O.stT=0;O.stunFor=1.3;O.vx=0;floatText(O.x,O.y-130*O.scale,'STUNNED','#ffd34a');}}
         if(t>1.1&&!this.bite){this.bite=1;F.dir=O.x>F.x?1:-1;F.x=O.x-F.dir*80*F.scale;puffs2(F.x,F.y,'#e8d8c0',10);sfx('crit',{O});if(O.state!=='ko')brDamage(O,F,24,{kb:520,up:360,dir:F.dir,big:1,sup:1,col:P.color});F.buff=6;}},
