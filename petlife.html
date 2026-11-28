@@ -235,6 +235,8 @@ body.chill #top,body.chill #tray,body.chill #care{opacity:0;pointer-events:none!
 .album2{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:16px;margin-top:14px;padding:4px}.album2 figure{margin:0;background:#fffdf8;padding:8px 8px 10px;box-shadow:0 4px 14px rgba(60,40,20,.2);transform:rotate(var(--r));cursor:pointer}
 .album2 img{width:100%;aspect-ratio:4/3;object-fit:cover;display:block}.album2 figcaption{font:700 13px "Marker Felt","Avenir Next",sans-serif;text-align:center;margin-top:6px;color:#4a3a2a;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 #tBed{position:relative}
+/* ===== v130 */
+.errlog{display:grid;gap:6px}.errlog div{background:#fff4f0;border-radius:12px;padding:8px 10px;font-size:12px}.errlog code{display:block;font-size:12px;color:#a8301a;margin:2px 0;word-break:break-word}.errlog small{display:block;opacity:.6;font-size:10px;word-break:break-all}
 </style></head><body>
 <div id="safe"></div><div id="safeb"></div><div id="hsov"></div><canvas id="cv"></canvas><div id="load"><div><h1>Pet Life</h1><p>Checking on your pets...</p></div></div><div id="ui" hidden><div id="top"></div><div id="care"></div><div id="tray"></div></div><div id="mbar"></div><div id="ghud"></div><div id="toast"></div><div id="sheet"></div>
 <script>
@@ -3212,5 +3214,40 @@ function v129Welcome(){if(S.v129Seen||!S.bigSeen||MODE||$('sheet').classList.con
    ${row('<svg width="30" height="30" viewBox="0 0 30 30"><rect x="4" y="6" width="22" height="18" rx="2" fill="#fbf8f1" stroke="#b8a888"/><rect x="7" y="9" width="16" height="11" fill="#8ac8f0"/><circle cx="12" cy="15" r="3" fill="#f2c14e"/></svg>','Photo album','Save your photos with captions (Journal, Album)')}
    ${row(icon('heart',20),'Holidays + your birthday','The house decorates itself for holidays. Set your birthday in the Menu for a party')}<button class="go wide" data-close>Cool!</button></div>`,'small');}
 const _closeSheet5=closeSheet;closeSheet=function(){_closeSheet5();if(!S.v129Seen)setTimeout(v129Welcome,800);};setTimeout(()=>{if(!S.v129Seen&&!$('sheet').classList.contains('on'))v129Welcome();},7000);
+
+</script><script>
+// =================== v130: CRASH-PROOF LOOP + GLITCH RECORDER ===================
+// Before: one error anywhere in a frame stopped the whole animation (pets vanished, picture froze).
+// Now every part runs on its own; a broken part is skipped and recorded, everything else keeps going.
+const ERRLOG=(()=>{try{return JSON.parse(localStorage.getItem('pl_err')||'[]');}catch(e){return[];}})();let ERRSEEN={},ERRTOAST=0,NEEDRESET=0,LASTRESET=0;
+function glitch(where,e){const msg=String(e&&e.message||e).slice(0,160),key=where+'|'+msg;if(ERRSEEN[key]){ERRSEEN[key]++;return;}ERRSEEN[key]=1;NEEDRESET=1;
+  ERRLOG.push({t:Date.now(),v:'v130',where,msg,st:String(e&&e.stack||'').split('\n').slice(0,4).join(' | ').slice(0,400)});while(ERRLOG.length>12)ERRLOG.shift();try{localStorage.setItem('pl_err',JSON.stringify(ERRLOG));}catch(_){}
+  if(!ERRTOAST){ERRTOAST=1;setTimeout(()=>{try{toast('Oops, a little glitch. The game kept going. Details are in Menu, Help','');}catch(_){}},300);}}
+function safe(where,fn){try{fn();}catch(e){glitch(where,e);}}
+frame=function(now){requestAnimationFrame(frame);const dt=Math.min(.05,Math.max(0,(now-last)/1000));last=now;NOW+=dt;
+  if(NEEDRESET&&now-LASTRESET>1000){NEEDRESET=0;LASTRESET=now;safe('reset',()=>{cv.width=cv.width;cx.setTransform(DPR,0,0,DPR,0,0);});}
+  cx.setTransform(DPR,0,0,DPR,0,0);cx.globalAlpha=1;cx.globalCompositeOperation='source-over';
+  safe('world',()=>{const bg=drawWorld();cx.drawImage(bg,0,0,W,H);});
+  safe('scene',()=>drawLive(NOW));
+  safe('step',()=>{if(MODE&&MODE.step)MODE.step(dt);else stepActors(dt);});
+  const order=ACT.slice().sort((a,b)=>a.y-b.y);
+  for(const A of order){if(A.away)continue;if(MODE&&MODE.hide&&MODE.hide(A))continue;cx.save();
+    try{if(!isFinite(A.x)||!isFinite(A.y)){const z=zoneOf(A.p);A.x=(z[0]+z[1])/2;A.y=(LAY.floorTop+LAY.floorBot)/2;A.state='idle';A.timer=1;}
+      if(A.p.species==='dog'&&inPool(A.x,A.y,-4)){const P=LAY.pool,wl=clamp(A.y-4*A.scale,P.y+5,P.y+P.h-4),bob=Math.sin(NOW*3)*1.5;cx.save();cx.beginPath();cx.rect(0,0,W,wl);cx.clip();cx.translate(0,30*A.scale+bob);drawPet(cx,A,NOW);cx.restore();
+        cx.fillStyle='rgba(50,170,220,.55)';cx.beginPath();cx.ellipse(A.x,wl+1,46*A.scale,5*A.scale,0,0,7);cx.fill();cx.strokeStyle='rgba(255,255,255,.75)';cx.lineWidth=2;cx.beginPath();cx.ellipse(A.x,wl,(44+Math.sin(NOW*6)*4)*A.scale,6*A.scale,0,0,7);cx.stroke();}
+      else if(A.jumpH){cx.save();cx.translate(0,-A.jumpH);drawPet(cx,A,NOW);cx.restore();}else drawPet(cx,A,NOW);}catch(e){glitch('pet '+A.p.name,e);}
+    cx.restore();cx.save();try{drawZ(A,NOW);if(!MODE){if(A.mail)drawMail(A,NOW);else if(WISH&&WISH.name===A.p.name)drawWish(A,NOW);else drawBubble(A,NOW);}
+      if(SEL===A.p.name&&!MODE){cx.strokeStyle='rgba(255,255,255,.9)';cx.lineWidth=3;cx.setLineDash([6,6]);cx.lineDashOffset=-NOW*20;cx.beginPath();cx.ellipse(A.x,A.y+2,(A.p.species==='dog'?78:62)*A.scale,12*A.scale,0,0,7);cx.stroke();cx.setLineDash([]);}}catch(e){glitch('bubble',e);}cx.restore();}
+  safe('mode',()=>{if(MODE&&MODE.draw)MODE.draw(NOW);});safe('fx',()=>drawParts(dt));};
+// the yard visitors were the likely culprit: each one now draws and moves on its own
+drawVisitors=function(t){for(let i=VACT.length-1;i>=0;i--){const a=VACT[i];cx.save();try{if(!isFinite(a.x)||!isFinite(a.y))throw new Error('bad position '+a.id);const s=visScale(a);drawV(cx,a,t,s);
+      if(a.glow>.02){a.glow-=1/60;const r=Math.max(1,(1.6-a.glow)*50*s);cx.strokeStyle='rgba(255,255,255,'+Math.max(0,Math.min(1,a.glow)).toFixed(3)+')';cx.lineWidth=3;cx.beginPath();cx.arc(a.x,a.y-12*s,r,0,7);cx.stroke();}else a.glow=0;}
+    catch(e){glitch('visitor '+a.id,e);VACT.splice(i,1);}cx.restore();}};
+const _stepVis2=stepVis;stepVis=function(dt){try{_stepVis2(dt);}catch(e){glitch('visitors',e);for(let i=VACT.length-1;i>=0;i--){const a=VACT[i];if(!isFinite(a.x)||!isFinite(a.y))VACT.splice(i,1);}}};
+const _arenaSnd2=arenaSnd;arenaSnd=function(n,o){try{_arenaSnd2(n,o);}catch(e){glitch('sound '+n,e);}};
+addEventListener('error',e=>glitch('page',e.error||e.message));addEventListener('unhandledrejection',e=>glitch('promise',e.reason));
+const _openHelp5=openHelp;openHelp=function(){_openHelp5();const h=$('sheet').querySelector('.help');if(!h)return;const x=document.createElement('div');
+  x.innerHTML=`<h4>Glitch report</h4>${ERRLOG.length?`<p class="sm">If pets ever disappear or something looks broken, screenshot this list and send it to Claude.</p><div class="errlog">${ERRLOG.slice().reverse().map(e=>`<div><b>${esc(e.where)}</b> · ${new Date(e.t).toLocaleString()}<br><code>${esc(e.msg)}</code><small>${esc(e.st)}</small></div>`).join('')}</div><button class="wide2" id="errClr">Clear the report</button>`:'<p class="sm">No glitches recorded. Everything is running smoothly.</p>'}`;h.appendChild(x);
+  const b=$('errClr');if(b)b.onclick=()=>{ERRLOG.length=0;try{localStorage.removeItem('pl_err');}catch(_){}openHelp();};};
 
 </script></body></html>
